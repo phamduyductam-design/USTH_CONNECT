@@ -1,0 +1,6 @@
+<resources>
+    <style name="Theme.UsthConnect" parent="Base.Theme.UsthConnect">
+        <item name="android:navigationBarColor">@color/surface</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+</resources>

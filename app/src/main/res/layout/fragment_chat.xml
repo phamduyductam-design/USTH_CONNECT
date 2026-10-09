@@ -1,0 +1,30 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/space_8" android:gravity="center_vertical">
+        <ImageButton android:id="@+id/back" style="@style/IconButton" android:src="@drawable/ic_back" android:contentDescription="@string/back" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+            <TextView android:id="@+id/title" style="@style/Heading" android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <TextView android:id="@+id/subtitle" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" />
+        </LinearLayout>
+        <com.google.android.material.button.MaterialButton android:id="@+id/members" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="wrap_content" app:icon="@drawable/ic_members" android:contentDescription="@string/members" />
+        <ImageButton android:id="@+id/more" style="@style/IconButton" android:src="@drawable/ic_settings" android:contentDescription="@string/options" />
+    </LinearLayout>
+    <TextView android:id="@+id/topic" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_selected" android:padding="@dimen/space_12" android:layout_marginHorizontal="@dimen/space_20" android:maxLines="3" android:ellipsize="end" />
+    <LinearLayout android:id="@+id/banner" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:padding="@dimen/space_8" android:layout_marginHorizontal="@dimen/space_20" android:layout_marginTop="@dimen/space_8" android:background="@drawable/bg_error" android:visibility="gone">
+        <TextView android:id="@+id/connection_status" style="@style/Caption" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="@color/error" android:accessibilityLiveRegion="polite" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/reconnect" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/reconnect" />
+    </LinearLayout>
+    <FrameLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1">
+        <androidx.recyclerview.widget.RecyclerView android:id="@+id/list" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="@dimen/space_20" android:clipToPadding="false" />
+        <LinearLayout android:id="@+id/empty" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:gravity="center" android:padding="@dimen/space_20">
+            <ImageView android:layout_width="@dimen/empty_icon" android:layout_height="@dimen/empty_icon" android:padding="@dimen/space_20" android:background="@drawable/bg_selected" android:src="@drawable/ic_chat" android:importantForAccessibility="no" />
+            <TextView android:id="@+id/empty_title" style="@style/Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/chat_empty" android:gravity="center" android:layout_marginTop="@dimen/space_16" />
+            <TextView android:id="@+id/empty_detail" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/chat_empty_detail" android:gravity="center" android:textColor="@color/text_secondary" android:layout_marginTop="@dimen/space_8" />
+        </LinearLayout>
+    </FrameLayout>
+    <com.google.android.material.button.MaterialButton android:id="@+id/latest" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/latest" android:layout_marginHorizontal="@dimen/space_20" android:visibility="gone" />
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="bottom" android:paddingStart="@dimen/space_20" android:paddingEnd="@dimen/space_20" android:paddingTop="@dimen/space_8" android:paddingBottom="@dimen/space_8">
+        <EditText android:id="@+id/composer" style="@style/Input" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:inputType="textMultiLine|textCapSentences" android:singleLine="false" android:maxLines="4" android:imeOptions="flagNoExtractUi" android:gravity="top" android:hint="@string/messages" android:autofillHints="" />
+        <ImageButton android:id="@+id/send" android:layout_width="@dimen/input_height" android:layout_height="@dimen/input_height" android:layout_marginStart="@dimen/space_8" android:padding="@dimen/space_16" android:background="@drawable/bg_primary" android:src="@drawable/ic_send" android:contentDescription="@string/send" />
+    </LinearLayout>
+    <TextView android:id="@+id/send_hint" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingStart="@dimen/space_20" android:paddingEnd="@dimen/space_20" android:paddingBottom="@dimen/space_8" />
+</LinearLayout>

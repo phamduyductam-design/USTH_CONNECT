@@ -1,0 +1,88 @@
+{
+  "courses": [
+    {
+      "id": "web",
+      "name": "Web Development",
+      "description": "Cùng học, cùng xây dựng.",
+      "icon": "code",
+      "channels": [
+        {
+          "name": "#web-general",
+          "description": "Trao đổi chung"
+        },
+        {
+          "name": "#web-questions",
+          "description": "Hỏi đáp bài tập"
+        },
+        {
+          "name": "#web-resources",
+          "description": "Chia sẻ tài liệu"
+        },
+        {
+          "name": "#web-project",
+          "description": "Thảo luận dự án"
+        }
+      ]
+    },
+    {
+      "id": "deep",
+      "name": "Deep Learning",
+      "description": "Cùng khám phá học sâu.",
+      "icon": "brain",
+      "channels": [
+        {
+          "name": "#deep-general",
+          "description": "Trao đổi chung"
+        },
+        {
+          "name": "#deep-questions",
+          "description": "Hỏi đáp bài tập"
+        },
+        {
+          "name": "#deep-resources",
+          "description": "Chia sẻ tài liệu"
+        }
+      ]
+    },
+    {
+      "id": "mobi",
+      "name": "MOBI",
+      "description": "Lập trình ứng dụng di động.",
+      "icon": "phone",
+      "channels": [
+        {
+          "name": "#mobi-general",
+          "description": "Trao đổi chung"
+        },
+        {
+          "name": "#mobi-questions",
+          "description": "Hỏi đáp bài tập"
+        },
+        {
+          "name": "#mobi-project",
+          "description": "Thảo luận dự án"
+        }
+      ]
+    },
+    {
+      "id": "french",
+      "name": "Tiếng Pháp",
+      "description": "Trao đổi cùng lớp.",
+      "icon": "book",
+      "channels": [
+        {
+          "name": "#french-general",
+          "description": "Trao đổi chung"
+        },
+        {
+          "name": "#french-practice",
+          "description": "Luyện tập tiếng Pháp"
+        },
+        {
+          "name": "#french-resources",
+          "description": "Chia sẻ tài liệu"
+        }
+      ]
+    }
+  ]
+}

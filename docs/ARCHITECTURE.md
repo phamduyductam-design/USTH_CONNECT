@@ -1,0 +1,82 @@
+# Kiến trúc và luồng dữ liệu
+
+## Kiến trúc
+
+```mermaid
+flowchart TD
+    Application[ConnectApplication: lifetime theo process] --> Session[SessionRepository]
+    Application --> Courses[CourseRepository]
+    Application --> Settings[SettingsStore]
+    Connect[ConnectActivity] --> Session
+    Main[MainActivity và các Fragment] --> Session
+    Main --> Courses
+    Session --> State[SessionState: trạng thái IRC trên main thread]
+    Session --> Client[IrcClient]
+    Session --> Settings
+    Courses --> JSON[assets/courses.json]
+    Settings --> Preferences[SharedPreferences: cấu hình và nháp]
+    Client --> Reader[Worker đọc blocking]
+    Client --> Writer[Executor ghi riêng]
+    Client --> Timer[ScheduledExecutor: timeout/reconnect/heartbeat]
+    Reader <--> Socket[Socket / SSLSocket TCP/TLS]
+    Writer --> Socket
+    Reader --> Parser[IrcParser]
+    Parser --> Handler[Handler với main Looper]
+    Handler --> State
+    State --> Listener[Listener đang STARTED]
+    Listener --> Main
+```
+
+Repository giữ application settings và listener đã đăng ký; không giữ Activity/View. Fragment và Activity đăng ký trong `onStart`, hủy trong `onStop`. View chỉ cập nhật trên main thread. IrcClient thuần Java; state thuần Java; Android Handler nằm ở lớp repository để test logic độc lập.
+
+## Điều hướng
+
+```mermaid
+flowchart LR
+    A[Kết nối] -->|001 từ server| B[Môn học]
+    B --> C[Kênh môn học]
+    C -->|JOIN xác nhận| D[Chat kênh]
+    B -->|Nhập kênh ngoài danh mục| D
+    D --> E[Bottom sheet Thành viên]
+    E --> F[Chat riêng]
+    B <--> G[Tin nhắn]
+    G --> F
+    B <--> H[Cá nhân]
+    H -->|Xác nhận ngắt| A
+```
+
+MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/Bundle và view hierarchy được Android lưu khi xoay. Chat lưu target, mốc chưa đọc và Parcelable của LinearLayoutManager; nháp ở SettingsStore. Không khai báo `configChanges` để né vòng đời. Một Application giữ nguyên SessionRepository và socket khi Activity được tạo lại.
+
+## Luồng gửi
+
+1. Người dùng bấm Gửi. ChatFragment kiểm tra điều kiện, lấy text và gọi SessionRepository.send.
+2. IrcCommands kiểm tra target, CR/LF/NUL, nội dung trống và kích thước UTF-8 của cả dòng <= 512 byte với CRLF.
+3. Repository thêm một hàng QUEUED của chính mình, gọi IrcClient.send. Nút gửi chỉ khả dụng khi CONNECTED và nếu là kênh thì JOIN đã xác nhận.
+4. Writer executor ghi UTF-8 và CRLF, flush socket. Handler nhận kết quả, đổi sang WRITTEN. Mọi cập nhật adapter nằm trên main thread.
+5. Numeric 401/404 hoặc lỗi tương ứng cập nhật tin gần nhất cho target thành FAILED. Vì IRC cổ điển không có ID/ACK cho từng tin, tương quan lỗi là best-effort theo target và cửa sổ 30 giây; không phải read receipt.
+6. Lỗi ghi một phần => UNCERTAIN. Mất kết nối không phát lại hàng. Người dùng tự bấm Thử lại, đọc xác nhận khả năng trùng, rồi gửi lại đúng hàng đó.
+
+## Luồng nhận
+
+1. Reader nhận bytes từ socket; gom theo CRLF với giới hạn incoming 8192 byte để chấp nhận tag; EOF giữa dòng hoặc framing sai đóng phiên.
+2. Parser tách tags/source/command/parameters/trailing. Dòng sai grammar bị bỏ qua. `PING` được trả lời `PONG` qua writer riêng.
+3. `001` chấp nhận phiên và nickname. Socket đã mở/TLS handshake thành công vẫn chỉ là CONNECTING/REGISTERING trước bước này.
+4. Callback mang epoch được Handler chuyển về main; callback của phiên cũ bị loại sau hủy/reconnect.
+5. SessionState xử lý JOIN/PART/KICK/QUIT/NICK, NAMES 353/366, TOPIC/331/332, PRIVMSG và lỗi numeric.
+6. NAMES nhiều gói được gom vào map có khóa nickname chuẩn hóa; PART/QUIT giữa gói dùng tombstone để không phục hồi người đã rời. Đến 366 mới thay danh sách hoàn chỉnh.
+7. Tin đến target khác chat đang mở tăng unread. Mở chat đánh dấu đọc cục bộ; không gửi trạng thái “đã đọc” cho server.
+8. Fragment render thông qua listener. Nếu đang đọc cũ, adapter giữ vị trí cuộn và hiện nút xuống tin mới; nếu đang ở cuối thì cuộn tiếp.
+
+## Reconnect và bảo mật
+
+Mỗi lần kết nối có generation/epoch mới. Hủy đóng socket và hủy timer, tránh callback cũ làm thay đổi phiên mới. Reader/writer riêng để đọc blocking không giữ hàng đợi gửi. Timeout 30 giây bao gồm connect/TLS/registration; socket connect 15 giây, read timeout 180 giây và PING định kỳ 60 giây với fixed delay.
+
+SSLSocket dùng trust store mặc định và `SSLParameters.setEndpointIdentificationAlgorithm("HTTPS")` để kiểm tra hostname. Không cài trust manager chấp nhận mọi certificate. Lỗi TLS là lỗi dừng để người dùng sửa cấu hình. Các hostname/IP của server phải phù hợp certificate; certificate tự ký chưa được hệ thống tin cậy sẽ bị từ chối.
+
+Cấu hình và nháp dùng `SharedPreferences.apply`, không ghi key/mật khẩu. Không lưu lịch sử giữa server; đổi host/cổng/TLS xóa dữ liệu RAM phiên trước. Bản đầu không triển khai foreground service, database history hoặc đăng nhập tài khoản.
+
+## Tối ưu và phần mở rộng
+
+RecyclerView tái sử dụng view holder, vector icons nhẹ và không tải bitmap mạng. Lịch sử được giới hạn để tránh tăng RAM vô hạn trong mỗi hội thoại. Callback lifecycle giảm leak; một socket dùng cho mọi kênh. UI layout co giãn, các danh sách cuộn và bàn phím dùng WindowInsetsCompat.
+
+Các adapter hiện cập nhật danh sách nhỏ bằng `notifyDataSetChanged` có giữ anchor. Đây là lựa chọn đơn giản của bản đồ án; DiffUtil/ListAdapter, phân trang SQLite, đọc server-time, ISUPPORT đầy đủ và foreground service là các hướng mở rộng được nêu rõ, không được xem là đã có.

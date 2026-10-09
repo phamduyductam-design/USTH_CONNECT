@@ -1,0 +1,3 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/space_20">
+    <EditText android:id="@+id/input" style="@style/Input" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/nickname" android:autofillHints="" android:inputType="textVisiblePassword" />
+</LinearLayout>

@@ -1,0 +1,16 @@
+.gradle/
+.idea/
+.tools/
+local.properties
+**/build/
+*.iml
+docs/sources/
+output/
+**/__pycache__/
+*.py[cod]
+*.apk
+*.aab
+*.jks
+*.keystore
+.DS_Store
+Thumbs.db

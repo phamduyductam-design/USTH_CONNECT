@@ -1,0 +1,15 @@
+<resources>
+    <color name="primary">#2E3B8F</color>
+    <color name="brand_red">#EF2028</color>
+    <color name="surface">#FFFFFF</color>
+    <color name="background">#F5F7FB</color>
+    <color name="text_primary">#172033</color>
+    <color name="text_secondary">#526079</color>
+    <color name="error">#C51D2B</color>
+    <color name="outline">#DCE2EF</color>
+    <color name="selected">#EBF1FF</color>
+    <color name="error_bg">#FFF0F2</color>
+    <color name="badge">#1261FF</color>
+    <color name="purple">#7650CE</color>
+    <color name="teal">#008E87</color>
+</resources>

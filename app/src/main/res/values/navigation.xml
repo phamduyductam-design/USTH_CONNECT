@@ -1,0 +1,5 @@
+<resources>
+    <style name="NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/selected</item>
+    </style>
+</resources>

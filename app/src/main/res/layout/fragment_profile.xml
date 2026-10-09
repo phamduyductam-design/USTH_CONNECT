@@ -1,0 +1,27 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="@dimen/space_20">
+        <TextView android:id="@+id/title" style="@style/Title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/profile" />
+        <View android:layout_width="@dimen/underline_width" android:layout_height="@dimen/underline_height" android:background="@color/brand_red" android:layout_marginTop="@dimen/space_4" android:layout_marginBottom="@dimen/space_16" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:background="@drawable/bg_card" android:padding="@dimen/space_16">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+                <TextView android:id="@+id/avatar" style="@style/Title" android:layout_width="@dimen/profile_avatar" android:layout_height="@dimen/profile_avatar" android:gravity="center" android:background="@drawable/bg_avatar" android:textColor="@color/surface" />
+                <TextView android:id="@+id/name" style="@style/Heading" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="@dimen/space_16" />
+            </LinearLayout>
+            <TextView android:id="@+id/nickname_label" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/nickname" android:layout_marginTop="@dimen/space_16" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+                <EditText android:id="@+id/nickname" style="@style/Input" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:inputType="textVisiblePassword" android:hint="@string/nickname" android:autofillHints="username" />
+                <com.google.android.material.button.MaterialButton android:id="@+id/change" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/change" />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView android:id="@+id/connection_label" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/connection" android:layout_marginTop="@dimen/space_16" />
+        <TextView android:id="@+id/server" style="@style/Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/bg_card" android:padding="@dimen/space_16" android:layout_marginTop="@dimen/space_8" app:drawableStartCompat="@drawable/ic_server" android:drawablePadding="@dimen/space_12" />
+        <TextView android:id="@+id/status" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/space_8" android:accessibilityLiveRegion="polite" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/reconnect" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/reconnect" android:layout_marginTop="@dimen/space_16" />
+        <TextView android:id="@+id/options_label" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/options" android:layout_marginTop="@dimen/space_16" />
+        <com.google.android.material.switchmaterial.SwitchMaterial android:id="@+id/notifications" android:layout_width="match_parent" android:layout_height="@dimen/input_height" android:text="@string/notifications" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/connection_options" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/connection_options" />
+        <TextView android:id="@+id/error" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:textColor="@color/error" android:layout_marginTop="@dimen/space_12" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/disconnect" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/disconnect" android:layout_marginTop="@dimen/space_16" android:textColor="@color/error" app:strokeColor="@color/error" app:icon="@drawable/ic_logout" />
+        <TextView android:id="@+id/limit" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/foreground_limit" android:layout_marginTop="@dimen/space_16" />
+    </LinearLayout>
+</ScrollView>
