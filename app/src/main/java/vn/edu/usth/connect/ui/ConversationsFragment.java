@@ -22,8 +22,10 @@ public final class ConversationsFragment extends SessionFragment {
   @Override
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
+    Ui.brand(v.findViewById(R.id.brand));
     Ui.visible(v.findViewById(R.id.back), false);
     Ui.visible(v.findViewById(R.id.join), false);
+    Ui.visible(v.findViewById(R.id.catalog_footer), true);
     ((TextView) v.findViewById(R.id.title)).setText(R.string.messages);
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_nick);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_edit);
@@ -47,7 +49,7 @@ public final class ConversationsFragment extends SessionFragment {
     for (Conversation c : chats)
       if (c.target.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
-        row.name = c.target;
+        row.name = Ui.displayName(c.target);
         row.avatar = c.target;
         row.detail = c.target;
         row.badge = c.unread;

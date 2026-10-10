@@ -5,6 +5,7 @@ import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.assertion.ViewAssertions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
 import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.allOf;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.*;
@@ -73,6 +74,7 @@ public class AppFlowTest {
       onView(withId(R.id.tls)).perform(click());
     } catch (AssertionError ignored) {
     }
+    onView(withId(R.id.advanced_toggle)).perform(scrollTo(), click());
     onView(withId(R.id.connect)).perform(scrollTo(), click());
     waitFor(() -> onMain(() -> app.session.data.connection == ConnectionState.CONNECTED));
     onView(withId(R.id.title)).check(matches(withText(R.string.courses)));
@@ -103,9 +105,10 @@ public class AppFlowTest {
   @Test
   public void courseJoinChatMembersPrivateAndRotation() throws Exception {
     onView(withText(R.string.no_courses)).check(matches(isDisplayed()));
+    onView(withId(R.id.empty_join)).perform(click());
     onView(withText("Web Development")).perform(click());
-    onView(withId(R.id.search)).perform(replaceText("web-general"), closeSoftKeyboard());
-    onView(withText(R.string.join)).perform(click());
+    onView(allOf(withId(R.id.join), isDisplayed(), withParent(hasDescendant(withText("web-general")))))
+        .perform(click());
     onView(withId(R.id.channel)).check(matches(withText("#web-general")));
     onView(withText(R.string.join)).perform(click());
     waitFor(() -> onMain(() -> app.session.data.channel("#web-general").joined));
@@ -135,7 +138,8 @@ public class AppFlowTest {
     onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
     onView(withId(R.id.members)).perform(click());
     onView(withText("an_ui")).perform(click());
-    onView(withId(R.id.title)).check(matches(withText("an_ui")));
+    onView(withId(R.id.message_member)).perform(click());
+    onView(withId(R.id.title)).check(matches(withText("An")));
     onView(withId(R.id.composer))
         .perform(replaceText("Tin riêng trên Android"), closeSoftKeyboard());
     onView(withId(R.id.send)).perform(click());

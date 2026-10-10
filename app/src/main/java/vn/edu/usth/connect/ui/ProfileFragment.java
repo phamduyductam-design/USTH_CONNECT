@@ -87,31 +87,28 @@ public final class ProfileFragment extends SessionFragment {
             });
     v.findViewById(R.id.disconnect)
         .setOnClickListener(
-            w ->
-                new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(R.string.disconnect_title)
-                    .setMessage(R.string.disconnect_detail)
-                    .setPositiveButton(
-                        R.string.disconnect,
-                        (d, which) -> {
-                          session.disconnect();
-                          main().openConnect();
-                        })
-                    .setNegativeButton(R.string.cancel, null)
-                    .show());
+            w -> Dialogs.confirm(main(), R.string.disconnect_title, R.string.disconnect_detail,
+                R.string.disconnect, () -> { session.disconnect(); main().openConnect(); }));
   }
 
   @Override
   protected void render() {
     if (root == null) return;
     Ui.avatar(root.findViewById(R.id.avatar), session.data.nickname);
-    ((TextView) root.findViewById(R.id.name)).setText(session.data.nickname);
+    Ui.avatar(root.findViewById(R.id.profile_account), session.data.nickname);
+    ((TextView) root.findViewById(R.id.name)).setText(Ui.displayName(session.data.nickname));
+    ((TextView) root.findViewById(R.id.profile_nick)).setText(session.data.nickname);
     if (!renderedNick.equals(session.data.nickname)) {
       ((EditText) root.findViewById(R.id.nickname)).setText(session.data.nickname);
       renderedNick = session.data.nickname;
     }
     ((TextView) root.findViewById(R.id.server)).setText(session.config.host);
-    ((TextView) root.findViewById(R.id.status)).setText(Ui.connection(requireContext(), session));
+    TextView status = root.findViewById(R.id.status);
+    boolean online = session.data.connection == ConnectionState.CONNECTED;
+    String connection = Ui.connection(requireContext(), session);
+    status.setText(online ? getString(R.string.connected_indicator, connection) : connection);
+    status.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(),
+        online ? R.color.success : R.color.error));
     ((TextView) root.findViewById(R.id.error))
         .setText(Ui.error(requireContext(), session.data.errorCode));
     Ui.visible(

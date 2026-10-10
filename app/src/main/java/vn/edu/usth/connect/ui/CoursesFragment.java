@@ -13,6 +13,7 @@ import vn.edu.usth.connect.model.*;
 
 public final class CoursesFragment extends SessionFragment {
   private CatalogAdapter adapter;
+  private boolean discovering;
 
   @Nullable
   @Override
@@ -24,8 +25,14 @@ public final class CoursesFragment extends SessionFragment {
   @Override
   public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
     super.onViewCreated(view, saved);
+    discovering = saved != null && saved.getBoolean("discovering");
+    Ui.brand(view.findViewById(R.id.brand));
     Ui.visible(view.findViewById(R.id.back), false);
-    view.findViewById(R.id.action).setOnClickListener(v -> main().showProfile());
+    Ui.visible(view.findViewById(R.id.action), false);
+    Ui.visible(view.findViewById(R.id.account_avatar), true);
+    view.findViewById(R.id.account_avatar).setOnClickListener(v -> main().showProfile());
+    view.findViewById(R.id.account_avatar).setContentDescription(getString(R.string.profile));
+    view.findViewById(R.id.empty_join).setOnClickListener(v -> { discovering = true; render(); });
     view.findViewById(R.id.join).setOnClickListener(v -> Dialogs.join(main(), ""));
     adapter = new CatalogAdapter();
     RecyclerView list = view.findViewById(R.id.list);
@@ -44,6 +51,7 @@ public final class CoursesFragment extends SessionFragment {
             .trim()
             .toLowerCase(Locale.ROOT);
     List<CatalogAdapter.Row> joined = new ArrayList<>(), discover = new ArrayList<>();
+    Ui.avatar(root.findViewById(R.id.account_avatar), session.data.nickname);
     int totalJoined = 0;
     for (Course course : app.courses.courses) {
       int count = 0, unread = 0;
@@ -61,6 +69,7 @@ public final class CoursesFragment extends SessionFragment {
       CatalogAdapter.Row row = new CatalogAdapter.Row();
       row.name = course.name;
       row.icon = Ui.courseIcon(course.icon);
+      row.iconColor = Ui.courseColor(course.icon);
       row.detail = count > 0 ? getString(R.string.course_count, count, unread) : course.description;
       row.badge = unread;
       row.click = () -> main().open(ChannelsFragment.create(course.id));
@@ -80,10 +89,10 @@ public final class CoursesFragment extends SessionFragment {
         totalJoined++;
       }
     List<CatalogAdapter.Row> rows = new ArrayList<>();
-    if (query.isEmpty() && totalJoined == 0)
-      rows.add(
-          CatalogAdapter.Row.empty(
-              getString(R.string.no_courses), getString(R.string.no_courses_detail)));
+    boolean empty = query.isEmpty() && totalJoined == 0 && !discovering;
+    Ui.visible(root.findViewById(R.id.catalog_empty), empty);
+    Ui.visible(root.findViewById(R.id.list), !empty);
+    Ui.visible(root.findViewById(R.id.join), !empty);
     if (!joined.isEmpty()) {
       rows.add(CatalogAdapter.Row.header(getString(R.string.joined)));
       rows.addAll(joined);
@@ -98,6 +107,12 @@ public final class CoursesFragment extends SessionFragment {
     }
     if (rows.isEmpty()) rows.add(CatalogAdapter.Row.empty(getString(R.string.no_results), ""));
     adapter.submit(rows);
+  }
+
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle out) {
+    super.onSaveInstanceState(out);
+    out.putBoolean("discovering", discovering);
   }
 
   @Override

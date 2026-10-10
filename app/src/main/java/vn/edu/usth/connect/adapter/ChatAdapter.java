@@ -107,14 +107,21 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
       text.setText(value);
       text.setTextColor(
           ContextCompat.getColor(context, row.unread ? R.color.badge : R.color.text_secondary));
+      Ui.visible(v.findViewById(R.id.separator_left), row.unread);
+      Ui.visible(v.findViewById(R.id.separator_right), row.unread);
       return;
     }
     Ui.avatar(v.findViewById(R.id.avatar), m.sender);
-    ((TextView) v.findViewById(R.id.name)).setText(m.sender);
+    ((TextView) v.findViewById(R.id.name)).setText(Ui.displayName(m.sender));
     ((TextView) v.findViewById(R.id.time)).setText(Ui.time(m.timestamp));
-    ((TextView) v.findViewById(R.id.text)).setText(m.text);
+    TextView body = v.findViewById(R.id.text);
+    body.setText(m.text);
+    body.setBackgroundResource(m.outgoing ? R.drawable.bg_bubble : 0);
+    int padding = m.outgoing ? (int)(8 * v.getResources().getDisplayMetrics().density) : 0;
+    body.setPadding(padding, padding, padding, padding);
     TextView status = v.findViewById(R.id.status);
-    Ui.visible(status, m.outgoing);
+    Ui.visible(status, m.outgoing && m.status != ChatMessage.Status.WRITTEN
+        && m.status != ChatMessage.Status.RECEIVED);
     int resource =
         m.status == ChatMessage.Status.QUEUED
             ? R.string.queued

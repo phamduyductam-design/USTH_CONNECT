@@ -8,6 +8,17 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.irc.IrcCommands;
 
 final class Dialogs {
+  static void confirm(MainActivity activity, int title, int detail, int action, Runnable accepted) {
+    View view = activity.getLayoutInflater().inflate(R.layout.dialog_confirm, null);
+    ((android.widget.TextView) view.findViewById(R.id.confirm_title)).setText(title);
+    ((android.widget.TextView) view.findViewById(R.id.confirm_detail)).setText(detail);
+    ((android.widget.TextView) view.findViewById(R.id.confirm_accept)).setText(action);
+    AlertDialog dialog = new MaterialAlertDialogBuilder(activity).setView(view).create();
+    view.findViewById(R.id.confirm_cancel).setOnClickListener(v -> dialog.dismiss());
+    view.findViewById(R.id.confirm_accept).setOnClickListener(v -> { dialog.dismiss(); accepted.run(); });
+    dialog.show();
+  }
+
   static void join(MainActivity activity, String preset) {
     View view = activity.getLayoutInflater().inflate(R.layout.dialog_join, null);
     EditText channel = view.findViewById(R.id.channel), key = view.findViewById(R.id.key);
