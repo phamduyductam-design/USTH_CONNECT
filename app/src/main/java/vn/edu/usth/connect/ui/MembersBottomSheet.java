@@ -19,6 +19,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
   private SessionRepository session;
   private CatalogAdapter adapter;
   private String target;
+  private String selectedNick = "";
 
   public static MembersBottomSheet create(String target) {
     MembersBottomSheet f = new MembersBottomSheet();
@@ -40,12 +41,14 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     root = v;
     session = ConnectApplication.from(requireContext()).session;
     target = requireArguments().getString("target");
+    if (b != null) selectedNick = b.getString("selected", "");
     v.findViewById(R.id.close).setOnClickListener(w -> dismiss());
     adapter = new CatalogAdapter();
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     list.setAdapter(adapter);
     Ui.watch(v.findViewById(R.id.search), this::changed);
+    v.findViewById(R.id.message_member).setOnClickListener(w -> openSelected());
   }
 
   @Override
@@ -57,6 +60,10 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
             getResources().getDimensionPixelSize(R.dimen.sheet_height),
             (int) (getResources().getDisplayMetrics().heightPixels * 0.8f));
     root.setLayoutParams(params);
+    View sheet = requireDialog().findViewById(com.google.android.material.R.id.design_bottom_sheet);
+    if (sheet != null)
+      com.google.android.material.bottomsheet.BottomSheetBehavior.from(sheet)
+          .setShouldRemoveExpandedCorners(false);
     session.addListener(this);
   }
 
@@ -70,6 +77,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
   public void changed() {
     if (root == null) return;
     Channel c = session.data.channel(target);
+    if (!selectedNick.isEmpty() && !c.members.containsKey(IrcParser.fold(selectedNick))) selectedNick = "";
     ((TextView) root.findViewById(R.id.subtitle))
         .setText(
             getString(
@@ -80,24 +88,43 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
         ((EditText) root.findViewById(R.id.search)).getText().toString().toLowerCase(Locale.ROOT);
     List<CatalogAdapter.Row> rows = new ArrayList<>();
     List<IrcUser> users = new ArrayList<>(c.members.values());
-    users.sort(Comparator.comparing(u -> IrcParser.fold(u.nickname)));
+    users.sort(Comparator.comparing((IrcUser u) ->
+        !IrcParser.fold(u.nickname).equals(IrcParser.fold(session.data.nickname)))
+        .thenComparing(u -> IrcParser.fold(u.nickname)));
     for (IrcUser user : users)
       if (user.nickname.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
-        row.name = user.nickname;
-        row.detail = user.prefixes;
+        row.name = Ui.displayName(user.nickname);
+        row.detail = user.nickname;
         row.avatar = user.nickname;
         row.self = IrcParser.fold(user.nickname).equals(IrcParser.fold(session.data.nickname));
-        if (!row.self)
-          row.click =
-              () -> {
-                ((MainActivity) requireActivity()).openChat(user.nickname);
-                dismiss();
-              };
+        row.selected = IrcParser.fold(user.nickname).equals(IrcParser.fold(selectedNick));
+        if (!row.self) {
+          row.click = () -> { selectedNick = user.nickname; changed(); };
+          row.joinVisible = row.selected;
+          row.actionText = R.string.private_message;
+          row.join = this::openSelected;
+        }
         rows.add(row);
       }
     if (rows.isEmpty()) rows.add(CatalogAdapter.Row.empty(getString(R.string.empty_members), ""));
     adapter.submit(rows);
+    android.widget.TextView action = root.findViewById(R.id.message_member);
+    action.setEnabled(!selectedNick.isEmpty());
+    action.setText(selectedNick.isEmpty() ? getString(R.string.private_message)
+        : getString(R.string.message_member, Ui.displayName(selectedNick)));
+  }
+
+  private void openSelected() {
+    if (selectedNick.isEmpty()) return;
+    ((MainActivity) requireActivity()).openChat(selectedNick);
+    dismiss();
+  }
+
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle out) {
+    super.onSaveInstanceState(out);
+    out.putString("selected", selectedNick);
   }
 
   @Override

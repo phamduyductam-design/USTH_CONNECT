@@ -90,7 +90,10 @@ public final class ChatFragment extends SessionFragment {
                           main().back();
                         })
                     .setNegativeButton(R.string.cancel, null)
-                    .show();
+                      .show();
+              else
+                new MaterialAlertDialogBuilder(requireContext()).setTitle(Ui.displayName(target))
+                    .setMessage(target).setPositiveButton(R.string.close, null).show();
             });
     EditText composer = v.findViewById(R.id.composer);
     composer.setText(session.draft(target));
@@ -142,12 +145,8 @@ public final class ChatFragment extends SessionFragment {
       Ui.toast(requireContext(), R.string.error_offline);
       return;
     }
-    new MaterialAlertDialogBuilder(requireContext())
-        .setTitle(R.string.retry_title)
-        .setMessage(R.string.retry_detail)
-        .setPositiveButton(R.string.retry, (d, w) -> session.retry(target, message))
-        .setNegativeButton(R.string.cancel, null)
-        .show();
+    Dialogs.confirm(main(), R.string.retry_title, R.string.retry_detail, R.string.retry,
+        () -> session.retry(target, message));
   }
 
   private void updateSend() {
@@ -157,7 +156,7 @@ public final class ChatFragment extends SessionFragment {
         session.canSend(target)
             && !((EditText) root.findViewById(R.id.composer)).getText().toString().trim().isEmpty();
     send.setEnabled(enabled);
-    send.setAlpha(enabled ? 1f : 0.4f);
+    send.setAlpha(1f);
   }
 
   @Override
@@ -174,15 +173,17 @@ public final class ChatFragment extends SessionFragment {
     }
     boolean channel = chat instanceof Channel;
     Channel c = channel ? (Channel) chat : null;
-    ((TextView) root.findViewById(R.id.title)).setText(target);
+    ((TextView) root.findViewById(R.id.title)).setText(channel ? target : Ui.displayName(target));
+    Ui.visible(root.findViewById(R.id.chat_avatar), !channel);
+    if (!channel) Ui.avatar(root.findViewById(R.id.chat_avatar), target);
     Course course = channel ? app.courses.forChannel(target) : null;
     ((TextView) root.findViewById(R.id.subtitle))
         .setText(
             channel
                 ? (course == null ? getString(R.string.other_channels) : course.name)
-                : getString(R.string.private_message));
+                : target);
     Ui.visible(root.findViewById(R.id.members), channel);
-    Ui.visible(root.findViewById(R.id.more), channel);
+    Ui.visible(root.findViewById(R.id.more), true);
     ((TextView) root.findViewById(R.id.members))
         .setText(String.valueOf(channel ? c.members.size() : 0));
     Ui.visible(root.findViewById(R.id.topic), channel);
@@ -192,11 +193,13 @@ public final class ChatFragment extends SessionFragment {
     Ui.visible(root.findViewById(R.id.banner), !online || (channel && !c.joined));
     ((TextView) root.findViewById(R.id.connection_status))
         .setText(
-            online ? getString(R.string.not_joined) : Ui.connection(requireContext(), session));
+            online ? getString(R.string.not_joined)
+                : getString(R.string.connection_lost_title) + "\n" + getString(R.string.connection_lost_detail));
     ((TextView) root.findViewById(R.id.reconnect))
         .setText(online ? R.string.join : R.string.reconnect);
-    root.findViewById(R.id.reconnect).setEnabled(!online || !c.joining);
-    composer.setHint(getString(channel ? R.string.chat_hint : R.string.pm_hint, target));
+    root.findViewById(R.id.reconnect).setEnabled(!online || !channel || !c.joining);
+    composer.setHint(getString(channel ? R.string.chat_hint : R.string.pm_hint,
+        channel ? target : Ui.displayName(target)));
     ((TextView) root.findViewById(R.id.send_hint))
         .setText(
             !online
@@ -213,6 +216,7 @@ public final class ChatFragment extends SessionFragment {
       }
     Ui.visible(root.findViewById(R.id.empty), !hasChat);
     RecyclerView list = root.findViewById(R.id.list);
+    Ui.visible(list, hasChat);
     Parcelable anchor = list.getLayoutManager().onSaveInstanceState();
     int currentSize = chat.messages.size();
     adapter.submit(chat.messages, unreadBoundary);

@@ -12,7 +12,7 @@ import vn.edu.usth.connect.ui.Ui;
 /** Shared visual rows for course/channel/PM/member lists. The fragments provide behavior. */
 public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Holder> {
   public static final class Row {
-    public int type, icon = R.drawable.ic_hash, badge;
+    public int type, icon = R.drawable.ic_hash, badge, iconColor, actionText;
     public String name = "", detail = "", preview = "", time = "", avatar = "";
     public boolean selected, joinVisible, joining, self;
     public Runnable click, join;
@@ -84,8 +84,9 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
       return;
     }
     ((TextView) v.findViewById(R.id.name)).setText(r.name);
-    ((TextView) v.findViewById(R.id.detail))
-        .setText(r.self ? v.getContext().getString(R.string.you) : r.detail);
+    ((TextView) v.findViewById(R.id.detail)).setText(r.detail);
+    Ui.visible(v.findViewById(R.id.detail), !r.detail.isEmpty());
+    Ui.visible(v.findViewById(R.id.self_badge), r.self);
     TextView preview = v.findViewById(R.id.preview);
     preview.setText(r.preview);
     Ui.visible(preview, !r.preview.isEmpty());
@@ -100,17 +101,27 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     ImageView icon = v.findViewById(R.id.icon);
     Ui.visible(icon, r.avatar.isEmpty());
     icon.setImageResource(r.icon);
+    icon.setBackgroundResource(r.iconColor == 0 ? 0 : R.drawable.bg_primary);
+    icon.setBackgroundTintList(r.iconColor == 0 ? null : android.content.res.ColorStateList.valueOf(
+        androidx.core.content.ContextCompat.getColor(v.getContext(), r.iconColor)));
+    icon.setImageTintList(android.content.res.ColorStateList.valueOf(
+        androidx.core.content.ContextCompat.getColor(v.getContext(),
+            r.iconColor == 0 ? R.color.text_secondary : R.color.surface)));
+    android.view.ViewGroup.LayoutParams iconParams = v.findViewById(R.id.icon_container).getLayoutParams();
+    iconParams.width = (int) (v.getResources().getDisplayMetrics().density *
+        (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));
+    v.findViewById(R.id.icon_container).setLayoutParams(iconParams);
     if (!r.avatar.isEmpty()) Ui.avatar(avatar, r.avatar);
     Ui.visible(v.findViewById(R.id.chevron), r.click != null && !r.joinVisible && !r.self);
     MaterialButton join = v.findViewById(R.id.join);
     Ui.visible(join, r.joinVisible);
-    join.setText(r.joining ? R.string.joining : R.string.join);
+    join.setText(r.joining ? R.string.joining : r.actionText == 0 ? R.string.join : r.actionText);
     join.setEnabled(!r.joining);
     join.setOnClickListener(
         ignored -> {
           if (r.join != null) r.join.run();
         });
-    v.setBackgroundResource(r.selected ? R.drawable.bg_selected : R.drawable.bg_card);
+    v.setBackgroundResource(r.selected ? R.drawable.bg_selected : R.drawable.bg_row);
     v.setOnClickListener(
         ignored -> {
           if (r.click != null) r.click.run();

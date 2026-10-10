@@ -15,6 +15,25 @@ import vn.edu.usth.connect.repository.SessionRepository;
 public final class Ui {
   private Ui() {}
 
+  public static String displayName(String nickname) {
+    String name = nickname.split("_", 2)[0];
+    return name.isEmpty() ? nickname : name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
+  }
+
+  public static int courseColor(String icon) {
+    if (icon.equals("brain")) return R.color.teal;
+    if (icon.equals("phone")) return R.color.purple;
+    if (icon.equals("book")) return R.color.brand_red;
+    return R.color.primary;
+  }
+
+  public static void brand(TextView view) {
+    SpannableString text = new SpannableString(view.getContext().getString(R.string.app_name));
+    text.setSpan(new android.text.style.ForegroundColorSpan(
+        ContextCompat.getColor(view.getContext(), R.color.primary)), 0, 4, 0);
+    view.setText(text);
+  }
+
   public static void watch(EditText edit, Runnable action) {
     edit.addTextChangedListener(
         new TextWatcher() {
@@ -32,15 +51,17 @@ public final class Ui {
     String initials =
         nickname.isEmpty()
             ? "?"
-            : nickname.substring(0, Math.min(nickname.length(), 2)).toUpperCase(Locale.ROOT);
+            : nickname.substring(0, 1).toUpperCase(Locale.ROOT);
     view.setText(initials);
     int[] colors = {R.color.badge, R.color.purple, R.color.teal, R.color.primary};
+    String lower = nickname.toLowerCase(Locale.ROOT);
+    int index = lower.startsWith("minh") ? 0 : lower.startsWith("an") ? 1
+        : lower.startsWith("ha") ? 2 : Math.floorMod(lower.hashCode(), colors.length);
     view.setBackgroundTintList(
         ColorStateList.valueOf(
             ContextCompat.getColor(
                 view.getContext(),
-                colors[
-                    Math.floorMod(nickname.toLowerCase(Locale.ROOT).hashCode(), colors.length)])));
+                colors[index])));
   }
 
   public static String time(long timestamp) {

@@ -105,16 +105,21 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
         new View[] {nick, host, port, username, realName, tls, findViewById(R.id.advanced_toggle)})
       input.setEnabled(!busy);
     Ui.visible(findViewById(R.id.progress), busy);
+    Ui.visible(findViewById(R.id.connect_status_panel), busy || session.data.connection == ConnectionState.FAILED);
+    findViewById(R.id.connect_status_panel).setBackgroundResource(
+        session.data.connection == ConnectionState.FAILED ? R.drawable.bg_error : R.drawable.bg_selected);
     Ui.visible(findViewById(R.id.cancel), busy);
     findViewById(R.id.connect).setEnabled(!busy);
     ((TextView) findViewById(R.id.connect))
         .setText(
             session.data.connection == ConnectionState.FAILED ? R.string.retry : R.string.connect);
-    ((TextView) findViewById(R.id.status))
-        .setText(
-            session.data.connection == ConnectionState.DISCONNECTED
-                ? ""
-                : Ui.connection(this, session));
+    String status = session.data.connection == ConnectionState.DISCONNECTED ? ""
+        : getString(busy ? R.string.connect_pending_title : R.string.connect_failed_title)
+            + "\n" + Ui.connection(this, session);
+    ((TextView) findViewById(R.id.status)).setText(status);
+    ((TextView) findViewById(R.id.status)).setTextColor(
+        androidx.core.content.ContextCompat.getColor(this,
+            session.data.connection == ConnectionState.FAILED ? R.color.error : R.color.primary));
   }
 
   @Override

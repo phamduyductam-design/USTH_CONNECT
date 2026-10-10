@@ -1,12 +1,14 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="@dimen/space_12" android:paddingBottom="@dimen/space_12">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="10dp" android:paddingBottom="10dp">
     <TextView android:id="@+id/avatar" style="@style/Heading" android:layout_width="@dimen/avatar" android:layout_height="@dimen/avatar" android:gravity="center" android:background="@drawable/bg_avatar" android:textColor="@color/surface" />
-    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="@dimen/space_12">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
-            <TextView android:id="@+id/name" style="@style/Heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="@dimen/body_size" />
-            <TextView android:id="@+id/time" style="@style/Caption" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="@dimen/space_8" />
+    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <TextView android:id="@+id/name" style="@style/Heading" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textSize="13sp" />
+            <TextView android:id="@+id/time" style="@style/Caption" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="8dp" />
         </LinearLayout>
-        <TextView android:id="@+id/text" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/space_4" android:textIsSelectable="true" />
-        <TextView android:id="@+id/status" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="@dimen/space_4" />
-        <com.google.android.material.button.MaterialButton android:id="@+id/retry" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/retry" android:visibility="gone" />
+        <TextView android:id="@+id/text" style="@style/Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="5dp" android:lineSpacingExtra="3dp" android:textIsSelectable="true" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginTop="3dp">
+            <TextView android:id="@+id/status" style="@style/Caption" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/retry" style="@style/SmallOutlineButton" android:layout_width="wrap_content" android:layout_height="32dp" android:text="@string/retry" android:visibility="gone" />
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

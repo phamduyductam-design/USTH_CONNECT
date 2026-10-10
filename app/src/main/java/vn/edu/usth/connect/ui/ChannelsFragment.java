@@ -33,10 +33,27 @@ public final class ChannelsFragment extends SessionFragment {
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
     course = app.courses.find(requireArguments().getString("course"));
-    ((TextView) v.findViewById(R.id.title)).setText(course.name);
+    ((TextView) v.findViewById(R.id.toolbar_title)).setText(course.name);
+    Ui.visible(v.findViewById(R.id.toolbar_title), true);
+    Ui.visible(v.findViewById(R.id.title), false);
+    Ui.visible(v.findViewById(R.id.brand_container), false);
+    Ui.visible(v.findViewById(R.id.course_summary), true);
+    ((TextView) v.findViewById(R.id.course_name)).setText(course.name);
+    ImageView icon = v.findViewById(R.id.course_icon);
+    icon.setImageResource(Ui.courseIcon(course.icon));
+    icon.setImageTintList(android.content.res.ColorStateList.valueOf(
+        androidx.core.content.ContextCompat.getColor(requireContext(), R.color.surface)));
+    icon.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+        androidx.core.content.ContextCompat.getColor(requireContext(), Ui.courseColor(course.icon))));
     ((TextView) v.findViewById(R.id.description)).setText(course.description);
     Ui.visible(v.findViewById(R.id.description), true);
-    Ui.visible(v.findViewById(R.id.action), false);
+    Ui.visible(v.findViewById(R.id.search), false);
+    ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_info);
+    v.findViewById(R.id.action).setContentDescription(getString(R.string.course_info));
+    v.findViewById(R.id.action).setOnClickListener(w ->
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(course.name).setMessage(course.description)
+            .setPositiveButton(R.string.close, null).show());
     Ui.visible(v.findViewById(R.id.brand), false);
     Ui.visible(v.findViewById(R.id.join), false);
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());

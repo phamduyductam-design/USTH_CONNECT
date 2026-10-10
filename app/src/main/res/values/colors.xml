@@ -1,15 +1,17 @@
 <resources>
-    <color name="primary">#2E3B8F</color>
-    <color name="brand_red">#EF2028</color>
+    <color name="primary">#303D98</color>
+    <color name="brand_red">#DB3343</color>
     <color name="surface">#FFFFFF</color>
-    <color name="background">#F5F7FB</color>
-    <color name="text_primary">#172033</color>
-    <color name="text_secondary">#526079</color>
-    <color name="error">#C51D2B</color>
-    <color name="outline">#DCE2EF</color>
-    <color name="selected">#EBF1FF</color>
-    <color name="error_bg">#FFF0F2</color>
-    <color name="badge">#1261FF</color>
-    <color name="purple">#7650CE</color>
-    <color name="teal">#008E87</color>
+    <color name="background">#F7F7FA</color>
+    <color name="text_primary">#181B2D</color>
+    <color name="text_secondary">#757985</color>
+    <color name="error">#CC2647</color>
+    <color name="outline">#E5E7ED</color>
+    <color name="selected">#EEF1FC</color>
+    <color name="error_bg">#FFF0F3</color>
+    <color name="badge">#2165DB</color>
+    <color name="purple">#8058CC</color>
+    <color name="teal">#16968F</color>
+    <color name="success">#239479</color>
+    <color name="divider">#EFF0F4</color>
 </resources>

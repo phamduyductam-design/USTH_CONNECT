@@ -1,0 +1,13 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+        <ImageView android:layout_width="44dp" android:layout_height="44dp" android:padding="10dp" android:background="@drawable/bg_empty" android:src="@drawable/ic_info" android:importantForAccessibility="no" />
+        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="12dp">
+            <TextView android:id="@+id/confirm_title" style="@style/Heading" android:layout_width="match_parent" android:layout_height="wrap_content" />
+            <TextView android:id="@+id/confirm_detail" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:lineSpacingExtra="3dp" />
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="end" android:layout_marginTop="18dp">
+        <com.google.android.material.button.MaterialButton android:id="@+id/confirm_cancel" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="40dp" android:text="@string/cancel" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/confirm_accept" style="@style/PrimaryButton" android:layout_width="wrap_content" android:layout_height="40dp" android:layout_marginStart="8dp" app:backgroundTint="@color/error" />
+    </LinearLayout>
+</LinearLayout>
