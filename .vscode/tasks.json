@@ -5,20 +5,59 @@
             "label": "USTH: Build APK",
             "type": "process",
             "command": "powershell.exe",
-            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/run-android.ps1", "-BuildOnly"],
-            "options": { "cwd": "${workspaceFolder}" },
-            "group": { "kind": "build", "isDefault": true },
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/run-android.ps1",
+                "-BuildOnly"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "problemMatcher": [],
-            "presentation": { "reveal": "always", "panel": "dedicated" }
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "osx": {
+                "command": "/bin/bash",
+                "args": [
+                    "${workspaceFolder}/tools/run-android.sh",
+                    "--build-only"
+                ]
+            }
         },
         {
             "label": "USTH: Chay may ao va ung dung",
             "type": "process",
             "command": "powershell.exe",
-            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "${workspaceFolder}/tools/run-android.ps1"],
-            "options": { "cwd": "${workspaceFolder}" },
+            "args": [
+                "-NoProfile",
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/tools/run-android.ps1"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "problemMatcher": [],
-            "presentation": { "reveal": "always", "panel": "dedicated" }
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            },
+            "osx": {
+                "command": "/bin/bash",
+                "args": [
+                    "${workspaceFolder}/tools/run-android.sh"
+                ]
+            }
         }
     ]
 }
