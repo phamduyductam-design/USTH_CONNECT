@@ -137,6 +137,21 @@ public class AppFlowTest {
             });
     InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
+    // A theme change recreates the screen without replacing the live IRC session or draft.
+    vn.edu.usth.connect.model.Channel liveChannel = app.session.data.channel("#web-general");
+    boolean previousTheme = app.settings.darkMode();
+    onView(withId(R.id.theme_toggle)).perform(click());
+    onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
+    assertTrue(onMain(() -> app.session.data.connection == ConnectionState.CONNECTED
+        && app.session.data.channel("#web-general") == liveChannel && liveChannel.joined
+        && liveChannel.members.containsKey("an_ui")));
+    assertEquals(!previousTheme, app.settings.darkMode());
+    onView(withId(R.id.theme_toggle)).perform(click());
+    onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
+    assertEquals(previousTheme, app.settings.darkMode());
+    peer.send(IrcCommands.message("#web-general", "Vẫn nhận tin sau khi đổi theme"), null);
+    waitFor(() -> onMain(() -> liveChannel.messages.stream()
+        .anyMatch(m -> m.text.equals("Vẫn nhận tin sau khi đổi theme"))));
     onView(withId(R.id.members)).perform(click());
     onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed())).perform(click());
     onView(withId(R.id.message_member)).perform(click());

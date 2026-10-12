@@ -42,7 +42,7 @@ public final class ChannelsFragment extends SessionFragment {
     ImageView icon = v.findViewById(R.id.course_icon);
     icon.setImageResource(Ui.courseIcon(course.icon));
     icon.setImageTintList(android.content.res.ColorStateList.valueOf(
-        androidx.core.content.ContextCompat.getColor(requireContext(), R.color.surface)));
+        androidx.core.content.ContextCompat.getColor(requireContext(), R.color.on_primary)));
     icon.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
         androidx.core.content.ContextCompat.getColor(requireContext(), Ui.courseColor(course.icon))));
     ((TextView) v.findViewById(R.id.description)).setText(course.description);

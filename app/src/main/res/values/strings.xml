@@ -182,4 +182,6 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="mentions_channel">Nhắc tên</string>
     <string name="command_invalid">Lệnh không hợp lệ. Dùng /help để xem cú pháp.</string>
     <string name="presence_unknown">Chưa xác định trạng thái</string>
+    <string name="switch_dark_mode">Chuyển sang chế độ tối</string>
+    <string name="switch_light_mode">Chuyển sang chế độ sáng</string>
 </resources>

@@ -107,7 +107,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
         androidx.core.content.ContextCompat.getColor(v.getContext(), r.iconColor)));
     icon.setImageTintList(android.content.res.ColorStateList.valueOf(
         androidx.core.content.ContextCompat.getColor(v.getContext(),
-            r.iconColor == 0 ? R.color.text_secondary : R.color.surface)));
+            r.iconColor == 0 ? R.color.text_secondary : R.color.on_primary)));
     android.view.ViewGroup.LayoutParams iconParams = v.findViewById(R.id.icon_container).getLayoutParams();
     iconParams.width = (int) (v.getResources().getDisplayMetrics().density *
         (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));

@@ -24,6 +24,7 @@ public abstract class SessionFragment extends Fragment implements SessionReposit
   public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
     super.onViewCreated(view, saved);
     root = view;
+    Ui.themeToggle(requireActivity(), view);
   }
 
   @Override

@@ -1,6 +1,6 @@
 # Báo cáo kiểm thử — tính năng IRC bổ sung
 
-Ngày: 12/10/2026. Nền tảng kiểm tra: macOS Apple Silicon, JDK 17, Gradle 8.9, Android API 35. APK bàn giao versionName 1.1 / versionCode 2.
+Ngày: 12/10/2026. Nền tảng kiểm tra: macOS Apple Silicon, JDK 17, Gradle 8.9, Android API 35. APK bàn giao versionName 1.2 / versionCode 3.
 
 ## Kết quả
 
@@ -10,7 +10,7 @@ Ngày: 12/10/2026. Nền tảng kiểm tra: macOS Apple Silicon, JDK 17, Gradle 
 | lintDebug | 0 lỗi, 8 cảnh báo có sẵn (dependency và notifyDataSetChanged) |
 | Unit test | 30 kiểm thử, 0 lỗi |
 | Android instrumentation | 2 kiểm thử, 0 lỗi |
-| Hai client qua Ergo localhost | 21 bước PASS |
+| Hai client qua Ergo localhost | 21 bước PASS ở bản 1.1; engine IRC không thay đổi trong bản 1.2 |
 
 ## Android với server thật
 
@@ -65,6 +65,13 @@ PASS explicit topic clearing
 ## Kiểm tra logo đăng nhập
 
 Logo USTH do người dùng cung cấp được giữ nguyên ảnh, đặt ở góc trên bên trái màn hình kết nối, fitCenter trong 92 × 40 dp. Kiểm tra bằng ảnh chụp native Android sau khi cài lại APK; build và lint đã chạy lại sau thay đổi resource.
+
+## Kiểm tra sáng/tối ở bản 1.2
+
+- Chạy lại assembleDebug, lintDebug (0 lỗi, 8 cảnh báo nền), 30 unit test và 2 bài Android.
+- Bài chat/PM bổ sung đổi theme hai lần khi đang có nháp. Nháp vẫn giữ, channel/session không bị thay thế, vẫn CONNECTED và còn thành viên; tiếp tục nhận tin thật từ client thứ hai sau khi đổi.
+- Kiểm tra native đăng nhập light → dark: nickname không mất; đóng process rồi mở lại vẫn dark. Kiểm tra giao diện danh mục, chat, bottom sheet, dialog JOIN, cá nhân và LIST; chuyển về light trong chat.
+- Giữ/restoring cấu hình và nháp người dùng trước/sau kiểm thử. `theme-android-checks.log` và `theme-preview.log` nằm ngoài Git trong .tools.
 
 ## Phạm vi
 

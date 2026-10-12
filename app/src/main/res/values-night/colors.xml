@@ -1,0 +1,16 @@
+<resources>
+    <color name="primary">#AEBBFF</color>
+    <color name="brand_red">#FF7184</color>
+    <color name="surface">#151823</color>
+    <color name="background">#202430</color>
+    <color name="text_primary">#EFF1FA</color>
+    <color name="text_secondary">#B0B6C8</color>
+    <color name="error">#FF829B</color>
+    <color name="outline">#3C4355</color>
+    <color name="selected">#2B3351</color>
+    <color name="error_bg">#3B2230</color>
+    <color name="success">#69D6B7</color>
+    <color name="divider">#2B3040</color>
+    <color name="disabled_fill">#454C61</color>
+    <color name="badge">#8AB4FF</color>
+</resources>

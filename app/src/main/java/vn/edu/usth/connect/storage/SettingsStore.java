@@ -13,6 +13,10 @@ public final class SettingsStore {
     prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
   }
 
+  public boolean darkMode() { return prefs.getBoolean("darkMode", false); }
+
+  public void darkMode(boolean enabled) { prefs.edit().putBoolean("darkMode", enabled).apply(); }
+
   public String host() {
     return prefs.getString("host", "");
   }
