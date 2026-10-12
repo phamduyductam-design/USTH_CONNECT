@@ -6,7 +6,10 @@ New-Item -ItemType Directory -Path $taskClasses -Force | Out-Null
 $taskJavac=if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin/javac.exe' } else { 'javac' }
 $taskJava=if ($env:JAVA_HOME) { Join-Path $env:JAVA_HOME 'bin/java.exe' } else { 'java' }
 $taskSources=Get-ChildItem -Path "$taskRoot/app/src/main/java/vn/edu/usth/connect/model/*.java","$taskRoot/app/src/main/java/vn/edu/usth/connect/irc/*.java" | Select-Object -ExpandProperty FullName
-& $taskJavac -encoding UTF-8 -d $taskClasses @taskSources (Join-Path $PSScriptRoot 'NetworkSmoke.java')
+& $taskJavac -encoding UTF-8 -d $taskClasses @taskSources (Join-Path $PSScriptRoot 'NetworkSmoke.java') (Join-Path $PSScriptRoot 'AdvancedNetworkSmoke.java')
 if ($LASTEXITCODE -ne 0) { throw 'Compilation failed' }
 & $taskJava -cp $taskClasses NetworkSmoke $Server $Port ([string]$Tls.IsPresent).ToLower()
 if ($LASTEXITCODE -ne 0) { throw 'Network smoke test failed' }
+
+& $taskJava -cp $taskClasses AdvancedNetworkSmoke $Server $Port ([string]$Tls.IsPresent).ToLower()
+if ($LASTEXITCODE -ne 0) { throw 'Advanced network smoke test failed' }

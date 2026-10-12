@@ -14,7 +14,7 @@ Giải thích OOP qua model Conversation/Channel, listener interface, các packa
 
 ## Activities — 2 phút
 
-ConnectActivity chỉ chuyển sang MainActivity sau 001. MainActivity điều phối Môn học/Tin nhắn/Cá nhân và back stack Kênh/Chat; MembersBottomSheet mở từ chat. Intent/Bundle dùng để điều hướng và lưu state. onStart/onStop đăng ký/hủy listener.
+ConnectActivity chỉ chuyển sang MainActivity sau 001. MainActivity điều phối Môn học/Phòng/Tin nhắn/Cá nhân và back stack Kênh/Chat; MembersBottomSheet mở từ chat. Intent/Bundle dùng để điều hướng và lưu state. onStart/onStop đăng ký/hủy listener.
 
 Xoay khi đang chat có nháp: Activity tạo lại nhưng cùng Application/session; nháp và vị trí cuộn được giữ. Giải thích process death khác với xoay: không bảo đảm giữ Socket khi hệ điều hành hủy process.
 
@@ -24,7 +24,7 @@ Mở IrcCommands.message, IrcParser.parse, IrcClient.readSession/write và Sessi
 
 Nêu:
 
-- TCP/TLS trực tiếp; `NICK`, `USER`, `JOIN`, `PART`, `PRIVMSG`, `QUIT`, `PING/PONG`.
+- TCP/TLS trực tiếp; `NICK`, `USER`, `JOIN`, `PART`, `PRIVMSG`, `QUIT`, `PING/PONG`; thêm `LIST`, `NAMES`, `WHO`, `TOPIC`, `MODE`, `KICK`, `AWAY`.
 - CONNECTED cần 001; JOIN cần sự kiện JOIN của chính mình.
 - UTF-8, CRLF, giới hạn 512 byte cho cả lệnh; phòng chèn lệnh bằng CR/LF.
 - TLS kiểm tra trust chain và hostname. Chưa có SASL/NickServ.
@@ -50,11 +50,12 @@ Chuẩn bị server Ergo riêng và hai client trước buổi bảo vệ; để
 4. Đổi nickname An; quan sát cập nhật thành viên/conversation. Thử nickname Minh để thấy máy chủ từ chối.
 5. Nhập nháp, xoay màn hình. Cuộn lên đọc cũ rồi gửi thêm từ client kia; app giữ vị trí và hiện nút tin mới.
 6. Dừng server: banner và send bị vô hiệu; khởi động lại: backoff, 001, JOIN lại. App không tự phát lại tin.
-7. Rời kênh bằng menu; ngắt kết nối có xác nhận. Nếu hết giờ, ưu tiên các bước 1–4 và ngắt chủ động.
+7. Mở tab Phòng để lấy LIST thật; dùng menu đổi topic và cấp Voice nếu là Operator. Đặt AWAY, nhắc nickname từ client thứ hai và xem thông báo khi app ở nền.
+8. Rời kênh bằng menu; ngắt kết nối có xác nhận. Nếu hết giờ, ưu tiên các bước 1–4 và ngắt chủ động.
 
 ## Conclusion — 1 phút
 
-“Đã có app Android build được, giao diện native, parser/transport IRC, các luồng môn/kênh/chat/thành viên/chat riêng/cá nhân và test được ghi rõ. Giới hạn còn lại là lưu lịch sử lâu dài, xác thực tài khoản, CAP/IRCv3 history, hỗ trợ casemapping đầy đủ và foreground service.”
+“Đã có app Android build được, giao diện native, parser/transport IRC, các luồng môn/kênh/chat/thành viên/chat riêng/cá nhân và test được ghi rõ. Giới hạn còn lại là lưu lịch sử lâu dài, xác thực tài khoản, IRCv3 history, hỗ trợ casemapping đầy đủ và foreground service.”
 
 Chỉ sử dụng kết quả trong TEST_REPORT.md để nói phần kiểm thử đã hoàn thành. Demo trong báo cáo bằng hai Java client dùng đúng engine cũng không được gọi là demo hai điện thoại nếu chưa chạy hai điện thoại.
 

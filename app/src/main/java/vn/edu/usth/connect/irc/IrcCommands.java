@@ -51,6 +51,32 @@ public final class IrcCommands {
     return checked("PART " + channel(channel));
   }
 
+  public static String names(String channel) { return checked("NAMES " + channel(channel)); }
+  public static String list() { return "LIST"; }
+  public static String who(String target) {
+    return checked("WHO " + (IrcParser.isChannel(target) ? channel(target) : token(target)));
+  }
+  public static String topic(String channel, String text) {
+    return checked("TOPIC " + channel(channel) + (text == null ? "" : " :" + text));
+  }
+  public static String kick(String channel, String nick, String reason) {
+    nick(nick);
+    return checked("KICK " + channel(channel) + " " + token(nick)
+        + (reason == null || reason.isEmpty() ? "" : " :" + reason));
+  }
+  public static String mode(String channel, String flags, String arguments) {
+    String line = "MODE " + channel(channel);
+    if (flags == null || flags.isEmpty()) return line;
+    if (!flags.matches("[+-][A-Za-z+-]+")) throw new IllegalArgumentException("mode");
+    line += " " + flags;
+    if (arguments != null && !arguments.isEmpty())
+      for (String arg : arguments.split(" +")) line += " " + token(arg);
+    return checked(line);
+  }
+  public static String away(String reason) {
+    return checked(reason == null || reason.isEmpty() ? "AWAY" : "AWAY :" + reason);
+  }
+
   public static String message(String target, String text) {
     if (text == null || text.trim().isEmpty()) throw new IllegalArgumentException("empty");
     return checked("PRIVMSG " + token(target) + " :" + text);

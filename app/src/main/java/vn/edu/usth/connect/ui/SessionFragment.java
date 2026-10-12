@@ -46,7 +46,7 @@ public abstract class SessionFragment extends Fragment implements SessionReposit
     if (!session.data.errorCode.isEmpty() && !error.equals(lastError)) {
       android.widget.Toast.makeText(
               requireContext(),
-              Ui.error(requireContext(), session.data.errorCode),
+              Ui.error(requireContext(), session.data.errorCode) + (session.data.errorDetail.isEmpty() ? "" : "\n" + session.data.errorDetail),
               android.widget.Toast.LENGTH_LONG)
           .show();
     }

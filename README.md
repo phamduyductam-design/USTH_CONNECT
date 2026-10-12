@@ -35,17 +35,17 @@ $env:JAVA_HOME = 'C:\path\to\jdk-17'
 
 macOS/Linux: `chmod +x gradlew`, rồi `./gradlew assembleDebug lintDebug testDebugUnitTest`. Đặt `sdk.dir=...` trong `local.properties` hoặc dùng `ANDROID_HOME`. Không đưa `local.properties`, `.tools/`, `.gradle/` hay `build/` lên Git. APK nằm ở `app/build/outputs/apk/debug/app-debug.apk`.
 
-Môi trường tạo dự án đã tải JDK Temurin 17.0.20.1, SDK và dependency vào `.tools/` **trong workspace**, không thay đổi JAVA_HOME toàn hệ thống. `local.properties` trên máy này trỏ tới `.tools/android-sdk`. File ZIP bàn giao chỉ chứa source và tài liệu, không chứa bộ SDK/JDK nhiều GB.
+SDK, AVD và server demo cục bộ có thể đặt trong `.tools/` (được Git bỏ qua). Các script chạy demo nằm trong `tools/`; không cần đưa SDK/JDK nhiều GB vào repository.
 
 ## Giả định và cách dùng
 
-Nếu dùng VS Code, xem [hướng dẫn chạy máy ảo và task đã chuẩn bị](docs/VSCODE_RUN.md). Máy hiện tại đã bật Windows Hypervisor Platform và chạy được emulator. Mở đúng `D:\prj_mobile`, rồi gọi task **USTH: Chay may ao va ung dung** để mở emulator, build/cài và mở app.
+Nếu dùng VS Code, mở thư mục chứa `settings.gradle` và chạy task **USTH: Chay may ao va ung dung**. Có cấu hình Windows và macOS riêng; xem [hướng dẫn chạy](docs/VSCODE_RUN.md).
 
 - `irc.example.edu` chỉ là hint theo ảnh mẫu, không được điền thành máy chủ thật. Chưa có thông tin về máy chủ IRC của USTH.
 - Mặc định TLS bật, cổng 6697. Nhập máy chủ do bạn được phép sử dụng. Với server cục bộ không có TLS, tắt TLS và chọn 6667.
 - Nickname ASCII tối đa 30 ký tự; máy chủ có thể đặt giới hạn thấp hơn. Không cần tài khoản trong server demo; bản này chưa có PASS, SASL hay NickServ UI.
-- Không có dữ liệu chat mẫu hay chế độ offline giả. Lần đầu danh sách **Đã tham gia** trống; hãy mở môn, chọn kênh và JOIN.
-- Tìm kiếm chỉ lọc danh mục. JOIN chỉ diễn ra khi bấm Tham gia và được công nhận sau phản hồi JOIN của chính mình.
+- Không có dữ liệu chat offline giả. Lần đầu danh sách **Đã tham gia** trống; bấm **Tham gia kênh**, mở môn rồi chọn kênh và JOIN. Tab **Phòng** lấy danh sách thật từ `LIST` trên server.
+- Tìm kiếm ở Môn học lọc metadata cục bộ; tìm kiếm ở Phòng lọc kết quả LIST của server. JOIN được công nhận sau phản hồi JOIN của chính mình.
 - Chủ đề kênh được hiển thị từ 331/332/TOPIC. Mô tả danh mục cục bộ không được trình bày như topic của máy chủ.
 - Kênh ngoài danh mục nằm ở **Kênh khác**. Môn thuộc Đã tham gia nếu ít nhất một kênh đã được xác nhận JOIN; badge cộng các tin chưa đọc của kênh đó.
 
@@ -76,6 +76,30 @@ Kiểm thử UI cần daemon thật đang chạy:
 .\gradlew.bat connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.server=10.0.2.2
 ```
 
+## Chức năng IRC đầy đủ theo checklist
+
+- Phòng server: LIST (321/322/323), tìm theo tên/topic, JOIN và tạo phòng bằng JOIN khi server cho phép.
+- Thành viên: NAMES chủ động, WHO, vai trò Owner/Admin/Operator/Half-operator/Voice/Thành viên; cập nhật NICK/JOIN/PART/QUIT/KICK/MODE.
+- Quản trị: đổi/xóa topic, cấp/thu Operator/Voice, KICK với lý do, bật/tắt +i/+m/+t. Server quyết định quyền và trả lỗi 482/404 khi bị từ chối.
+- Presence: đặt/xóa AWAY, đọc 301/305/306/352; away-notify cập nhật trực tiếp nếu server hỗ trợ, WHO phục vụ ảnh chụp trạng thái và làm mới.
+- Nhắc tên: nhận diện nickname nguyên từ theo RFC1459, tô đậm trong chat và kênh thông báo Android ưu tiên riêng. Thông báo cần quyền, app ở nền và process còn sống.
+- Lệnh gõ: `/join`, `/nick`, `/msg`, `/part`, `/list`, `/names`, `/who`, `/topic`, `/mode`, `/kick`, `/away`, `/help`. Lệnh lạ báo lỗi; `//` gửi nội dung bắt đầu bằng `/`.
+- Xuống dòng ở ô soạn tin được gộp thành khoảng trắng trước gửi; giữ nháp nếu nội dung không hợp lệ.
+
+Xem [hướng dẫn tính năng và cú pháp](docs/IRC_FEATURES.md).
+
+Trên macOS/Linux, chạy hai nhóm kiểm tra mạng với daemon bạn kiểm soát:
+
+```bash
+bash tools/network-smoke.sh 127.0.0.1 6667 false
+```
+
+Để người thứ hai tự nhập tin trong terminal (client này không tự nhắc lại):
+
+```bash
+bash tools/interactive-peer.sh 127.0.0.1 6667 false an_demo '#web-general'
+```
+
 ## Tổ chức source
 
 ```text
@@ -102,8 +126,8 @@ docs/                              # Kiến trúc, liên hệ slide, kịch bả
 - Một phiên sống trong Application/process; không dùng foreground service. Phiên có thể nhận thông báo khi process vẫn chạy và đã có quyền, nhưng không bảo đảm tồn tại sau khi Android hủy process. Mở lại sau process death cần kết nối và JOIN lại.
 - Lịch sử tối đa 500 hàng mỗi hội thoại, chỉ trong RAM, không tải lịch sử server. Nháp và cấu hình không nhạy cảm dùng SharedPreferences. Không có SQLite ở bản này; không giả vờ có dữ liệu cũ sau process death.
 - Không lưu channel key xuống đĩa. Không lưu mật khẩu tài khoản. Lịch sử được xóa khi đổi server hoặc danh tính kết nối; nháp được phân vùng theo host/cổng/TLS/kênh.
-- Dùng CASEMAPPING RFC1459, NAMES prefix phổ biến `~&@%+`. Server có casemapping khác vẫn hoạt động với nickname/kênh ASCII thông thường của danh mục; tên có các ký tự `[ ] \\ ^` có thể cần mở rộng ISUPPORT CASEMAPPING/PREFIX.
-- Không có read receipt, typing indicator, SASL/NickServ, IRCv3 CHATHISTORY, thay đổi topic/mode hay quyền quản trị. Có đọc tag IRCv3 cơ bản, nhưng chưa thương lượng CAP và chưa dùng thời gian server.
+- Dùng CASEMAPPING RFC1459. PREFIX và CHANMODES được đọc từ ISUPPORT 005; CAP thương lượng `multi-prefix` và `away-notify` khi server hỗ trợ. CASEMAPPING khác RFC1459 chưa được thương lượng.
+- Không có read receipt, typing indicator, SASL/NickServ, IRCv3 CHATHISTORY hoặc thời gian server. Có TOPIC/KICK/MODE, vai trò và away; thao tác quản trị vẫn do server kiểm tra quyền.
 - Một tin gửi thành công chỉ có trạng thái **đã ghi vào kết nối**, không khẳng định người nhận đã nhận. Lỗi ghi một phần có trạng thái **chưa rõ đã gửi**. Gửi lại cần xác nhận và không tự gửi lại khi reconnect.
 - Reconnect: 1/2/4/8/16/32 giây, tối đa 6 lần thất bại liên tiếp sau một phiên từng được chấp nhận; ngắt chủ động dừng retry. Những kênh còn muốn tham gia được JOIN lại sau 001, không phát lại tin nhắn.
 - Không chia tự động tin vượt 512 byte. App báo lỗi và giữ nội dung để người dùng rút ngắn; giới hạn gồm cả tên kênh/nickname, lệnh và CRLF.

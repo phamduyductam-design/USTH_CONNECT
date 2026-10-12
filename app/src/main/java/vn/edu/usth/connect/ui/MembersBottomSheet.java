@@ -43,6 +43,8 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     target = requireArguments().getString("target");
     if (b != null) selectedNick = b.getString("selected", "");
     v.findViewById(R.id.close).setOnClickListener(w -> dismiss());
+    v.findViewById(R.id.refresh_members).setOnClickListener(w -> refresh());
+    v.findViewById(R.id.manage_member).setOnClickListener(w -> Dialogs.member((MainActivity) requireActivity(), target, selectedNick));
     adapter = new CatalogAdapter();
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -65,6 +67,11 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
       com.google.android.material.bottomsheet.BottomSheetBehavior.from(sheet)
           .setShouldRemoveExpandedCorners(false);
     session.addListener(this);
+    refresh();
+  }
+
+  private void refresh() {
+    if (session.canSend(target)) session.refreshNames(target);
   }
 
   @Override
@@ -95,7 +102,10 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
       if (user.nickname.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
         row.name = Ui.displayName(user.nickname);
-        row.detail = user.nickname;
+        row.detail = user.nickname + " · " + Ui.role(requireContext(), session.data.role(target, user.nickname));
+        if (session.data.awayUsers.containsKey(IrcParser.fold(user.nickname)))
+          row.preview = getString(R.string.away_presence) + (session.data.awayUsers.get(IrcParser.fold(user.nickname)).isEmpty()
+              ? "" : ": " + session.data.awayUsers.get(IrcParser.fold(user.nickname)));
         row.avatar = user.nickname;
         row.self = IrcParser.fold(user.nickname).equals(IrcParser.fold(session.data.nickname));
         row.selected = IrcParser.fold(user.nickname).equals(IrcParser.fold(selectedNick));
@@ -109,6 +119,8 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
       }
     if (rows.isEmpty()) rows.add(CatalogAdapter.Row.empty(getString(R.string.empty_members), ""));
     adapter.submit(rows);
+    root.findViewById(R.id.refresh_members).setEnabled(session.canSend(target) && !c.namesInProgress);
+    Ui.visible(root.findViewById(R.id.manage_member), !selectedNick.isEmpty() && session.canSend(target) && session.data.canManage(target));
     android.widget.TextView action = root.findViewById(R.id.message_member);
     action.setEnabled(!selectedNick.isEmpty());
     action.setText(selectedNick.isEmpty() ? getString(R.string.private_message)

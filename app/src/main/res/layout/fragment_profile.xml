@@ -28,6 +28,8 @@
             <TextView android:id="@+id/status" style="@style/Caption" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="@color/success" android:accessibilityLiveRegion="polite" android:maxWidth="110dp" />
         </LinearLayout>
         <com.google.android.material.button.MaterialButton android:id="@+id/reconnect" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="@string/reconnect" android:layout_marginTop="12dp" />
+        <TextView android:id="@+id/away_status" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="12dp" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/away_toggle" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="@string/away_set" android:layout_marginTop="8dp" />
         <TextView android:id="@+id/options_label" style="@style/SectionLabel" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/options" android:layout_marginTop="22dp" android:layout_marginBottom="8dp" />
         <LinearLayout android:layout_width="match_parent" android:layout_height="52dp" android:gravity="center_vertical" android:background="@drawable/bg_row">
             <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@drawable/ic_notification" app:tint="@color/text_secondary" android:layout_marginStart="10dp" android:layout_marginEnd="12dp" android:importantForAccessibility="no" />

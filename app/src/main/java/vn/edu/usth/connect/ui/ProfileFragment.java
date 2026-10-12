@@ -67,6 +67,9 @@ public final class ProfileFragment extends SessionFragment {
             render();
           }
         });
+    v.findViewById(R.id.away_toggle).setOnClickListener(w -> {
+      if (session.data.away) session.setAway(""); else Dialogs.away(main());
+    });
     v.findViewById(R.id.reconnect).setOnClickListener(w -> session.reconnect());
     v.findViewById(R.id.connection_options)
         .setOnClickListener(
@@ -113,6 +116,10 @@ public final class ProfileFragment extends SessionFragment {
         .setText(Ui.error(requireContext(), session.data.errorCode));
     Ui.visible(
         root.findViewById(R.id.reconnect), session.data.connection != ConnectionState.CONNECTED);
+    root.findViewById(R.id.away_toggle).setEnabled(online);
+    ((TextView)root.findViewById(R.id.away_toggle)).setText(session.data.away ? R.string.away_clear : R.string.away_set);
+    ((TextView)root.findViewById(R.id.away_status)).setText(!online ? connection : session.data.away
+        ? getString(R.string.away_detail, session.data.awayMessage) : getString(R.string.online_presence));
     binding = true;
     ((SwitchMaterial) root.findViewById(R.id.notifications))
         .setChecked(

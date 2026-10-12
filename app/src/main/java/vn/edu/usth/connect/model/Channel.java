@@ -8,6 +8,7 @@ import java.util.Set;
 public final class Channel extends Conversation {
   public boolean joined, wanted, joining, namesInProgress;
   public String topic = "";
+  public final Set<Character> modes = new HashSet<>();
   public final Map<String, IrcUser> members = new LinkedHashMap<>();
   public final Map<String, IrcUser> namesBatch = new LinkedHashMap<>();
   public final Set<String> namesRemoved = new HashSet<>();

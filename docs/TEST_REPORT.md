@@ -1,98 +1,73 @@
-# Báo cáo kiểm thử
+# Báo cáo kiểm thử — tính năng IRC bổ sung
 
-Thực hiện ngày 08–09/10/2026, múi giờ Asia/Bangkok (UTC+7), trên Windows. Báo cáo phân biệt test logic/giao thức JVM với chạy ứng dụng Android trên thiết bị.
+Ngày: 12/10/2026. Nền tảng kiểm tra: macOS Apple Silicon, JDK 17, Gradle 8.9, Android API 35. APK bàn giao versionName 1.1 / versionCode 2.
 
-## Môi trường thực tế
+## Kết quả
 
-- Temurin JDK 17.0.20.1, Gradle wrapper 8.9, AGP 8.7.3.
-- Android SDK 35 revision 2; Build Tools 34.0.0 (mặc định AGP) và 35.0.0 đã cài.
-- SDK/JDK/cache nằm trong `.tools/` của workspace; không dựa vào JDK 25 có sẵn.
-- IRC daemon Ergo 2.19.1 chính thức, binary Windows x86_64 có đối chiếu SHA-256; chỉ listen `127.0.0.1:6667`, CASEMAPPING RFC1459.
-- Mạng công cộng: `irc.libera.chat:6697`, TLS và kiểm tra hostname/trust store mặc định, hai nickname ngẫu nhiên trong kênh tạm ngẫu nhiên chỉ trao đổi với nhau.
+| Kiểm tra | Kết quả |
+|---|---|
+| assembleDebug | Thành công |
+| lintDebug | 0 lỗi, 8 cảnh báo có sẵn (dependency và notifyDataSetChanged) |
+| Unit test | 30 kiểm thử, 0 lỗi |
+| Android instrumentation | 2 kiểm thử, 0 lỗi |
+| Hai client qua Ergo localhost | 21 bước PASS |
 
-## Kết quả build và kiểm tra tĩnh
+## Android với server thật
 
-Lệnh:
+- Kết nối NICK/USER; JOIN theo môn; gửi/nhận tin kênh và nhắn riêng.
+- Giữ nháp khi Activity tái tạo; gửi nội dung có xuống dòng trong cả kênh và PM.
+- Tải phòng bằng /list và mở phòng từ kết quả LIST.
+- Đổi topic bằng menu/dialog và nhận topic từ server.
+- Làm mới thành viên; cấp Voice bằng GUI; vai trò và away cập nhật trên màn thành viên.
+- Đưa app về nền, nhận tin nhắc nickname; kiểm tra Android NotificationManager có notification ở channel mentions.
+- Đặt/xóa AWAY qua Cá nhân và chờ phản hồi server xác nhận.
+- Thu Voice bằng lệnh gõ; KICK bằng GUI và xác nhận người bị loại không còn trong danh sách.
+- /part và xác nhận trạng thái joined bị xóa.
 
-```powershell
-.\gradlew.bat assembleDebug assembleDebugAndroidTest lintDebug testDebugUnitTest --console=plain --no-daemon
+## Các kiểm tra đơn vị đáng chú ý
+
+- Parser/framing, CRLF, UTF-8 byte limit, chặn chèn lệnh, prefix/tag.
+- Epoch/reconnect không phát lại tin; ngắt chủ động hủy retry.
+- CAP LS nhiều dòng, yêu cầu capability được công bố, CAP END; server cũ trả 421 CAP vẫn đăng ký được.
+- LIST bắt đầu/kết thúc/rỗng/lỗi; MODE có tham số key/role không làm lệch nickname; đổi quyền trong lúc NAMES chưa kết thúc.
+- PREFIX/CHANMODES từ ISUPPORT; WHO, AWAY, 301/305/306; đổi nickname và QUIT cập nhật presence.
+- Nhắc nickname theo nguyên từ/RFC1459; giữ đúng chỉ số khi có Unicode/emoji trước nickname.
+- Slash command sai báo lỗi; topic query/clear phân biệt; builder mới vẫn chặn CRLF/NUL và tin quá dài.
+
+## Giao thức trực tiếp với hai phiên client
+
+Script network-smoke.sh dùng đúng Java IrcClient của app. Hai nickname kiểm thử chỉ trao đổi trong các phòng tạm riêng trên daemon cục bộ. Bot demo không tham gia.
+
+```text
+PASS two real TCP sessions accepted with 001 (TLS=false)
+PASS JOIN acknowledgements and peer membership event
+PASS NAMES completed
+PASS UTF-8 channel PRIVMSG delivered to second client
+PASS private PRIVMSG delivered
+PASS NICK broadcast
+PASS 401 for missing recipient
+PASS PART broadcast
+PASS QUIT broadcast; no implicit resend
+PASS LIST returns the real temporary channel and its two users
+PASS explicit NAMES refresh
+PASS operator TOPIC broadcast
+PASS MODE grants Voice and updates topic restriction
+PASS server rejects non-operator MODE and TOPIC with 482
+PASS AWAY acknowledgement, negotiated away-notify and WHO presence
+PASS clearing AWAY updates the other client
+PASS grant and revoke Operator / Voice
+PASS moderated channel enforces permissions on the server
+PASS real incoming nickname mention
+PASS KICK broadcast to both clients
+PASS explicit topic clearing
 ```
 
-Kết quả: **BUILD SUCCESSFUL**. APK debug và APK instrumentation test đã build. `apksigner verify --verbose` xác minh APK debug thành công, APK Signature Scheme v2, một signer. Đây là debug signing; chưa có khóa phát hành hoặc upload lên store.
+## Kiểm tra logo đăng nhập
 
-Lint: **0 lỗi, 8 cảnh báo**:
+Logo USTH do người dùng cung cấp được giữ nguyên ảnh, đặt ở góc trên bên trái màn hình kết nối, fitCenter trong 92 × 40 dp. Kiểm tra bằng ảnh chụp native Android sau khi cài lại APK; build và lint đã chạy lại sau thay đổi resource.
 
-- 6 cảnh báo có phiên bản dependency mới hơn. Dự án chủ động ghim bộ phiên bản đã build, không dùng dynamic version.
-- 2 cảnh báo adapter dùng `notifyDataSetChanged`; danh sách hiện nhỏ, có giới hạn và chat giữ anchor. Có thể chuyển sang DiffUtil khi mở rộng.
+## Phạm vi
 
-Không dùng lint baseline để che lỗi. Các lỗi API 27 trên minSdk 24, tham chiếu style, import test và các cảnh báo resource/accessibility/overdraw phát hiện trong quá trình build đã được sửa.
+Bài kiểm tra mạng mới dùng TCP localhost, không kiểm thử mới TLS trên mạng công cộng hay hai điện thoại vật lý. Không dùng test này để tuyên bố hỗ trợ mọi lệnh/extensions IRC. Away tự cập nhật khi server có away-notify; server cũ dùng WHO/làm mới. Thông báo phụ thuộc quyền hệ điều hành, app ở nền và process còn sống.
 
-## Unit test — 22 test, 0 failed, 0 errors
-
-| Bộ test | Số test | Phạm vi |
-|---|---:|---|
-| IrcParserTest | 8 | Source, command, trailing, khoảng trắng, tags, case folding, CRLF, input phân mảnh, lỗi framing, UTF-8 byte limit, chèn lệnh |
-| SessionStateTest | 10 | JOIN xác nhận, NAMES nhiều phần, PART/NICK xen giữa, NAMES đến muộn sau PART, unread, private target, nickname, KICK/PART, mất kết nối, gửi bị từ chối, echo dedup, giới hạn lịch sử |
-| IrcClientTest | 4 | Chỉ CONNECTED sau 001, reader blocking không chặn writer/PONG, 433 trước đăng ký, hủy reconnect, reconnect đăng ký lại và không phát lại tin đã gửi |
-
-Unit transport dùng ServerSocket fixture có kiểm soát trên loopback. Các fixture này là công cụ kiểm thử framing/trạng thái, không được gọi là server của USTH và không cấp dữ liệu mẫu cho sản phẩm.
-
-## Smoke test hai client với IRC daemon thật
-
-`tools/NetworkSmoke.java` sử dụng chính IrcClient/IrcCommands/model của app, compile từ source; không có transport thay thế. Đã chạy cả:
-
-```powershell
-.\tools\network-smoke.ps1 -Server 127.0.0.1 -Port 6667
-.\tools\network-smoke.ps1 -Server irc.libera.chat -Port 6697 -Tls
-```
-
-Hai lần đều qua 9 bước:
-
-1. Hai phiên được máy chủ chấp nhận bằng 001.
-2. JOIN có xác nhận self và sự kiện peer JOIN.
-3. NAMES hoàn tất bằng 366.
-4. Tin nhắn tiếng Việt UTF-8 trong kênh được client kia nhận.
-5. Tin nhắn riêng được client kia nhận.
-6. Đổi nickname được broadcast.
-7. Người nhận không tồn tại trả numeric 401.
-8. PART được broadcast.
-9. QUIT được broadcast.
-
-Đây là hai **Java client dùng engine của app** chạy trên Windows, không phải hai điện thoại. Kiểm thử công cộng xác nhận đường TCP/TLS và việc dùng trust store/hostname verification trong engine trên JVM; không chứng minh đã chạy TLS trên Android thiết bị.
-
-## Lần thử máy ảo ban đầu
-
-Đã tải và thử Android Emulator 37.2.12 với image Android 35 Google APIs x86_64 revision 9. Máy báo **Android Emulator hypervisor driver is not installed**. Thử software mode `-accel off`, SwiftShader và cấu hình không Vulkan/GPU cũng không boot được; lần cuối emulator thoát `-1073741819` (`0xC0000005`). ADB không có thiết bị sẵn sàng.
-
-Vì vậy:
-
-- `AppFlowTest` đã compile và build APK test, **chưa thực thi**.
-- Chưa có ảnh chụp app chạy thật. Không dùng ảnh mockup người dùng đưa để thay bằng ảnh chạy app.
-- Chưa xác nhận thực tế layout/font/keyboard, xoay màn hình, giữ vị trí cuộn, permission thông báo, foreground/background trên thiết bị.
-- Chưa demo đồng thời hai Android client, chưa đo UI frame time/overdraw/pin hoặc test trên API 24.
-- Chưa chạy test certificate không tin cậy/sai hostname trên Android và chưa thử IRC server do USTH cung cấp.
-
-Source xử lý các trường hợp trên, nhưng trạng thái **implemented** không được hiểu là **runtime verified**. Các tiến trình emulator thử nghiệm đã được dừng sau kiểm tra; không cài driver hay thay đổi tính năng Windows toàn hệ thống.
-
-Bổ sung ngày 09/10/2026: đã thêm `.vscode/tasks.json`, `tools/run-android.ps1` và hướng dẫn `VSCODE_RUN.md`. Đã kiểm tra cú pháp PowerShell/JSON và nhánh CheckOnly dừng đúng khi thiếu hypervisor. Chưa thực thi nhánh mở máy ảo/cài APK của task vì Windows Hypervisor Platform chưa sẵn sàng; cần bật tính năng Windows và restart trước.
-
-### Cập nhật sau khi người dùng bật WHPX, ngày 09/10/2026
-
-`-accel-check` đã trả mã 0 và `WHPX(10.0.26200) is installed and usable`. Đã chạy `tools/run-android.ps1` thành công: máy ảo `emulator-5554` boot xong (`sys.boot_completed=1`), build APK thành công, `adb install` báo Success, app có process đang chạy và `ConnectActivity` là Activity resumed.
-
-Đã chụp và xem ảnh thật tại `output/screenshots/connect.png`; màn hình Kết nối hiển thị với bàn phím đang mở. Giới hạn “chưa có ảnh chạy thật/chưa chạy được emulator” của lần thử ban đầu đã được giải quyết. Chưa chạy AppFlowTest, chưa xác minh toàn bộ các màn hình hoặc TLS/chat trên Android; các mục đó vẫn cần kiểm tra riêng. Máy ảo đang được giữ mở để người dùng sử dụng.
-
-## Checklist cần chạy khi có điện thoại / emulator hoạt động
-
-- Cài `USTH-Connect-debug.apk`, thử cả màn hình nhỏ và landscape.
-- Chạy AppFlowTest với server thật; kiểm tra JOIN, tin kênh/riêng, thành viên, tái tạo Activity và giữ nháp.
-- Xoay portrait ↔ landscape với bàn phím mở, kiểm tra không mất nháp và không tạo socket thứ hai bằng log daemon.
-- Cuộn lên đọc cũ, cho client kia gửi thêm; kiểm tra giữ vị trí và nút xuống tin mới.
-- Ngắt mạng/dừng server rồi khởi động lại; kiểm tra backoff, JOIN lại, nút gửi và không tự phát lại tin.
-- Từ chối/bật quyền POST_NOTIFICATIONS, bật/tắt trong hệ thống, nhận tin khi app ở nền và process còn sống.
-- Nhập nickname trùng, key sai, channel bị cấm/invite-only/full, target không tồn tại, tin UTF-8 vượt giới hạn.
-- Xác nhận ngắt chủ động hủy retry; mở lại sau process death phải kết nối/JOIN lại và không hiển thị lịch sử giả.
-
-## Bằng chứng bàn giao
-
-`output/verification/` chứa log build, kết quả JUnit XML, báo cáo lint HTML/XML, log smoke local/public và log lần thử emulator. `output/SHA256SUMS.txt` kiểm tra checksum source ZIP và APK. Các tài liệu source nằm trong `docs/`; bản APK cài được được copy riêng vào output.
+Log và XML có thể tái tạo bằng lệnh README; .tools/, build/ và dữ liệu người dùng không được commit. Xem [IRC_FEATURES.md](IRC_FEATURES.md) để thao tác và [ARCHITECTURE.md](ARCHITECTURE.md) để đối chiếu luồng dữ liệu.

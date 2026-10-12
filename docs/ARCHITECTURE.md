@@ -39,6 +39,8 @@ flowchart LR
     B -->|Nhập kênh ngoài danh mục| D
     D --> E[Bottom sheet Thành viên]
     E --> F[Chat riêng]
+    B <--> S[Phòng: LIST từ server]
+    S -->|JOIN xác nhận| D
     B <--> G[Tin nhắn]
     G --> F
     B <--> H[Cá nhân]
@@ -49,7 +51,7 @@ MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/
 
 ## Luồng gửi
 
-1. Người dùng bấm Gửi. ChatFragment kiểm tra điều kiện, lấy text và gọi SessionRepository.send.
+1. Người dùng bấm Gửi. ChatFragment gộp xuống dòng thành khoảng trắng. SlashCommand tách lệnh gõ thành thao tác typed; tin thường gọi SessionRepository.send. // gửi dấu / nguyên văn.
 2. IrcCommands kiểm tra target, CR/LF/NUL, nội dung trống và kích thước UTF-8 của cả dòng <= 512 byte với CRLF.
 3. Repository thêm một hàng QUEUED của chính mình, gọi IrcClient.send. Nút gửi chỉ khả dụng khi CONNECTED và nếu là kênh thì JOIN đã xác nhận.
 4. Writer executor ghi UTF-8 và CRLF, flush socket. Handler nhận kết quả, đổi sang WRITTEN. Mọi cập nhật adapter nằm trên main thread.
@@ -62,7 +64,7 @@ MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/
 2. Parser tách tags/source/command/parameters/trailing. Dòng sai grammar bị bỏ qua. `PING` được trả lời `PONG` qua writer riêng.
 3. `001` chấp nhận phiên và nickname. Socket đã mở/TLS handshake thành công vẫn chỉ là CONNECTING/REGISTERING trước bước này.
 4. Callback mang epoch được Handler chuyển về main; callback của phiên cũ bị loại sau hủy/reconnect.
-5. SessionState xử lý JOIN/PART/KICK/QUIT/NICK, NAMES 353/366, TOPIC/331/332, PRIVMSG và lỗi numeric.
+5. SessionState xử lý JOIN/PART/KICK/QUIT/NICK; NAMES 353/366; LIST 321/322/323; TOPIC/331/332; MODE/324; WHO 352; AWAY/301/305/306; PRIVMSG và lỗi numeric. Prefix/CHANMODES lấy từ 005. CAP thương lượng multi-prefix/away-notify trước 001; server không hỗ trợ CAP vẫn đăng ký bằng NICK/USER.
 6. NAMES nhiều gói được gom vào map có khóa nickname chuẩn hóa; PART/QUIT giữa gói dùng tombstone để không phục hồi người đã rời. Đến 366 mới thay danh sách hoàn chỉnh.
 7. Tin đến target khác chat đang mở tăng unread. Mở chat đánh dấu đọc cục bộ; không gửi trạng thái “đã đọc” cho server.
 8. Fragment render thông qua listener. Nếu đang đọc cũ, adapter giữ vị trí cuộn và hiện nút xuống tin mới; nếu đang ở cuối thì cuộn tiếp.
@@ -80,3 +82,11 @@ Cấu hình và nháp dùng `SharedPreferences.apply`, không ghi key/mật kh�
 RecyclerView tái sử dụng view holder, vector icons nhẹ và không tải bitmap mạng. Lịch sử được giới hạn để tránh tăng RAM vô hạn trong mỗi hội thoại. Callback lifecycle giảm leak; một socket dùng cho mọi kênh. UI layout co giãn, các danh sách cuộn và bàn phím dùng WindowInsetsCompat.
 
 Các adapter hiện cập nhật danh sách nhỏ bằng `notifyDataSetChanged` có giữ anchor. Đây là lựa chọn đơn giản của bản đồ án; DiffUtil/ListAdapter, phân trang SQLite, đọc server-time, ISUPPORT đầy đủ và foreground service là các hướng mở rộng được nêu rõ, không được xem là đã có.
+
+## Trạng thái bổ sung
+
+ServerChannelsFragment đọc availableChannels, độc lập với CourseRepository/courses.json. LIST/NAMES có trạng thái tải và timeout; không ghi nhận phòng hay quyền bằng dữ liệu mẫu. MODE cập nhật cả members lẫn namesBatch để không mất thay đổi quyền khi NAMES chưa kết thúc.
+
+WHO lấy presence ban đầu; AWAY cập nhật trực tiếp khi đã thương lượng away-notify. NICK đổi khóa presence, QUIT/mất kết nối xóa presence. Hộp thông tin PM đăng ký listener trong lúc mở và hủy khi đóng/Activity bị hủy.
+
+Mentions giữ chỉ số UTF-16 khi fold nickname theo RFC1459, dùng ranh giới nickname. ChatAdapter tô các vùng được nhắc; ConnectApplication dùng notification channel mentions có importance HIGH khi app ở nền.

@@ -2,10 +2,12 @@
     <View android:layout_width="36dp" android:layout_height="4dp" android:layout_gravity="center" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" android:background="@drawable/bg_input" />
     <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:gravity="center_vertical">
         <TextView style="@style/Heading" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/members" android:textSize="22sp" />
-        <ImageButton android:id="@+id/close" style="@style/IconButton" android:src="@drawable/ic_close" android:contentDescription="@string/close" android:layout_marginEnd="-12dp" />
+        <ImageButton android:id="@+id/refresh_members" style="@style/IconButton" android:src="@drawable/ic_refresh" android:contentDescription="@string/refresh_members" />
+        <ImageButton android:id="@+id/close" style="@style/IconButton" android:src="@drawable/ic_close" android:contentDescription="@string/close" />
     </LinearLayout>
     <TextView android:id="@+id/subtitle" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="14dp" />
     <EditText android:id="@+id/search" style="@style/SearchInput" android:layout_width="match_parent" android:layout_height="wrap_content" android:hint="@string/search_members" android:inputType="text" android:autofillHints="" android:drawableStart="@drawable/ic_search" android:drawablePadding="8dp" />
     <androidx.recyclerview.widget.RecyclerView android:id="@+id/list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:paddingTop="10dp" />
+    <com.google.android.material.button.MaterialButton android:id="@+id/manage_member" style="@style/OutlineButton" android:layout_width="match_parent" android:layout_height="40dp" android:text="@string/manage_member" android:visibility="gone" android:layout_marginTop="8dp" />
     <com.google.android.material.button.MaterialButton android:id="@+id/message_member" style="@style/PrimaryButton" android:layout_width="match_parent" android:layout_height="48dp" android:text="@string/private_message" android:layout_marginTop="10dp" android:enabled="false" />
 </LinearLayout>
