@@ -10,6 +10,14 @@ import org.junit.Test;
 import vn.edu.usth.connect.model.*;
 
 public class IrcClientTest {
+  private static String[] registration(BufferedReader in, OutputStream output) throws IOException {
+    if (!"CAP LS 302".equals(in.readLine())) throw new IOException("missing CAP LS");
+    String nick = in.readLine(), user = in.readLine();
+    output.write(":server CAP * LS :\r\n".getBytes(StandardCharsets.UTF_8)); output.flush();
+    if (!"CAP END".equals(in.readLine())) throw new IOException("missing CAP END");
+    return new String[] {nick, user};
+  }
+
   @Test
   public void reconnectRegistersAgainWithoutReplayingSentMessage() throws Exception {
     CountDownLatch first = new CountDownLatch(1), second = new CountDownLatch(1);
@@ -26,8 +34,7 @@ public class IrcClientTest {
                   BufferedReader in =
                       new BufferedReader(
                           new InputStreamReader(initial.getInputStream(), StandardCharsets.UTF_8));
-                  in.readLine();
-                  in.readLine();
+                  registration(in, initial.getOutputStream());
                   initial
                       .getOutputStream()
                       .write(":server 001 minh :Welcome\r\n".getBytes(StandardCharsets.UTF_8));
@@ -40,8 +47,9 @@ public class IrcClientTest {
                   BufferedReader in =
                       new BufferedReader(
                           new InputStreamReader(next.getInputStream(), StandardCharsets.UTF_8));
-                  if (!"NICK minh".equals(in.readLine())) throw new IOException("missing NICK");
-                  if (!in.readLine().startsWith("USER ")) throw new IOException("missing USER");
+                  String[] registration = registration(in, next.getOutputStream());
+                  if (!"NICK minh".equals(registration[0])) throw new IOException("missing NICK");
+                  if (!registration[1].startsWith("USER ")) throw new IOException("missing USER");
                   next.getOutputStream()
                       .write(":server 001 minh :Welcome back\r\n".getBytes(StandardCharsets.UTF_8));
                   next.getOutputStream().flush();
@@ -99,8 +107,8 @@ public class IrcClientTest {
                   PrintWriter out =
                       new PrintWriter(
                           new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
-                  sent.add(in.readLine());
-                  sent.add(in.readLine());
+                  String[] registration = registration(in, socket.getOutputStream());
+                  sent.add(registration[0]); sent.add(registration[1]);
                   registered.countDown();
                   Thread.sleep(150);
                   out.print(":server 001 minh :Welcome\r\nPING :probe\r\n");
@@ -161,8 +169,7 @@ public class IrcClientTest {
                 try (Socket socket = server.accept()) {
                   BufferedReader input =
                       new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                  input.readLine();
-                  input.readLine();
+                  registration(input, socket.getOutputStream());
                   socket
                       .getOutputStream()
                       .write(":server 433 * minh :in use\r\n".getBytes(StandardCharsets.UTF_8));
@@ -207,8 +214,7 @@ public class IrcClientTest {
                 try (Socket socket = server.accept()) {
                   BufferedReader in =
                       new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                  in.readLine();
-                  in.readLine();
+                  registration(in, socket.getOutputStream());
                   socket
                       .getOutputStream()
                       .write(":s 001 minh :ok\r\n".getBytes(StandardCharsets.UTF_8));
@@ -244,4 +250,39 @@ public class IrcClientTest {
       }
     }
   }
+  @Test public void capabilityNegotiationAndLegacyFallback() throws Exception {
+    for (boolean legacy : new boolean[] {false, true}) {
+      try (ServerSocket server = new ServerSocket(0)) {
+        ExecutorService fixture = Executors.newSingleThreadExecutor();
+        Future<?> task = fixture.submit(() -> {
+          try (Socket socket = server.accept()) {
+            socket.setSoTimeout(4000);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            assertEquals("CAP LS 302", in.readLine());
+            assertEquals("NICK minh", in.readLine()); assertTrue(in.readLine().startsWith("USER "));
+            OutputStream out = socket.getOutputStream();
+            if (legacy) out.write(":s 421 * CAP :Unknown command\r\n".getBytes(StandardCharsets.UTF_8));
+            else {
+              out.write(":s CAP * LS * :multi-prefix\r\n:s CAP * LS :away-notify sasl\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
+              assertEquals("CAP REQ :multi-prefix away-notify", in.readLine());
+              out.write(":s CAP * ACK :multi-prefix away-notify\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
+              assertEquals("CAP END", in.readLine());
+            }
+            out.write(":s 001 minh :Welcome\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
+            while (in.readLine() != null) { }
+          } catch (IOException e) { throw new RuntimeException(e); }
+        });
+        CountDownLatch accepted = new CountDownLatch(1);
+        IrcClient client = new IrcClient(new IrcClient.Listener() {
+          public void onState(long e, ConnectionState s, String reason) { if (s == ConnectionState.CONNECTED) accepted.countDown(); }
+          public void onMessage(long e, IrcMessage m) { }
+        });
+        try {
+          client.connect(new ConnectionConfig("127.0.0.1", server.getLocalPort(), false, "minh", "u", "test"));
+          assertTrue(accepted.await(4, TimeUnit.SECONDS)); client.disconnect(); task.get(4, TimeUnit.SECONDS);
+        } finally { client.shutdown(); fixture.shutdownNow(); }
+      }
+    }
+  }
+
 }

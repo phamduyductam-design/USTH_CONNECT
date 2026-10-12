@@ -27,6 +27,13 @@ public final class Ui {
     return R.color.primary;
   }
 
+  public static String role(Context context, String role) {
+    int id = role.equals("q") ? R.string.owner_role : role.equals("a") ? R.string.admin_role
+        : role.equals("o") ? R.string.operator_role : role.equals("h") ? R.string.halfop_role
+        : role.equals("v") ? R.string.voice_role : R.string.member_role;
+    return context.getString(id);
+  }
+
   public static void brand(TextView view) {
     SpannableString text = new SpannableString(view.getContext().getString(R.string.app_name));
     text.setSpan(new android.text.style.ForegroundColorSpan(

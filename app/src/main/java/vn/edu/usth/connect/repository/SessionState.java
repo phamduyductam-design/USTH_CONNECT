@@ -10,6 +10,12 @@ import vn.edu.usth.connect.model.*;
 public final class SessionState {
   public final Map<String, Channel> channels = new LinkedHashMap<>();
   public final Map<String, Conversation> conversations = new LinkedHashMap<>();
+  public final Map<String, ServerChannel> availableChannels = new LinkedHashMap<>();
+  public final Set<String> onlineUsers = new HashSet<>();
+  public final Map<String, String> awayUsers = new HashMap<>();
+  public boolean listing, listLoaded, away;
+  public String awayMessage = "", requestedAway = "", errorDetail = "";
+  public String prefixModes = "qaohv", prefixSymbols = "~&@%+", channelModes = "beI,k,l,imnpst";
   public String nickname = "", activeTarget = "", errorCode = "", errorTarget = "";
   public ConnectionState connection = ConnectionState.DISCONNECTED;
 
@@ -24,10 +30,16 @@ public final class SessionState {
   }
 
   public void connectionLost() {
+    listing = false;
+    listLoaded = false;
+    away = false;
+    awayMessage = "";
+    awayUsers.clear(); onlineUsers.clear();
     for (Channel c : channels.values()) {
       c.joined = false;
       c.joining = false;
       c.members.clear();
+      c.modes.clear();
       c.namesBatch.clear();
       c.namesRemoved.clear();
       c.namesInProgress = false;
@@ -55,9 +67,55 @@ public final class SessionState {
     Channel c;
     switch (m.command) {
       case "001":
-        nickname = m.param(0);
+        nickname = m.param(0); onlineUsers.add(IrcParser.fold(nickname));
+        break;
+      case "005":
+        for (String token : m.parameters) {
+          if (token.startsWith("PREFIX=(")) {
+            int end = token.indexOf(')');
+            if (end > 8 && token.length() - end - 1 == end - 8) {
+              prefixModes = token.substring(8, end); prefixSymbols = token.substring(end + 1);
+            }
+          } else if (token.startsWith("CHANMODES=")) channelModes = token.substring(10);
+        }
+        break;
+      case "321": availableChannels.clear(); listing = true; break;
+      case "322":
+        try {
+          if (availableChannels.size() < 5000)
+            availableChannels.put(IrcParser.fold(m.param(1)),
+                new ServerChannel(m.param(1), Integer.parseInt(m.param(2)), m.last()));
+        } catch (NumberFormatException ignored) { }
+        break;
+      case "323": listing = false; listLoaded = true; break;
+      case "MODE":
+        if (IrcParser.isChannel(m.param(0)))
+          applyModes(channel(m.param(0)), m.param(1), m.parameters.subList(Math.min(2, m.parameters.size()), m.parameters.size()));
+        break;
+      case "324":
+        c = channel(m.param(1)); c.modes.clear();
+        applyModes(c, m.param(2), m.parameters.subList(Math.min(3, m.parameters.size()), m.parameters.size()));
+        break;
+      case "301": onlineUsers.add(IrcParser.fold(m.param(1))); awayUsers.put(IrcParser.fold(m.param(1)), m.last()); break;
+      case "305": away = false; awayMessage = ""; awayUsers.remove(IrcParser.fold(nickname)); break;
+      case "306": away = true; awayMessage = requestedAway; awayUsers.put(IrcParser.fold(nickname), awayMessage); break;
+      case "AWAY":
+        if (m.parameters.isEmpty()) awayUsers.remove(folded); else awayUsers.put(folded, m.last());
+        break;
+      case "352":
+        String whoNick = m.param(5), flags = m.param(6);
+        onlineUsers.add(IrcParser.fold(whoNick));
+        if (flags.startsWith("G")) awayUsers.putIfAbsent(IrcParser.fold(whoNick), "");
+        else if (flags.startsWith("H")) awayUsers.remove(IrcParser.fold(whoNick));
+        Channel whoChannel = channels.get(IrcParser.fold(m.param(1)));
+        if (whoChannel != null && whoChannel.joined && whoChannel.members.containsKey(IrcParser.fold(whoNick))) {
+          String prefixes = "";
+          for (char symbol : prefixSymbols.toCharArray()) if (flags.indexOf(symbol) >= 0) prefixes += symbol;
+          memberAdd(whoChannel, new IrcUser(whoNick, prefixes));
+        }
         break;
       case "JOIN":
+        onlineUsers.add(folded);
         c = channel(m.last());
         if (self) {
           c.joined = true;
@@ -98,6 +156,7 @@ public final class SessionState {
         event(c, m.param(1), "", "KICK");
         break;
       case "QUIT":
+        awayUsers.remove(folded); onlineUsers.remove(folded);
         for (Channel ch : channels.values())
           if (ch.members.containsKey(folded) || ch.namesBatch.containsKey(folded)) {
             memberRemove(ch, folded);
@@ -106,6 +165,8 @@ public final class SessionState {
         break;
       case "NICK":
         String newNick = m.last(), key = IrcParser.fold(newNick);
+        if (onlineUsers.remove(folded)) onlineUsers.add(key);
+        if (awayUsers.containsKey(folded)) awayUsers.put(key, awayUsers.remove(folded));
         for (Channel ch : channels.values()) {
           IrcUser user = ch.members.get(folded);
           if (user != null || ch.namesBatch.containsKey(folded)) {
@@ -139,10 +200,12 @@ public final class SessionState {
         }
         for (String value : m.last().split(" +")) {
           int i = 0;
-          while (i < value.length() && "~&@%+".indexOf(value.charAt(i)) >= 0) i++;
+          while (i < value.length() && prefixSymbols.indexOf(value.charAt(i)) >= 0) i++;
           String nick = value.substring(i).split("!", 2)[0];
-          if (!nick.isEmpty() && !c.namesRemoved.contains(IrcParser.fold(nick)))
+          if (!nick.isEmpty() && !c.namesRemoved.contains(IrcParser.fold(nick))) {
             c.namesBatch.put(IrcParser.fold(nick), new IrcUser(nick, value.substring(0, i)));
+            onlineUsers.add(IrcParser.fold(nick));
+          }
         }
         break;
       case "366":
@@ -183,6 +246,7 @@ public final class SessionState {
           }
         }
         ChatMessage message = new ChatMessage(from, text, self, ChatMessage.Status.RECEIVED);
+        if (!self && !Mentions.ranges(text, nickname).isEmpty()) message.mentionNick = nickname;
         chat.add(message);
         if (!self && !IrcParser.fold(target).equals(IrcParser.fold(activeTarget))) {
           chat.unread++;
@@ -192,6 +256,8 @@ public final class SessionState {
       default:
         if (m.command.matches("[45][0-9]{2}")) {
           errorCode = m.command;
+          errorDetail = m.last();
+          if (m.param(1).equalsIgnoreCase("LIST")) listing = false;
           errorTarget = m.param(1);
           Channel failed = channels.get(IrcParser.fold(errorTarget));
           if (failed != null && !failed.joined) {
@@ -217,6 +283,48 @@ public final class SessionState {
         }
     }
     return null;
+  }
+
+  public String role(String target, String nick) {
+    Channel c = channels.get(IrcParser.fold(target));
+    IrcUser user = c == null ? null : c.members.get(IrcParser.fold(nick));
+    if (user != null) {
+      for (int i = 0; i < prefixSymbols.length(); i++)
+        if (user.prefixes.indexOf(prefixSymbols.charAt(i)) >= 0) return String.valueOf(prefixModes.charAt(i));
+    }
+    return "u";
+  }
+
+  public boolean canManage(String target) { return "qaoh".contains(role(target, nickname)); }
+
+  private void applyModes(Channel c, String flags, List<String> args) {
+    boolean adding = true; int at = 0;
+    String[] groups = channelModes.split(",", -1);
+    for (char mode : flags.toCharArray()) {
+      if (mode == '+') { adding = true; continue; }
+      if (mode == '-') { adding = false; continue; }
+      int rank = prefixModes.indexOf(mode);
+      boolean consumes = rank >= 0 || (groups.length > 0 && groups[0].indexOf(mode) >= 0)
+          || (groups.length > 1 && groups[1].indexOf(mode) >= 0)
+          || (adding && groups.length > 2 && groups[2].indexOf(mode) >= 0);
+      String arg = consumes && at < args.size() ? args.get(at++) : "";
+      if (rank >= 0) {
+        if (arg.isEmpty()) continue;
+        String key = IrcParser.fold(arg);
+        updatePrefix(c.members, key, prefixSymbols.charAt(rank), adding);
+        updatePrefix(c.namesBatch, key, prefixSymbols.charAt(rank), adding);
+      } else if (adding) c.modes.add(mode); else c.modes.remove(mode);
+    }
+  }
+
+  private void updatePrefix(Map<String, IrcUser> users, String key, char symbol, boolean adding) {
+    IrcUser user = users.get(key);
+    if (user == null) return;
+    String value = user.prefixes.replace(String.valueOf(symbol), "");
+    if (adding) value += symbol;
+    String ordered = "";
+    for (char prefix : prefixSymbols.toCharArray()) if (value.indexOf(prefix) >= 0) ordered += prefix;
+    users.put(key, user.withPrefixes(ordered));
   }
 
   private static void memberAdd(Channel c, IrcUser u) {

@@ -3,6 +3,7 @@ package vn.edu.usth.connect.irc;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 import javax.net.ssl.*;
@@ -27,6 +28,8 @@ public final class IrcClient {
     volatile Socket socket;
     volatile BufferedOutputStream output;
     volatile boolean accepted;
+    boolean negotiating = true;
+    final Set<String> offered = new LinkedHashSet<>();
     volatile ScheduledFuture<?> deadline, heartbeat;
 
     Attempt(long epoch) {
@@ -107,6 +110,7 @@ public final class IrcClient {
       }
       a.output = new BufferedOutputStream(transport.getOutputStream());
       state(a, ConnectionState.REGISTERING, "");
+      write(a, "CAP LS 302", null, false);
       write(a, IrcCommands.nick(c.nickname), null, false);
       write(a, IrcCommands.user(c.username, c.realName), null, false);
       BufferedInputStream input = new BufferedInputStream(transport.getInputStream());
@@ -120,7 +124,14 @@ public final class IrcClient {
         } catch (IllegalArgumentException invalid) {
           continue;
         }
-        if (message.command.equals("PING")) {
+        if (message.command.equals("CAP") && a.negotiating) {
+          negotiate(a, message);
+          continue;
+        } else if (message.command.equals("421") && message.param(1).equalsIgnoreCase("CAP")) {
+          // Legacy servers can register normally without IRCv3 capabilities.
+          a.negotiating = false;
+          continue;
+        } else if (message.command.equals("PING")) {
           write(a, IrcCommands.checked("PONG :" + message.last()), null, false);
         } else if (message.command.equals("001")) {
           acceptRegistration(a, message);
@@ -157,6 +168,7 @@ public final class IrcClient {
   private synchronized void acceptRegistration(Attempt a, IrcMessage message) {
     if (!current(a) || a.accepted) return;
     a.accepted = true;
+    a.negotiating = false;
     hasConnected = true;
     retryCount = 0;
     config = config.withNick(message.param(0));
@@ -167,6 +179,24 @@ public final class IrcClient {
     // The short lock protects configuration/timer ownership, never a blocking socket read.
     listener.onMessage(a.epoch, message);
     state(a, ConnectionState.CONNECTED, "");
+  }
+
+  private void negotiate(Attempt a, IrcMessage message) {
+    String subcommand = message.param(1);
+    if (subcommand.equals("LS")) {
+      for (String cap : message.last().split(" +")) a.offered.add(cap.split("=", 2)[0]);
+      if (message.param(2).equals("*")) return;
+      List<String> requested = new ArrayList<>();
+      for (String cap : new String[] {"multi-prefix", "away-notify"})
+        if (a.offered.contains(cap)) requested.add(cap);
+      if (!requested.isEmpty()) write(a, "CAP REQ :" + String.join(" ", requested), null, false);
+      else finishNegotiation(a);
+    } else if (subcommand.equals("ACK") || subcommand.equals("NAK")) finishNegotiation(a);
+  }
+
+  private void finishNegotiation(Attempt a) {
+    a.negotiating = false;
+    write(a, "CAP END", null, false);
   }
 
   static String readLine(InputStream input) throws IOException {

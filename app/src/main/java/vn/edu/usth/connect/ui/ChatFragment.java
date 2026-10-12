@@ -76,30 +76,16 @@ public final class ChatFragment extends SessionFragment {
                 Dialogs.join(main(), target);
               else session.reconnect();
             });
-    v.findViewById(R.id.more)
-        .setOnClickListener(
-            w -> {
-              if (IrcParser.isChannel(target))
-                new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle(getString(R.string.leave_title, target))
-                    .setMessage(R.string.leave_detail)
-                    .setPositiveButton(
-                        R.string.leave,
-                        (d, which) -> {
-                          session.part(target);
-                          main().back();
-                        })
-                    .setNegativeButton(R.string.cancel, null)
-                      .show();
-              else
-                new MaterialAlertDialogBuilder(requireContext()).setTitle(Ui.displayName(target))
-                    .setMessage(target).setPositiveButton(R.string.close, null).show();
-            });
+    v.findViewById(R.id.more).setOnClickListener(w -> {
+      if (session.data.connection == ConnectionState.CONNECTED) Dialogs.chatMenu(main(), target);
+      else Ui.toast(requireContext(), R.string.error_offline);
+    });
     EditText composer = v.findViewById(R.id.composer);
     composer.setText(session.draft(target));
     Ui.watch(
         composer,
         () -> {
+          composer.setError(null);
           session.saveDraft(target, composer.getText().toString());
           updateSend();
         });
@@ -117,6 +103,8 @@ public final class ChatFragment extends SessionFragment {
   public void onStart() {
     super.onStart();
     session.setActive(target);
+    if (!IrcParser.isChannel(target) && session.data.connection == ConnectionState.CONNECTED)
+      session.refreshWho(target);
   }
 
   @Override
@@ -128,13 +116,28 @@ public final class ChatFragment extends SessionFragment {
   private void send() {
     EditText composer = root.findViewById(R.id.composer);
     try {
-      session.send(target, composer.getText().toString());
+      // A composer line break is text, not the end of an IRC command.
+      String text = composer.getText().toString().replaceAll("[\\r\\n]+", " ").trim();
+      if (text.startsWith("/") && !text.startsWith("//")) {
+        vn.edu.usth.connect.irc.SlashCommand command = vn.edu.usth.connect.irc.SlashCommand.parse(text, target);
+        if (command.name.equals("help")) Dialogs.help(main()); else session.execute(command);
+        composer.setText("");
+        if (command.name.equals("join") || command.name.equals("msg")) main().openChat(command.target);
+        else if (command.name.equals("list")) main().showServerChannels();
+        else if (command.name.equals("part") && command.target.equalsIgnoreCase(target)) main().back();
+        return;
+      }
+      session.send(target, text.startsWith("//") ? text.substring(1) : text);
       composer.setText("");
       pinned = true;
       ((RecyclerView) root.findViewById(R.id.list))
           .scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
     } catch (IllegalArgumentException e) {
-      composer.setError(getString(R.string.error_message));
+      String message = e.getMessage();
+      composer.setError(composer.getText().toString().trim().startsWith("/")
+          ? message != null && (message.startsWith("Cách dùng") || message.startsWith("Lệnh không"))
+              ? message : getString(R.string.command_invalid)
+          : getString(R.string.error_message));
     } catch (IllegalStateException e) {
       Ui.toast(requireContext(), R.string.error_offline);
     }
@@ -152,9 +155,10 @@ public final class ChatFragment extends SessionFragment {
   private void updateSend() {
     if (root == null) return;
     View send = root.findViewById(R.id.send);
-    boolean enabled =
-        session.canSend(target)
-            && !((EditText) root.findViewById(R.id.composer)).getText().toString().trim().isEmpty();
+    String input = ((EditText) root.findViewById(R.id.composer)).getText().toString().trim();
+    boolean command = input.startsWith("/") && !input.startsWith("//");
+    boolean enabled = session.data.connection == ConnectionState.CONNECTED && !input.isEmpty()
+        && (command || session.canSend(target));
     send.setEnabled(enabled);
     send.setAlpha(1f);
   }
@@ -181,7 +185,9 @@ public final class ChatFragment extends SessionFragment {
         .setText(
             channel
                 ? (course == null ? getString(R.string.other_channels) : course.name)
-                : target);
+                : target + " · " + getString(session.data.awayUsers.containsKey(IrcParser.fold(target))
+                    ? R.string.away_presence : session.data.onlineUsers.contains(IrcParser.fold(target))
+                        ? R.string.online_presence : R.string.presence_unknown));
     Ui.visible(root.findViewById(R.id.members), channel);
     Ui.visible(root.findViewById(R.id.more), true);
     ((TextView) root.findViewById(R.id.members))

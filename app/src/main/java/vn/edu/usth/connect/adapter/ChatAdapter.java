@@ -115,7 +115,13 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
     ((TextView) v.findViewById(R.id.name)).setText(Ui.displayName(m.sender));
     ((TextView) v.findViewById(R.id.time)).setText(Ui.time(m.timestamp));
     TextView body = v.findViewById(R.id.text);
-    body.setText(m.text);
+    android.text.SpannableString content = new android.text.SpannableString(m.text);
+    for (int[] range : vn.edu.usth.connect.irc.Mentions.ranges(m.text, m.mentionNick)) {
+      content.setSpan(new android.text.style.BackgroundColorSpan(ContextCompat.getColor(context, R.color.selected)), range[0], range[1], android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      content.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), range[0], range[1], android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      content.setSpan(new android.text.style.ForegroundColorSpan(ContextCompat.getColor(context, R.color.primary)), range[0], range[1], android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+    body.setText(content);
     body.setBackgroundResource(m.outgoing ? R.drawable.bg_bubble : 0);
     int padding = m.outgoing ? (int)(8 * v.getResources().getDisplayMetrics().density) : 0;
     body.setPadding(padding, padding, padding, padding);

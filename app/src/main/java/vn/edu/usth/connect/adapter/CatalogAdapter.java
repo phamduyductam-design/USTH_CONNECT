@@ -15,6 +15,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     public int type, icon = R.drawable.ic_hash, badge, iconColor, actionText;
     public String name = "", detail = "", preview = "", time = "", avatar = "";
     public boolean selected, joinVisible, joining, self;
+    public boolean enabled = true;
     public Runnable click, join;
 
     public static Row header(String title) {
@@ -116,7 +117,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     MaterialButton join = v.findViewById(R.id.join);
     Ui.visible(join, r.joinVisible);
     join.setText(r.joining ? R.string.joining : r.actionText == 0 ? R.string.join : r.actionText);
-    join.setEnabled(!r.joining);
+    join.setEnabled(r.enabled && !r.joining);
     join.setOnClickListener(
         ignored -> {
           if (r.join != null) r.join.run();

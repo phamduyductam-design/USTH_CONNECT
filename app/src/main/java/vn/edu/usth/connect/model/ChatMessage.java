@@ -15,6 +15,7 @@ public final class ChatMessage {
 
   public final long id = IDS.incrementAndGet(), timestamp;
   public final String sender, text;
+  public String mentionNick = "";
   public final boolean outgoing;
   // System rows store an event code, translated with Android string resources in the adapter.
   public final String event;
