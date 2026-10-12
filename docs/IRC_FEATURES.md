@@ -2,7 +2,7 @@
 
 ## Đối chiếu yêu cầu trong ảnh
 
-| Yêu cầu | Trạng thái bản 1.1 |
+| Yêu cầu | Trạng thái bản 1.2 |
 |---|---|
 | Kết nối, đổi nickname, tham gia/rời phòng | NICK/USER, NICK, JOIN, PART qua IRC server |
 | Nhắn trong phòng và riêng 1–1 | PRIVMSG qua IRC server |
@@ -14,6 +14,8 @@
 Các mục trong checklist đã được triển khai. Đây không phải tuyên bố hỗ trợ mọi extension IRC; xem phạm vi kiểm thử trong TEST_REPORT.md.
 
 ## Các màn hình
+
+- **Sáng/tối**: bấm biểu tượng mặt trăng/mặt trời ở góc trên bên phải màn hình đăng nhập hoặc màn hình chính/chat. Lựa chọn áp dụng toàn app và được lưu cho lần mở sau; mặc định sáng.
 
 - **Đăng nhập/kết nối**: logo USTH ở góc trên bên trái; form nickname và server IRC.
 

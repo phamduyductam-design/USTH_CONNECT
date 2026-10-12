@@ -22,6 +22,7 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
     super.onCreate(saved);
     setContentView(R.layout.activity_connect);
     Insets.apply(this, findViewById(R.id.root));
+    Ui.themeToggle(this, findViewById(R.id.root));
     ConnectApplication app = ConnectApplication.from(this);
     session = app.session;
     nick = findViewById(R.id.nickname);

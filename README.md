@@ -1,6 +1,6 @@
 # USTH Connect
 
-Ứng dụng Android native Java/XML: kết nối IRC, trao đổi theo môn học và nhắn riêng. Dự án này được tạo từ prompt và các ảnh mẫu đã cung cấp. Danh mục môn là metadata cục bộ; tin nhắn, topic, thành viên và xác nhận JOIN đến từ phiên IRC thật.
+Ứng dụng Android native Java/XML, có chế độ sáng/tối lưu theo lựa chọn người dùng: kết nối IRC, trao đổi theo môn học và nhắn riêng. Dự án này được tạo từ prompt và các ảnh mẫu đã cung cấp. Danh mục môn là metadata cục bộ; tin nhắn, topic, thành viên và xác nhận JOIN đến từ phiên IRC thật.
 
 ## Mở và build
 

@@ -15,6 +15,20 @@ import vn.edu.usth.connect.repository.SessionRepository;
 public final class Ui {
   private Ui() {}
 
+  public static void themeToggle(android.app.Activity activity, View root) {
+    ImageButton button = root.findViewById(R.id.theme_toggle);
+    if (button == null) return;
+    boolean dark = (activity.getResources().getConfiguration().uiMode
+        & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+        == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    button.setImageResource(dark ? R.drawable.ic_sun : R.drawable.ic_moon);
+    button.setContentDescription(activity.getString(dark ? R.string.switch_light_mode : R.string.switch_dark_mode));
+    button.setOnClickListener(v -> {
+      vn.edu.usth.connect.ConnectApplication.from(activity).settings.darkMode(!dark);
+      ThemeMode.apply(activity, !dark);
+    });
+  }
+
   public static String displayName(String nickname) {
     String name = nickname.split("_", 2)[0];
     return name.isEmpty() ? nickname : name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
@@ -23,8 +37,8 @@ public final class Ui {
   public static int courseColor(String icon) {
     if (icon.equals("brain")) return R.color.teal;
     if (icon.equals("phone")) return R.color.purple;
-    if (icon.equals("book")) return R.color.brand_red;
-    return R.color.primary;
+    if (icon.equals("book")) return R.color.filled_red;
+    return R.color.filled_primary;
   }
 
   public static String role(Context context, String role) {
@@ -60,7 +74,7 @@ public final class Ui {
             ? "?"
             : nickname.substring(0, 1).toUpperCase(Locale.ROOT);
     view.setText(initials);
-    int[] colors = {R.color.badge, R.color.purple, R.color.teal, R.color.primary};
+    int[] colors = {R.color.filled_badge, R.color.purple, R.color.teal, R.color.filled_primary};
     String lower = nickname.toLowerCase(Locale.ROOT);
     int index = lower.startsWith("minh") ? 0 : lower.startsWith("an") ? 1
         : lower.startsWith("ha") ? 2 : Math.floorMod(lower.hashCode(), colors.length);

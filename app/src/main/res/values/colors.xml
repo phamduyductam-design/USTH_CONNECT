@@ -14,4 +14,9 @@
     <color name="teal">#16968F</color>
     <color name="success">#239479</color>
     <color name="divider">#EFF0F4</color>
+    <color name="filled_primary">#303D98</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="disabled_fill">#B8BECE</color>
+    <color name="filled_badge">#2165DB</color>
+    <color name="filled_red">#DB3343</color>
 </resources>
