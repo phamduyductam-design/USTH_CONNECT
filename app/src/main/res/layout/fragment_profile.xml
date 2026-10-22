@@ -4,240 +4,425 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:clipToPadding="false">
     <LinearLayout
+        android:baselineAligned="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
         <LinearLayout
+            android:baselineAligned="false"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical">
-            <TextView
-                android:id="@+id/title"
-                style="@style/Heading"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:background="@color/surface"
+            android:paddingStart="20dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="20dp">
+            <LinearLayout
+                android:baselineAligned="false"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/profile"
-                android:textSize="20sp" />
-            <TextView
-                android:id="@+id/profile_account"
-                style="@style/Caption"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
-                android:gravity="center"
-                android:background="@drawable/bg_avatar"
-                android:textColor="@color/on_primary" />
+                android:orientation="vertical">
+                <TextView
+                    style="@style/Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cp_brand_label"
+                    android:textColor="@color/primary"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.15"
+                    android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/title"
+                    style="@style/Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/profile"
+                    android:textSize="26sp" />
+            </LinearLayout>
             <include
                 layout="@layout/view_theme_toggle" />
         </LinearLayout>
-        <View
-            android:layout_width="24dp"
-            android:layout_height="2dp"
-            android:background="@color/brand_red"
-            android:layout_marginBottom="20dp" />
         <LinearLayout
+            android:baselineAligned="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp">
-            <TextView
-                android:id="@+id/avatar"
-                style="@style/Title"
-                android:layout_width="@dimen/profile_avatar"
-                android:layout_height="@dimen/profile_avatar"
-                android:gravity="center"
-                android:background="@drawable/bg_avatar"
-                android:textColor="@color/on_primary" />
+            android:orientation="vertical"
+            android:padding="16dp">
             <LinearLayout
-                android:layout_width="0dp"
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="16dp">
-                <TextView
-                    android:id="@+id/name"
-                    style="@style/Heading"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-                <TextView
-                    android:id="@+id/profile_nick"
-                    style="@style/Caption"
-                    android:layout_width="match_parent"
+                android:padding="20dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_profile_highlight">
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp">
+                    <TextView
+                        android:id="@+id/avatar"
+                        style="@style/Title"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:background="@drawable/bg_avatar"
+                        android:textColor="@color/on_primary"
+                        android:textSize="26sp"
+                        android:importantForAccessibility="no" />
+                    <View
+                        android:id="@+id/profile_presence_dot"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/bg_profile_online"
+                        android:importantForAccessibility="no" />
+                </FrameLayout>
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp" />
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+                    <TextView
+                        android:id="@+id/name"
+                        style="@style/Heading"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textSize="20sp"
+                        android:maxLines="2"
+                        android:ellipsize="end" />
+                    <TextView
+                        android:id="@+id/profile_nick"
+                        style="@style/Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/status"
+                        style="@style/Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="@color/success"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:accessibilityLiveRegion="polite" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
-        <TextView
-            android:id="@+id/nickname_label"
-            style="@style/Caption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/nickname"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/text_primary" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:gravity="center_vertical">
-            <EditText
-                android:id="@+id/nickname"
-                style="@style/Body"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:inputType="textVisiblePassword"
-                android:hint="@string/nickname"
-                android:autofillHints="username"
-                android:padding="0dp" />
+            <TextView
+                style="@style/Heading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/cp_profile_server"
+                android:textSize="18sp" />
+            <LinearLayout
+                android:baselineAligned="false"
+                android:id="@+id/connection_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="84dp"
+                android:gravity="center_vertical"
+                android:padding="16dp"
+                android:background="@drawable/bg_connection_card"
+                android:foreground="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true">
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_server"
+                    app:tint="@color/primary"
+                    android:importantForAccessibility="no" />
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+                    <TextView
+                        android:id="@+id/server"
+                        style="@style/Body"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/server_details"
+                        style="@style/Caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textSize="13sp" />
+                </LinearLayout>
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="8dp"
+                    android:src="@drawable/ic_chevron"
+                    app:tint="@color/text_secondary"
+                    android:importantForAccessibility="no" />
+            </LinearLayout>
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/change"
-                style="@style/SmallOutlineButton"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="@string/change"
-                app:strokeWidth="0dp" />
-        </LinearLayout>
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider" />
-        <TextView
-            android:id="@+id/connection_label"
-            style="@style/SectionLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/connection"
-            android:layout_marginTop="22dp"
-            android:layout_marginBottom="10dp" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="64dp"
-            android:gravity="center_vertical"
-            android:padding="12dp"
-            android:background="@drawable/bg_row">
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_server"
-                android:importantForAccessibility="no" />
-            <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/reconnect"
+                style="@style/OutlineButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/reconnect"
+                app:icon="@drawable/ic_refresh" />
+            <TextView
+                style="@style/Heading"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/cp_profile_settings"
+                android:textSize="18sp" />
+            <LinearLayout
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:layout_marginStart="12dp">
-                <TextView
-                    android:id="@+id/server"
-                    style="@style/Body"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/bg_connection_card">
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:id="@+id/profile_nickname_toggle"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:gravity="center_vertical"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_person"
+                        app:tint="@color/primary"
+                        android:importantForAccessibility="no" />
+                    <TextView
+                        style="@style/Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/nickname"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/profile_nickname_value"
+                        style="@style/Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxWidth="120dp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:textSize="13sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_chevron"
+                        app:tint="@color/text_secondary"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:id="@+id/profile_nickname_panel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold" />
+                    android:layout_marginBottom="12dp"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+                    <EditText
+                        android:id="@+id/nickname"
+                        style="@style/Input"
+                        android:layout_width="0dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:hint="@string/cp_edit_nickname"
+                        android:inputType="textVisiblePassword"
+                        android:autofillHints="username" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/change"
+                        style="@style/OutlineButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/change"
+                        android:minWidth="64dp" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider" />
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_notification"
+                        app:tint="@color/primary"
+                        android:importantForAccessibility="no" />
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/notifications"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:text="@string/notifications"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        app:useMaterialThemeColors="true" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider" />
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="72dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_refresh"
+                        app:tint="@color/primary"
+                        android:importantForAccessibility="no" />
+                    <LinearLayout
+                        android:baselineAligned="false"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/Body"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/cp_reconnect_label"
+                            android:textSize="16sp" />
+                        <TextView
+                            style="@style/Caption"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/cp_reconnect_detail"
+                            android:textSize="13sp"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/divider" />
+                <LinearLayout
+                    android:baselineAligned="false"
+                    android:id="@+id/profile_theme_settings"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:gravity="center_vertical"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginEnd="12dp"
+                        android:src="@drawable/ic_moon"
+                        app:tint="@color/primary"
+                        android:importantForAccessibility="no" />
+                    <TextView
+                        style="@style/Body"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/cp_theme_label"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/profile_theme_value"
+                        style="@style/Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="13sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_chevron"
+                        app:tint="@color/text_secondary"
+                        android:importantForAccessibility="no" />
+                </LinearLayout>
+            </LinearLayout>
+            <TextView
+                style="@style/Heading"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="12dp"
+                android:text="@string/cp_presence_label"
+                android:textSize="18sp" />
+            <LinearLayout
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="@drawable/bg_connection_card">
                 <TextView
+                    android:id="@+id/away_status"
                     style="@style/Caption"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/server_note_short"
-                    android:layout_marginTop="3dp" />
+                    android:textSize="14sp" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/away_toggle"
+                    style="@style/OutlineButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="12dp"
+                    android:text="@string/away_set" />
             </LinearLayout>
             <TextView
-                android:id="@+id/status"
+                android:id="@+id/error"
                 style="@style/Caption"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@color/success"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/error"
                 android:accessibilityLiveRegion="polite"
-                android:maxWidth="110dp" />
+                android:visibility="gone" />
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/disconnect"
+                style="@style/OutlineButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="8dp"
+                android:text="@string/disconnect"
+                android:textColor="@color/error"
+                app:backgroundTint="@color/error_bg"
+                app:strokeColor="@color/error"
+                app:icon="@drawable/ic_logout"
+                app:iconTint="@color/error"
+                app:iconSize="20dp"
+                app:iconGravity="textStart" />
         </LinearLayout>
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/reconnect"
-            style="@style/OutlineButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/reconnect"
-            android:layout_marginTop="12dp" />
-        <TextView
-            android:id="@+id/away_status"
-            style="@style/Caption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/away_toggle"
-            style="@style/OutlineButton"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="@string/away_set"
-            android:layout_marginTop="8dp" />
-        <TextView
-            android:id="@+id/options_label"
-            style="@style/SectionLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/options"
-            android:layout_marginTop="22dp"
-            android:layout_marginBottom="8dp" />
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_row">
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_notification"
-                app:tint="@color/text_secondary"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="12dp"
-                android:importantForAccessibility="no" />
-            <com.google.android.material.switchmaterial.SwitchMaterial
-                android:id="@+id/notifications"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:text="@string/notifications"
-                android:textSize="14sp"
-                app:useMaterialThemeColors="true" />
-        </LinearLayout>
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/connection_options"
-            style="@style/OutlineButton"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="@string/connection_options"
-            android:gravity="start|center_vertical"
-            app:strokeWidth="0dp"
-            app:icon="@drawable/ic_settings"
-            app:iconTint="@color/text_secondary"
-            app:iconSize="20dp" />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/divider" />
-        <TextView
-            android:id="@+id/error"
-            style="@style/Caption"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/error"
-            android:layout_marginTop="8dp" />
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/disconnect"
-            style="@style/OutlineButton"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:text="@string/disconnect"
-            android:layout_marginTop="20dp"
-            android:textColor="@color/error"
-            app:strokeColor="@color/error"
-            app:icon="@drawable/ic_logout"
-            app:iconTint="@color/error"
-            app:iconSize="16dp"
-            app:iconGravity="textStart" />
     </LinearLayout>
 </ScrollView>

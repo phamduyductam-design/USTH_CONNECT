@@ -78,9 +78,11 @@ public class AppFlowTest {
     } catch (AssertionError ignored) {
     }
     onView(withId(R.id.advanced_toggle)).perform(scrollTo(), click());
+    capture("01-ket-noi");
     onView(withId(R.id.connect)).perform(scrollTo(), click());
     waitFor(() -> onMain(() -> app.session.data.connection == ConnectionState.CONNECTED));
     onView(withId(R.id.title)).check(matches(withText(R.string.courses)));
+    capture("02-mon-hoc");
     CountDownLatch connected = new CountDownLatch(1);
     peer =
         new IrcClient(
@@ -110,11 +112,12 @@ public class AppFlowTest {
     onView(withText(R.string.no_courses)).check(matches(isDisplayed()));
     onView(withId(R.id.empty_join)).perform(click());
     onView(withText("Web Development")).perform(click());
+    capture("03-kenh-mon");
     onView(
             allOf(
                 withId(R.id.join),
                 isDisplayed(),
-                withParent(hasDescendant(withText("web-general")))))
+                withParent(hasDescendant(withText("#web-general")))))
         .perform(click());
     onView(withId(R.id.channel)).check(matches(withText("#web-general")));
     onView(withText(R.string.join)).perform(click());
@@ -130,6 +133,20 @@ public class AppFlowTest {
             received.stream()
                 .anyMatch(m -> m.command.equals("PRIVMSG") && m.last().equals("Chào An")));
     onView(withText("Xin chào Minh từ client thứ hai")).check(matches(isDisplayed()));
+    peer.send(IrcCommands.message("#web-general", "Mình đã nhận được lời chào của bạn."), null);
+    peer.send(IrcCommands.message("#web-general", "Cùng trao đổi bài tập trong kênh nhé."), null);
+    waitFor(
+        () ->
+            onMain(
+                () ->
+                    app.session.data.channel("#web-general").messages.stream()
+                        .anyMatch(m -> m.text.equals("Cùng trao đổi bài tập trong kênh nhé."))));
+    onView(
+            allOf(
+                withId(R.id.avatar),
+                withParent(hasDescendant(withText("Cùng trao đổi bài tập trong kênh nhé.")))))
+        .check(matches(withEffectiveVisibility(Visibility.INVISIBLE)));
+    capture("04-chat-kenh");
     onView(withId(R.id.composer)).perform(replaceText("Nháp khi xoay"), closeSoftKeyboard());
     InstrumentationRegistry.getInstrumentation()
         .runOnMainSync(
@@ -148,6 +165,7 @@ public class AppFlowTest {
     boolean previousTheme = app.settings.darkMode();
     onView(withId(R.id.theme_toggle)).perform(click());
     onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
+    capture("10-chat-toi");
     assertTrue(
         onMain(
             () ->
@@ -167,6 +185,7 @@ public class AppFlowTest {
                     liveChannel.messages.stream()
                         .anyMatch(m -> m.text.equals("Vẫn nhận tin sau khi đổi theme"))));
     onView(withId(R.id.members)).perform(click());
+    capture("05-thanh-vien");
     onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed()))
         .perform(click());
     onView(withId(R.id.message_member)).perform(click());
@@ -179,6 +198,40 @@ public class AppFlowTest {
             received.stream()
                 .anyMatch(
                     m -> m.command.equals("PRIVMSG") && m.last().equals("Tin riêng trên Android")));
+    peer.send(
+        IrcCommands.message("minh_ui", "Mình đã nhận được tin riêng, cùng trao đổi nhé."), null);
+    waitFor(
+        () ->
+            onMain(
+                () ->
+                    app.session.data.conversation("an_ui").messages.stream()
+                        .anyMatch(
+                            m ->
+                                m.text.equals("Mình đã nhận được tin riêng, cùng trao đổi nhé."))));
+    onView(withText("Mình đã nhận được tin riêng, cùng trao đổi nhé."))
+        .check(matches(isDisplayed()));
+    capture("07-nhan-rieng");
+    onView(withId(R.id.nav_messages)).perform(click());
+    capture("06-tin-nhan");
+    onView(withId(R.id.nav_courses)).perform(click());
+    capture("02-mon-hoc-da-tham-gia");
+  }
+
+  private void capture(String name) throws Exception {
+    if (!"true".equals(InstrumentationRegistry.getArguments().getString("screenshots"))) return;
+    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    java.io.File folder = new java.io.File(app.getExternalFilesDir(null), "redesign-screenshots");
+    if (!folder.isDirectory() && !folder.mkdirs())
+      throw new java.io.IOException("Cannot create screenshots directory");
+    android.graphics.Bitmap bitmap =
+        InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
+    try (java.io.FileOutputStream output =
+        new java.io.FileOutputStream(new java.io.File(folder, name + ".png"))) {
+      assertNotNull(bitmap);
+      assertTrue(bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output));
+    } finally {
+      if (bitmap != null) bitmap.recycle();
+    }
   }
 
   private void sendCommand(String text) {
@@ -229,7 +282,7 @@ public class AppFlowTest {
     onView(withId(R.id.manage_member)).perform(click());
     onView(withText(R.string.give_voice)).perform(click());
     waitFor(() -> onMain(() -> app.session.data.role(room, "an_ui").equals("v")));
-    onView(withText("an_ui · Voice")).check(matches(isDisplayed()));
+    onView(withText("an_ui · " + app.getString(R.string.voice_role))).check(matches(isDisplayed()));
     peer.send(IrcCommands.away("Đang học"), null);
     waitFor(() -> onMain(() -> app.session.data.awayUsers.containsKey("an_ui")));
     onView(withText("Vắng mặt: Đang học")).check(matches(isDisplayed()));
@@ -286,6 +339,7 @@ public class AppFlowTest {
 
     onView(withId(R.id.back)).perform(click());
     onView(withId(R.id.nav_profile)).perform(click());
+    capture("08-ca-nhan");
     onView(withId(R.id.away_toggle)).perform(scrollTo(), click());
     onView(withId(R.id.input)).perform(replaceText("Bận học"), closeSoftKeyboard());
     onView(withText(R.string.apply)).perform(click());
@@ -293,7 +347,8 @@ public class AppFlowTest {
     onView(withId(R.id.away_status)).check(matches(withText("Vắng mặt: Bận học")));
     onView(withId(R.id.away_toggle)).perform(scrollTo(), click());
     waitFor(() -> onMain(() -> !app.session.data.away));
-    onView(withId(R.id.nav_server)).perform(click());
+    onView(withId(R.id.nav_courses)).perform(click());
+    onView(withId(R.id.browse_server)).perform(click());
     onView(withText(room)).perform(click());
     sendCommand("/mode " + room + " -v an_ui");
     waitFor(() -> onMain(() -> app.session.data.role(room, "an_ui").equals("u")));
@@ -308,5 +363,74 @@ public class AppFlowTest {
     onView(withId(R.id.close)).perform(click());
     sendCommand("/part");
     waitFor(() -> onMain(() -> !app.session.data.channel(room).joined));
+  }
+
+  @Test
+  public void threeTabsEmptyPrivateChatAndKeyboardInsets() throws Exception {
+    assertTrue(
+        onMain(
+            () -> {
+              android.app.Activity activity =
+                  androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                      .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED)
+                      .iterator()
+                      .next();
+              return ((com.google.android.material.bottomnavigation.BottomNavigationView)
+                          activity.findViewById(R.id.navigation))
+                      .getMenu()
+                      .size()
+                  == 3;
+            }));
+    onView(withId(R.id.nav_messages)).perform(click());
+    onView(withText(R.string.no_conversations)).check(matches(isDisplayed()));
+    onView(withText(R.string.catalog_start_conversation)).perform(click());
+    onView(withId(R.id.input)).perform(replaceText("an_ui"), closeSoftKeyboard());
+    onView(withText(R.string.private_message)).perform(click());
+    onView(withId(R.id.composer)).perform(click(), typeText("First line\nSecond line"));
+    waitFor(
+        () ->
+            onMain(
+                () -> {
+                  android.app.Activity activity =
+                      androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                          .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED)
+                          .iterator()
+                          .next();
+                  android.view.View composer = activity.findViewById(R.id.composer);
+                  android.graphics.Rect viewport = new android.graphics.Rect();
+                  activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(viewport);
+                  int[] position = new int[2];
+                  composer.getLocationOnScreen(position);
+                  return position[1] + composer.getHeight() <= viewport.bottom
+                      && activity.findViewById(R.id.navigation).getVisibility()
+                          == android.view.View.GONE;
+                }));
+    capture("09-ban-phim");
+    onView(withId(R.id.composer)).perform(closeSoftKeyboard());
+    onView(withId(R.id.navigation)).check(matches(isDisplayed()));
+    onView(withId(R.id.send)).perform(click());
+    waitFor(
+        () ->
+            received.stream()
+                .anyMatch(
+                    m -> m.command.equals("PRIVMSG") && m.last().equals("First line Second line")));
+    onView(withId(R.id.nav_profile)).perform(click());
+    capture("08-ca-nhan");
+    onView(withId(R.id.profile_nickname_toggle)).perform(scrollTo(), click());
+    onView(withId(R.id.nickname))
+        .perform(scrollTo(), replaceText("minh_redesign"), closeSoftKeyboard());
+    onView(withId(R.id.change)).perform(scrollTo(), click());
+    waitFor(() -> onMain(() -> app.session.data.nickname.equals("minh_redesign")));
+    onView(withId(R.id.profile_nickname_value)).check(matches(withText("minh_redesign")));
+    onView(withId(R.id.disconnect)).perform(scrollTo(), click());
+    onView(withText(R.string.cancel)).perform(click());
+    assertTrue(onMain(() -> app.session.data.connection == ConnectionState.CONNECTED));
+    onView(withId(R.id.disconnect)).perform(scrollTo(), click());
+    onView(allOf(withText(R.string.disconnect), isDisplayed())).perform(click());
+    waitFor(() -> onMain(() -> app.session.data.connection == ConnectionState.DISCONNECTED));
+    onView(withId(R.id.host))
+        .check(
+            matches(
+                withText(InstrumentationRegistry.getArguments().getString("server", "10.0.2.2"))));
   }
 }

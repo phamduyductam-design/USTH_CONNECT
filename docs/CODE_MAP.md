@@ -24,10 +24,10 @@ Trong các mục Java bên dưới, tiền tố chung là `app/src/main/java/vn/
 | Đọc một dòng IRC | `irc/IrcParser.parse()`; dữ liệu `IrcMessage` | `irc/IrcClient` gọi parser |
 | Danh mục môn học | `ui/CoursesFragment`, `repository/CourseRepository` | `assets/courses.json`; `fragment_catalog.xml` |
 | Kênh thuộc một môn | `ui/CourseChannelsFragment` | `model/Course`; `fragment_catalog.xml` |
-| Phòng công khai từ server | `ui/ServerChannelsFragment` → `SessionRepository.listChannels()` | `SessionState.handleListEntry()`; `model/ServerChannel` |
+| Phòng công khai từ server | `CoursesFragment` → `MainActivity.showServerChannels()` → `ServerChannelsFragment` → `SessionRepository.listChannels()` | Môn học → Phòng trên server; `SessionState.handleListEntry()`; `model/ServerChannel` |
 | Tham gia/rời kênh | `ui/dialog/ChannelDialogs.showJoin()` / `showMenu()` | `dialog_join_channel.xml`; `SessionRepository.join()` / `part()`; `SessionState.handleJoin()` / `handlePart()` |
 | Gửi tin nhắn | `ui/ChatFragment.send()` → `SessionRepository.send()` → `IrcCommands.message()` | `res/layout/fragment_chat.xml`; `model/ChatMessage` |
-| Nhận tin kênh hoặc PM | `SessionState.handleChatMessage()` | `model/Conversation`, `Channel`; `adapter/ChatAdapter`; `item_chat_message.xml`, `item_chat_separator.xml`; `bg_outgoing_message.xml` cho tin gửi đi |
+| Nhận tin kênh hoặc PM | `SessionState.handleChatMessage()` | `model/Conversation`, `Channel`; `adapter/ChatAdapter`; `item_chat_message.xml`, `item_chat_separator.xml`; `bg_chat_incoming.xml`/`bg_chat_outgoing.xml` cho bubble |
 | Lệnh `/join`, `/msg`, `/topic`… | `irc/SlashCommand.parse()` → `SessionRepository.execute()` | `ChatFragment.sendSlashCommand()`; hướng dẫn trong `CommonDialogs.showCommandHelp()` |
 | Hiển thị header, mất kết nối, lịch sử chat | `ChatFragment.renderHeader()` / `renderConnectionState()` / `renderMessages()` | `fragment_chat.xml`; `adapter/ChatAdapter` |
 | Nháp và cuộn hội thoại | `ChatFragment.syncTargetAndDraft()` / `onSaveInstanceState()` | `storage/SettingsStore.draft()` |

@@ -1,190 +1,271 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:baselineAligned="false"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp">
+    android:layout_height="match_parent">
     <LinearLayout
-        android:id="@+id/catalog_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:gravity="center_vertical">
-        <ImageButton
-            android:id="@+id/back"
-            style="@style/IconButton"
-            android:src="@drawable/ic_back"
-            android:contentDescription="@string/back"
-            android:layout_marginStart="-12dp" />
-        <FrameLayout
-            android:id="@+id/brand_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1">
-            <TextView
-                android:id="@+id/brand"
-                style="@style/Heading"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/app_name"
-                android:textSize="13sp" />
-            <View
-                android:layout_width="22dp"
-                android:layout_height="2dp"
-                android:layout_gravity="bottom"
-                android:layout_marginBottom="8dp"
-                android:background="@color/brand_red" />
-        </FrameLayout>
-        <TextView
-            android:id="@+id/toolbar_title"
-            style="@style/Heading"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textSize="16sp"
-            android:visibility="gone" />
-        <TextView
-            android:id="@+id/account_avatar"
-            style="@style/Caption"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:gravity="center"
-            android:textColor="@color/on_primary"
-            android:background="@drawable/bg_avatar"
-            android:visibility="gone" />
-        <ImageButton
-            android:id="@+id/action"
-            style="@style/IconButton"
-            android:src="@drawable/ic_person"
-            android:contentDescription="@string/profile" />
-        <include
-            layout="@layout/view_theme_toggle" />
-    </LinearLayout>
-    <TextView
-        android:id="@+id/title"
-        style="@style/Title"
+        android:baselineAligned="false"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/courses"
-        android:layout_marginBottom="12dp" />
-    <LinearLayout
-        android:id="@+id/course_summary"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:padding="14dp"
-        android:background="@drawable/bg_selected"
-        android:visibility="gone"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp">
-        <ImageView
-            android:id="@+id/course_icon"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:padding="12dp"
-            android:background="@drawable/bg_primary"
-            android:importantForAccessibility="no" />
+        android:orientation="vertical"
+        android:background="@color/surface"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:id="@+id/catalog_header"
+        android:layout_alignParentTop="true">
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="14dp">
+            android:baselineAligned="false"
+            android:id="@+id/catalog_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:gravity="center_vertical">
+            <ImageButton
+                android:id="@+id/back"
+                style="@style/IconButton"
+                android:src="@drawable/ic_back"
+                android:contentDescription="@string/back" />
+            <FrameLayout
+                android:id="@+id/brand_container"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+                <TextView
+                    android:id="@+id/brand"
+                    style="@style/Heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:text="@string/catalog_brand"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.14"
+                    android:textColor="@color/primary" />
+            </FrameLayout>
             <TextView
-                android:id="@+id/course_name"
-                style="@style/Heading"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-            <TextView
-                android:id="@+id/description"
-                style="@style/Caption"
-                android:layout_width="match_parent"
+                android:id="@+id/toolbar_title"
+                style="@style/Title"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp" />
+                android:layout_weight="1"
+                android:visibility="gone" />
+            <TextView
+                android:id="@+id/account_avatar"
+                style="@style/Heading"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:background="@drawable/bg_avatar"
+                android:visibility="gone" />
+            <ImageButton
+                android:id="@+id/action"
+                style="@style/IconButton"
+                android:src="@drawable/ic_plus"
+                android:contentDescription="@string/new_conversation" />
+            <include
+                layout="@layout/view_theme_toggle" />
         </LinearLayout>
+        <TextView
+            android:id="@+id/title"
+            style="@style/Title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/courses" />
     </LinearLayout>
-    <EditText
-        android:id="@+id/search"
-        style="@style/SearchInput"
+    <LinearLayout
+        android:baselineAligned="false"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/search_courses"
-        android:inputType="text"
-        android:autofillHints=""
-        android:drawableStart="@drawable/ic_search"
-        android:drawablePadding="8dp"
-        android:imeOptions="actionDone" />
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingTop="10dp"
-            android:paddingBottom="8dp" />
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:layout_below="@id/catalog_header">
         <LinearLayout
-            android:id="@+id/catalog_empty"
+            android:baselineAligned="false"
+            android:id="@+id/course_summary"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:background="@drawable/bg_catalog_selected"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp">
+            <ImageView
+                android:id="@+id/course_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_selected"
+                android:importantForAccessibility="no" />
+            <LinearLayout
+                android:baselineAligned="false"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp">
+                <TextView
+                    android:id="@+id/course_name"
+                    style="@style/Heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/primary" />
+                <TextView
+                    android:id="@+id/description"
+                    style="@style/Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+        </LinearLayout>
+        <EditText
+            android:id="@+id/search"
+            style="@style/SearchInput"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_catalog_search"
+            android:hint="@string/search_courses"
+            android:inputType="text"
+            android:autofillHints=""
+            android:drawableStart="@drawable/ic_search"
+            android:drawablePadding="12dp"
+            android:imeOptions="actionDone"
+            android:textSize="14sp" />
+        <TextView
+            android:id="@+id/catalog_connection"
+            style="@style/Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/success"
+            android:visibility="gone" />
+        <RelativeLayout
+            android:id="@+id/active_channel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="64dp"
+            android:padding="12dp"
+            android:background="@drawable/bg_catalog_active"
+            android:layout_marginTop="8dp"
             android:visibility="gone">
             <ImageView
-                android:layout_width="@dimen/empty_icon"
-                android:layout_height="@dimen/empty_icon"
-                android:padding="34dp"
-                android:background="@drawable/bg_empty"
-                android:src="@drawable/ic_book_chat"
-                android:importantForAccessibility="no" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_hash"
+                app:tint="@color/on_primary"
+                android:importantForAccessibility="no"
+                android:id="@+id/active_channel_icon"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true" />
+            <LinearLayout
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="12dp"
+                android:layout_toEndOf="@id/active_channel_icon"
+                android:layout_toStartOf="@id/active_channel_chevron"
+                android:layout_centerVertical="true">
+                <TextView
+                    android:id="@+id/active_channel_name"
+                    style="@style/Heading"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/on_primary" />
+                <TextView
+                    android:id="@+id/active_channel_detail"
+                    style="@style/Caption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/on_primary"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_chevron"
+                app:tint="@color/on_primary"
+                android:importantForAccessibility="no"
+                android:id="@+id/active_channel_chevron"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true" />
+        </RelativeLayout>
+        <LinearLayout
+            android:baselineAligned="false"
+            android:id="@+id/catalog_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:background="@drawable/bg_catalog_selected"
+            android:padding="12dp"
+            android:layout_marginTop="12dp">
             <TextView
+                android:id="@+id/catalog_empty_title"
                 style="@style/Heading"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/no_courses"
-                android:gravity="center"
-                android:layout_marginTop="20dp" />
+                android:textSize="16sp" />
             <TextView
+                android:id="@+id/catalog_empty_detail"
                 style="@style/Caption"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/no_courses_detail"
-                android:gravity="center"
-                android:layout_marginTop="8dp"
-                android:lineSpacingExtra="3dp" />
+                android:layout_marginTop="4dp" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/empty_join"
-                style="@style/PrimaryButton"
-                android:layout_width="match_parent"
+                style="@style/SmallOutlineButton"
+                android:layout_width="wrap_content"
                 android:layout_height="48dp"
-                android:layout_marginTop="20dp"
-                android:text="@string/join_channel"
+                android:text="@string/catalog_discover_channels"
+                android:layout_marginTop="4dp"
                 app:icon="@drawable/ic_plus"
                 app:iconGravity="textStart" />
         </LinearLayout>
-    </FrameLayout>
-    <TextView
-        android:id="@+id/catalog_footer"
-        style="@style/Caption"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/conversations_footer"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp"
-        android:visibility="gone" />
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/join"
-        style="@style/OutlineButton"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:text="@string/join_channel"
-        android:layout_marginBottom="8dp"
-        app:icon="@drawable/ic_plus"
-        app:iconGravity="textStart" />
-</LinearLayout>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+        <TextView
+            android:id="@+id/catalog_footer"
+            style="@style/Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="12dp"
+            app:drawableStartCompat="@drawable/ic_info"
+            android:drawablePadding="8dp"
+            android:text="@string/catalog_conversation_hint"
+            android:visibility="gone" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/browse_server"
+            style="@style/OutlineButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/catalog_browse_server"
+            android:layout_marginBottom="8dp"
+            app:icon="@drawable/ic_search"
+            app:iconGravity="textStart"
+            android:visibility="gone" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/join"
+            style="@style/OutlineButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="@string/join_channel"
+            android:layout_marginBottom="8dp"
+            app:icon="@drawable/ic_plus"
+            app:iconGravity="textStart" />
+    </LinearLayout>
+</RelativeLayout>

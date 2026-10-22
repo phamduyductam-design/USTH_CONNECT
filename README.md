@@ -6,6 +6,8 @@
 
 Bắt đầu từ [bản đồ mã nguồn](docs/CODE_MAP.md): có bảng tính năng → file/hàm/layout, luồng gửi/nhận tin và thứ tự đọc cho người mới. Xem [nhận xét code và các phần đã làm sạch](docs/CODE_REVIEW.md).
 
+Giao diện mới giữ Java/XML và IRC engine hiện có, với ba tab **Môn học · Tin nhắn · Cá nhân**. Duyệt phòng công khai ở **Môn học → Phòng trên server**. Xem [thiết kế, tích hợp và kiểm chứng UI](docs/UI_REDESIGN.md).
+
 ## Mở và build
 
 Clone repository, rồi mở thư mục vừa clone bằng Android Studio hoặc VS Code:
@@ -48,7 +50,7 @@ Nếu dùng VS Code, mở thư mục chứa `settings.gradle` và chạy task **
 - `irc.example.edu` chỉ là hint theo ảnh mẫu, không được điền thành máy chủ thật. Chưa có thông tin về máy chủ IRC của USTH.
 - Mặc định TLS bật, cổng 6697. Nhập máy chủ do bạn được phép sử dụng. Với server cục bộ không có TLS, tắt TLS và chọn 6667.
 - Nickname ASCII tối đa 30 ký tự; máy chủ có thể đặt giới hạn thấp hơn. Không cần tài khoản trong server demo; bản này chưa có PASS, SASL hay NickServ UI.
-- Không có dữ liệu chat offline giả. Lần đầu danh sách **Đã tham gia** trống; bấm **Tham gia kênh**, mở môn rồi chọn kênh và JOIN. Tab **Phòng** lấy danh sách thật từ `LIST` trên server.
+- Không có dữ liệu chat offline giả. Lần đầu có lời nhắc chưa tham gia, danh mục môn cấu hình sẵn và nút **Khám phá kênh**. Mở môn rồi chọn **Tham gia** để JOIN, hoặc nhập tên kênh bằng **Tham gia kênh**. **Môn học → Phòng trên server** lấy danh sách thật từ `LIST`.
 - Tìm kiếm ở Môn học lọc metadata cục bộ; tìm kiếm ở Phòng lọc kết quả LIST của server. JOIN được công nhận sau phản hồi JOIN của chính mình.
 - Chủ đề kênh được hiển thị từ 331/332/TOPIC. Mô tả danh mục cục bộ không được trình bày như topic của máy chủ.
 - Kênh ngoài danh mục nằm ở **Kênh khác**. Môn thuộc Đã tham gia nếu ít nhất một kênh đã được xác nhận JOIN; badge cộng các tin chưa đọc của kênh đó.

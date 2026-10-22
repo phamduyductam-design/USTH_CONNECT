@@ -25,11 +25,13 @@ public final class ConversationsFragment extends SessionAwareFragment {
     super.onViewCreated(v, b);
     UiHelpers.brand(v.findViewById(R.id.brand));
     UiHelpers.visible(v.findViewById(R.id.back), false);
-    UiHelpers.visible(v.findViewById(R.id.join), false);
+    UiHelpers.visible(v.findViewById(R.id.join), true);
+    ((TextView) v.findViewById(R.id.join)).setText(R.string.catalog_start_conversation);
+    v.findViewById(R.id.join).setOnClickListener(w -> UserDialogs.showNewConversation(main()));
     UiHelpers.visible(v.findViewById(R.id.catalog_footer), true);
     ((TextView) v.findViewById(R.id.title)).setText(R.string.messages);
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_nick);
-    ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_edit);
+    ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_plus);
     v.findViewById(R.id.action).setContentDescription(getString(R.string.new_conversation));
     v.findViewById(R.id.action).setOnClickListener(w -> UserDialogs.showNewConversation(main()));
     adapter = new CatalogAdapter();
@@ -50,9 +52,9 @@ public final class ConversationsFragment extends SessionAwareFragment {
     for (Conversation c : chats)
       if (c.target.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
-        row.name = UiHelpers.displayName(c.target);
+        row.name = c.target;
         row.avatar = c.target;
-        row.detail = c.target;
+        row.detail = "";
         row.badge = c.unread;
         row.preview =
             c.messages.isEmpty()
@@ -67,7 +69,11 @@ public final class ConversationsFragment extends SessionAwareFragment {
           CatalogAdapter.Row.empty(
               getString(query.isEmpty() ? R.string.no_conversations : R.string.no_results),
               query.isEmpty() ? getString(R.string.no_conversations_detail) : ""));
-    else rows.add(0, CatalogAdapter.Row.header(getString(R.string.recent)));
+    else {
+      CatalogAdapter.Row header = CatalogAdapter.Row.header(getString(R.string.recent));
+      header.headerCount = getString(R.string.catalog_recent_count, rows.size());
+      rows.add(0, header);
+    }
     adapter.submit(rows);
   }
 

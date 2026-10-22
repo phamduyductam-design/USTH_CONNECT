@@ -1,4 +1,8 @@
-"""Generate the project's small, first-party XML resources. Run only when changing the design system."""
+"""Legacy baseline generator, retained for historical reference.
+
+The redesigned UI is maintained directly in app/src/main/res. Do not run this
+script on the current app: it recreates the old design and can overwrite it.
+"""
 from pathlib import Path
 import json
 import xml.etree.ElementTree as ET
