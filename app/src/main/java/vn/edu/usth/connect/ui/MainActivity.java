@@ -6,10 +6,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import vn.edu.usth.connect.*;
+import vn.edu.usth.connect.irc.IrcParser;
 
 public final class MainActivity extends AppCompatActivity {
   private BottomNavigationView navigation;
   private int tab = R.id.nav_courses;
+  private boolean keyboardVisible;
 
   @Override
   protected void onCreate(Bundle saved) {
@@ -19,10 +21,17 @@ public final class MainActivity extends AppCompatActivity {
       return;
     }
     setContentView(R.layout.activity_main);
-    WindowInsetsHelper.apply(this, findViewById(R.id.root));
     navigation = findViewById(R.id.navigation);
+    WindowInsetsHelper.apply(
+        this,
+        findViewById(R.id.root),
+        visible -> {
+          keyboardVisible = visible;
+          updateNavigation();
+        });
     if (saved != null) {
       tab = saved.getInt("tab", R.id.nav_courses);
+      if (navigation.getMenu().findItem(tab) == null) tab = R.id.nav_courses;
       navigation.setSelectedItemId(tab);
     }
     navigation.setOnItemSelectedListener(
@@ -54,9 +63,7 @@ public final class MainActivity extends AppCompatActivity {
     Fragment fragment =
         id == R.id.nav_messages
             ? new ConversationsFragment()
-            : id == R.id.nav_profile
-                ? new ProfileFragment()
-                : id == R.id.nav_server ? new ServerChannelsFragment() : new CoursesFragment();
+            : id == R.id.nav_profile ? new ProfileFragment() : new CoursesFragment();
     getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
   }
 
@@ -74,7 +81,8 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   public void showServerChannels() {
-    navigation.setSelectedItemId(R.id.nav_server);
+    if (!(getSupportFragmentManager().findFragmentById(R.id.container)
+        instanceof ServerChannelsFragment)) open(new ServerChannelsFragment());
   }
 
   public void showProfile() {
@@ -86,10 +94,18 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   private void updateNavigation() {
-    if (navigation != null)
-      UiHelpers.visible(
-          navigation,
-          !(getSupportFragmentManager().findFragmentById(R.id.container) instanceof ChatFragment));
+    if (navigation == null) return;
+    Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
+    if (current instanceof ProfileFragment) tab = R.id.nav_profile;
+    else if (current instanceof ConversationsFragment) tab = R.id.nav_messages;
+    else if (current instanceof ChatFragment) {
+      String target = current.requireArguments().getString("target", "");
+      tab = IrcParser.isChannel(target) ? R.id.nav_courses : R.id.nav_messages;
+    } else if (current != null) tab = R.id.nav_courses;
+    navigation.getMenu().findItem(tab).setChecked(true);
+    // Keep the three-tab context while browsing; give typing the full remaining height.
+    UiHelpers.visible(navigation, !keyboardVisible);
+    UiHelpers.visible(findViewById(R.id.navigation_divider), !keyboardVisible);
   }
 
   public void openConnect() {

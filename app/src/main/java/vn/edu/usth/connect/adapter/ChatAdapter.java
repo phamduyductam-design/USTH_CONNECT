@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import java.util.*;
 import vn.edu.usth.connect.R;
+import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.ChatMessage;
 import vn.edu.usth.connect.ui.UiHelpers;
 
@@ -20,36 +21,53 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
     final ChatMessage message;
     final String separator;
     final boolean unread;
+    final boolean grouped;
 
-    Row(ChatMessage message, String separator, boolean unread) {
+    Row(ChatMessage message, String separator, boolean unread, boolean grouped) {
       this.message = message;
       this.separator = separator;
       this.unread = unread;
+      this.grouped = grouped;
     }
   }
 
   private final List<Row> rows = new ArrayList<>();
   private final Retry retry;
   private final Context context;
+  private final boolean privateChat;
 
-  public ChatAdapter(Context context, Retry retry) {
+  public ChatAdapter(Context context, Retry retry, boolean privateChat) {
     this.context = context;
     this.retry = retry;
+    this.privateChat = privateChat;
     setHasStableIds(true);
   }
 
   public void submit(List<ChatMessage> messages, long unreadId) {
     rows.clear();
     String previousDate = "";
+    ChatMessage previous = null;
     for (ChatMessage message : messages) {
       String date = UiHelpers.date(context, message.timestamp);
-      if (!date.equals(previousDate)) {
-        rows.add(new Row(null, date, false));
+      boolean newDay = !date.equals(previousDate);
+      if (newDay) {
+        rows.add(new Row(null, date, false, false));
         previousDate = date;
       }
       if (message.id == unreadId)
-        rows.add(new Row(null, context.getString(R.string.new_messages), true));
-      rows.add(new Row(message, "", false));
+        rows.add(new Row(null, context.getString(R.string.new_messages), true, false));
+      boolean grouped =
+          !newDay
+              && message.id != unreadId
+              && previous != null
+              && previous.event.isEmpty()
+              && message.event.isEmpty()
+              && previous.outgoing == message.outgoing
+              && IrcParser.fold(previous.sender).equals(IrcParser.fold(message.sender))
+              && message.timestamp >= previous.timestamp
+              && message.timestamp - previous.timestamp <= 5 * 60 * 1000;
+      rows.add(new Row(message, "", false, grouped));
+      previous = message;
     }
     notifyDataSetChanged();
   }
@@ -109,15 +127,31 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
       }
       text.setText(value);
       text.setTextColor(
-          ContextCompat.getColor(context, row.unread ? R.color.badge : R.color.text_secondary));
+          ContextCompat.getColor(context, row.unread ? R.color.error : R.color.text_secondary));
+      text.setBackgroundResource(m == null && !row.unread ? R.drawable.bg_chat_date : 0);
       UiHelpers.visible(v.findViewById(R.id.separator_left), row.unread);
       UiHelpers.visible(v.findViewById(R.id.separator_right), row.unread);
       return;
     }
-    UiHelpers.avatar(v.findViewById(R.id.avatar), m.sender);
-    ((TextView) v.findViewById(R.id.name)).setText(UiHelpers.displayName(m.sender));
+    LinearLayout container = (LinearLayout) v;
+    boolean outgoingPrivate = privateChat && m.outgoing;
+    container.setGravity(outgoingPrivate ? Gravity.END : Gravity.START);
+    container.setPadding(0, dp(row.grouped ? 3 : 12), 0, dp(4));
+    TextView avatar = v.findViewById(R.id.avatar);
+    UiHelpers.avatar(avatar, m.sender);
+    avatar.setVisibility(outgoingPrivate ? View.GONE : row.grouped ? View.INVISIBLE : View.VISIBLE);
+    LinearLayout contentContainer = v.findViewById(R.id.message_content);
+    LinearLayout.LayoutParams contentParams =
+        (LinearLayout.LayoutParams) contentContainer.getLayoutParams();
+    contentParams.setMarginStart(outgoingPrivate ? dp(44) : dp(10));
+    contentContainer.setLayoutParams(contentParams);
+    contentContainer.setGravity(outgoingPrivate ? Gravity.END : Gravity.START);
+    UiHelpers.visible(v.findViewById(R.id.message_heading), !privateChat && !row.grouped);
+    ((TextView) v.findViewById(R.id.name)).setText(m.sender);
     ((TextView) v.findViewById(R.id.time)).setText(UiHelpers.time(m.timestamp));
     TextView body = v.findViewById(R.id.text);
+    int width = context.getResources().getDisplayMetrics().widthPixels;
+    body.setMaxWidth(Math.max(dp(120), width - dp(privateChat ? 96 : 88)));
     android.text.SpannableString content = new android.text.SpannableString(m.text);
     for (int[] range : vn.edu.usth.connect.irc.NicknameMentions.ranges(m.text, m.mentionNick)) {
       content.setSpan(
@@ -139,9 +173,11 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
           android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
     body.setText(content);
-    body.setBackgroundResource(m.outgoing ? R.drawable.bg_outgoing_message : 0);
-    int padding = m.outgoing ? (int) (8 * v.getResources().getDisplayMetrics().density) : 0;
-    body.setPadding(padding, padding, padding, padding);
+    body.setBackgroundResource(
+        outgoingPrivate ? R.drawable.bg_chat_outgoing : R.drawable.bg_chat_incoming);
+    TextView messageTime = v.findViewById(R.id.message_time);
+    messageTime.setText(UiHelpers.time(m.timestamp));
+    UiHelpers.visible(messageTime, privateChat);
     TextView status = v.findViewById(R.id.status);
     UiHelpers.visible(
         status,
@@ -167,5 +203,9 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
     UiHelpers.visible(
         button, m.status == ChatMessage.Status.FAILED || m.status == ChatMessage.Status.UNCERTAIN);
     button.setOnClickListener(ignored -> retry.retry(m));
+  }
+
+  private int dp(int value) {
+    return Math.round(value * context.getResources().getDisplayMetrics().density);
   }
 }

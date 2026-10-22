@@ -129,9 +129,13 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
                 selectedNick = user.nickname;
                 changed();
               };
-          row.joinVisible = row.selected;
+          row.joinVisible = true;
           row.actionText = R.string.private_message;
-          row.join = this::openSelected;
+          row.join =
+              () -> {
+                selectedNick = user.nickname;
+                openSelected();
+              };
         }
         rows.add(row);
       }
@@ -144,6 +148,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
         !selectedNick.isEmpty() && session.canSend(target) && session.data.canManage(target));
     android.widget.TextView action = root.findViewById(R.id.message_member);
     action.setEnabled(!selectedNick.isEmpty());
+    UiHelpers.visible(action, !selectedNick.isEmpty());
     action.setText(
         selectedNick.isEmpty()
             ? getString(R.string.private_message)
