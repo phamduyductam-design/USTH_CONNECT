@@ -14,6 +14,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.dialog.CommonDialogs;
+import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
 public final class ProfileFragment extends SessionFragment {
   private boolean binding;
@@ -67,9 +69,12 @@ public final class ProfileFragment extends SessionFragment {
             render();
           }
         });
-    v.findViewById(R.id.away_toggle).setOnClickListener(w -> {
-      if (session.data.away) session.setAway(""); else Dialogs.away(main());
-    });
+    v.findViewById(R.id.away_toggle)
+        .setOnClickListener(
+            w -> {
+              if (session.data.away) session.setAway("");
+              else UserDialogs.showAway(main());
+            });
     v.findViewById(R.id.reconnect).setOnClickListener(w -> session.reconnect());
     v.findViewById(R.id.connection_options)
         .setOnClickListener(
@@ -90,8 +95,16 @@ public final class ProfileFragment extends SessionFragment {
             });
     v.findViewById(R.id.disconnect)
         .setOnClickListener(
-            w -> Dialogs.confirm(main(), R.string.disconnect_title, R.string.disconnect_detail,
-                R.string.disconnect, () -> { session.disconnect(); main().openConnect(); }));
+            w ->
+                CommonDialogs.confirm(
+                    main(),
+                    R.string.disconnect_title,
+                    R.string.disconnect_detail,
+                    R.string.disconnect,
+                    () -> {
+                      session.disconnect();
+                      main().openConnect();
+                    }));
   }
 
   @Override
@@ -110,16 +123,23 @@ public final class ProfileFragment extends SessionFragment {
     boolean online = session.data.connection == ConnectionState.CONNECTED;
     String connection = Ui.connection(requireContext(), session);
     status.setText(online ? getString(R.string.connected_indicator, connection) : connection);
-    status.setTextColor(androidx.core.content.ContextCompat.getColor(requireContext(),
-        online ? R.color.success : R.color.error));
+    status.setTextColor(
+        androidx.core.content.ContextCompat.getColor(
+            requireContext(), online ? R.color.success : R.color.error));
     ((TextView) root.findViewById(R.id.error))
         .setText(Ui.error(requireContext(), session.data.errorCode));
     Ui.visible(
         root.findViewById(R.id.reconnect), session.data.connection != ConnectionState.CONNECTED);
     root.findViewById(R.id.away_toggle).setEnabled(online);
-    ((TextView)root.findViewById(R.id.away_toggle)).setText(session.data.away ? R.string.away_clear : R.string.away_set);
-    ((TextView)root.findViewById(R.id.away_status)).setText(!online ? connection : session.data.away
-        ? getString(R.string.away_detail, session.data.awayMessage) : getString(R.string.online_presence));
+    ((TextView) root.findViewById(R.id.away_toggle))
+        .setText(session.data.away ? R.string.away_clear : R.string.away_set);
+    ((TextView) root.findViewById(R.id.away_status))
+        .setText(
+            !online
+                ? connection
+                : session.data.away
+                    ? getString(R.string.away_detail, session.data.awayMessage)
+                    : getString(R.string.online_presence));
     binding = true;
     ((SwitchMaterial) root.findViewById(R.id.notifications))
         .setChecked(

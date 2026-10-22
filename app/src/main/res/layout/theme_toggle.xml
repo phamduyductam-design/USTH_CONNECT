@@ -1,1 +1,7 @@
-<ImageButton xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/theme_toggle" style="@style/IconButton" android:src="@drawable/ic_moon" android:contentDescription="@string/switch_dark_mode" />
+<?xml version="1.0" encoding="utf-8"?>
+<ImageButton
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/theme_toggle"
+    style="@style/IconButton"
+    android:src="@drawable/ic_moon"
+    android:contentDescription="@string/switch_dark_mode" />

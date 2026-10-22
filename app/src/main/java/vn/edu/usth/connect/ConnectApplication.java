@@ -37,7 +37,11 @@ public final class ConnectApplication extends Application {
               "messages",
               getString(R.string.notifications),
               NotificationManager.IMPORTANCE_DEFAULT));
-      manager.createNotificationChannel(new NotificationChannel("mentions", getString(R.string.mentions_channel), NotificationManager.IMPORTANCE_HIGH));
+      manager.createNotificationChannel(
+          new NotificationChannel(
+              "mentions",
+              getString(R.string.mentions_channel),
+              NotificationManager.IMPORTANCE_HIGH));
     }
     registerActivityLifecycleCallbacks(
         new ActivityLifecycleCallbacks() {
@@ -80,11 +84,21 @@ public final class ConnectApplication extends Application {
           try {
             notifications.notify(
                 target.hashCode(),
-                new NotificationCompat.Builder(this, message.mentionNick.isEmpty() ? "messages" : "mentions")
+                new NotificationCompat.Builder(
+                        this, message.mentionNick.isEmpty() ? "messages" : "mentions")
                     .setSmallIcon(R.drawable.ic_notification)
-                    .setContentTitle(getString(message.mentionNick.isEmpty() ? R.string.notification_title : R.string.mention_title, message.sender, target))
+                    .setContentTitle(
+                        getString(
+                            message.mentionNick.isEmpty()
+                                ? R.string.notification_title
+                                : R.string.mention_title,
+                            message.sender,
+                            target))
                     .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                    .setPriority(message.mentionNick.isEmpty() ? NotificationCompat.PRIORITY_DEFAULT : NotificationCompat.PRIORITY_HIGH)
+                    .setPriority(
+                        message.mentionNick.isEmpty()
+                            ? NotificationCompat.PRIORITY_DEFAULT
+                            : NotificationCompat.PRIORITY_HIGH)
                     .setContentText(message.text)
                     .setContentIntent(pending)
                     .setAutoCancel(true)

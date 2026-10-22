@@ -103,14 +103,21 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     Ui.visible(icon, r.avatar.isEmpty());
     icon.setImageResource(r.icon);
     icon.setBackgroundResource(r.iconColor == 0 ? 0 : R.drawable.bg_primary);
-    icon.setBackgroundTintList(r.iconColor == 0 ? null : android.content.res.ColorStateList.valueOf(
-        androidx.core.content.ContextCompat.getColor(v.getContext(), r.iconColor)));
-    icon.setImageTintList(android.content.res.ColorStateList.valueOf(
-        androidx.core.content.ContextCompat.getColor(v.getContext(),
-            r.iconColor == 0 ? R.color.text_secondary : R.color.on_primary)));
-    android.view.ViewGroup.LayoutParams iconParams = v.findViewById(R.id.icon_container).getLayoutParams();
-    iconParams.width = (int) (v.getResources().getDisplayMetrics().density *
-        (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));
+    icon.setBackgroundTintList(
+        r.iconColor == 0
+            ? null
+            : android.content.res.ColorStateList.valueOf(
+                androidx.core.content.ContextCompat.getColor(v.getContext(), r.iconColor)));
+    icon.setImageTintList(
+        android.content.res.ColorStateList.valueOf(
+            androidx.core.content.ContextCompat.getColor(
+                v.getContext(), r.iconColor == 0 ? R.color.text_secondary : R.color.on_primary)));
+    android.view.ViewGroup.LayoutParams iconParams =
+        v.findViewById(R.id.icon_container).getLayoutParams();
+    iconParams.width =
+        (int)
+            (v.getResources().getDisplayMetrics().density
+                * (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));
     v.findViewById(R.id.icon_container).setLayoutParams(iconParams);
     if (!r.avatar.isEmpty()) Ui.avatar(avatar, r.avatar);
     Ui.visible(v.findViewById(R.id.chevron), r.click != null && !r.joinVisible && !r.self);
