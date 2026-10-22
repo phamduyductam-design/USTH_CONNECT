@@ -21,8 +21,8 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
   protected void onCreate(Bundle saved) {
     super.onCreate(saved);
     setContentView(R.layout.activity_connect);
-    Insets.apply(this, findViewById(R.id.root));
-    Ui.themeToggle(this, findViewById(R.id.root));
+    WindowInsetsHelper.apply(this, findViewById(R.id.root));
+    UiHelpers.themeToggle(this, findViewById(R.id.root));
     ConnectApplication app = ConnectApplication.from(this);
     session = app.session;
     nick = findViewById(R.id.nickname);
@@ -50,7 +50,7 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
         .setOnClickListener(
             v -> {
               View panel = findViewById(R.id.advanced_panel);
-              Ui.visible(panel, panel.getVisibility() != View.VISIBLE);
+              UiHelpers.visible(panel, panel.getVisibility() != View.VISIBLE);
             });
     findViewById(R.id.connect).setOnClickListener(v -> connect());
     findViewById(R.id.cancel).setOnClickListener(v -> session.disconnect());
@@ -105,8 +105,8 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
     for (View input :
         new View[] {nick, host, port, username, realName, tls, findViewById(R.id.advanced_toggle)})
       input.setEnabled(!busy);
-    Ui.visible(findViewById(R.id.progress), busy);
-    Ui.visible(
+    UiHelpers.visible(findViewById(R.id.progress), busy);
+    UiHelpers.visible(
         findViewById(R.id.connect_status_panel),
         busy || session.data.connection == ConnectionState.FAILED);
     findViewById(R.id.connect_status_panel)
@@ -114,7 +114,7 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
             session.data.connection == ConnectionState.FAILED
                 ? R.drawable.bg_error
                 : R.drawable.bg_selected);
-    Ui.visible(findViewById(R.id.cancel), busy);
+    UiHelpers.visible(findViewById(R.id.cancel), busy);
     findViewById(R.id.connect).setEnabled(!busy);
     ((TextView) findViewById(R.id.connect))
         .setText(
@@ -124,7 +124,7 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
             ? ""
             : getString(busy ? R.string.connect_pending_title : R.string.connect_failed_title)
                 + "\n"
-                + Ui.connection(this, session);
+                + UiHelpers.connection(this, session);
     ((TextView) findViewById(R.id.status)).setText(status);
     ((TextView) findViewById(R.id.status))
         .setTextColor(

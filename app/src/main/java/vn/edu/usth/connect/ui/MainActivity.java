@@ -19,7 +19,7 @@ public final class MainActivity extends AppCompatActivity {
       return;
     }
     setContentView(R.layout.activity_main);
-    Insets.apply(this, findViewById(R.id.root));
+    WindowInsetsHelper.apply(this, findViewById(R.id.root));
     navigation = findViewById(R.id.navigation);
     if (saved != null) {
       tab = saved.getInt("tab", R.id.nav_courses);
@@ -87,7 +87,7 @@ public final class MainActivity extends AppCompatActivity {
 
   private void updateNavigation() {
     if (navigation != null)
-      Ui.visible(
+      UiHelpers.visible(
           navigation,
           !(getSupportFragmentManager().findFragmentById(R.id.container) instanceof ChatFragment));
   }

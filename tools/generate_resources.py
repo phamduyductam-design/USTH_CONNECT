@@ -13,7 +13,7 @@ def write(name, text):
         ET.register_namespace('app','http://schemas.android.com/apk/res-auto')
         ET.register_namespace('tools','http://schemas.android.com/tools')
         tree=ET.fromstring(text)
-        if name in ['res/layout/activity_main.xml','res/layout/activity_connect.xml','res/layout/sheet_members.xml']:
+        if name in ['res/layout/activity_main.xml','res/layout/activity_connect.xml','res/layout/dialog_members.xml']:
             tree.attrib.pop('{http://schemas.android.com/apk/res/android}background',None)
         if name.startswith('res/layout/'):
             sizes={'24dp':'space_24','80dp':'row_height','96dp':'empty_icon','72dp':'profile_avatar'}
@@ -94,7 +94,7 @@ write('res/values-v27/themes.xml','<resources><style name="Theme.UsthConnect" pa
 for name,color,radius,stroke in [('input','background','input_radius',True),('card','surface','card_radius',True),('selected','selected','card_radius',False),('error','error_bg','input_radius',False),('primary','primary','input_radius',False)]:
  write(f'res/drawable/bg_{name}.xml',f'<shape xmlns:android="http://schemas.android.com/apk/res/android"><solid android:color="@color/{color}"/><corners android:radius="@dimen/{radius}"/>'+('<stroke android:width="@dimen/line" android:color="@color/outline"/>' if stroke else '')+'</shape>')
 write('res/drawable/bg_avatar.xml','<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval"><solid android:color="@color/badge"/></shape>')
-write('res/color/nav_tint.xml','<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_checked="true" android:color="@color/primary"/><item android:color="@color/text_secondary"/></selector>')
+write('res/color/navigation_item_tint.xml','<selector xmlns:android="http://schemas.android.com/apk/res/android"><item android:state_checked="true" android:color="@color/primary"/><item android:color="@color/text_secondary"/></selector>')
 icons={
  'back':'M15,5 L8,12 L15,19', 'close':'M5,5 L19,19 M19,5 L5,19', 'search':'M10,3 A7,7 0,1 0,10,17 A7,7 0,1 0,10,3 M15,15 L21,21',
  'book':'M12,5 C8,2 3,3 2,4 L2,20 C5,18 9,18 12,21 C15,18 19,18 22,20 L22,4 C19,2 15,2 12,5 L12,21',
@@ -153,7 +153,7 @@ write('res/layout/activity_connect.xml',f'''<ScrollView {NS} android:id="@+id/ro
  </LinearLayout></ScrollView>''')
 write('res/layout/activity_main.xml',f'''<LinearLayout {NS} android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@color/surface">
  <androidx.fragment.app.FragmentContainerView android:id="@+id/container" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
- <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/navigation" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/surface" app:menu="@menu/navigation" app:labelVisibilityMode="labeled" app:itemIconTint="@color/nav_tint" app:itemTextColor="@color/nav_tint" app:itemActiveIndicatorStyle="@style/NavIndicator"/>
+ <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/navigation" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/surface" app:menu="@menu/navigation" app:labelVisibilityMode="labeled" app:itemIconTint="@color/navigation_item_tint" app:itemTextColor="@color/navigation_item_tint" app:itemActiveIndicatorStyle="@style/NavIndicator"/>
  </LinearLayout>''')
 write('res/values/navigation.xml','<resources><style name="NavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator"><item name="android:color">@color/selected</item></style></resources>')
 write('res/layout/fragment_catalog.xml',f'''<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:paddingStart="@dimen/space_20" android:paddingEnd="@dimen/space_20" android:paddingTop="@dimen/space_12">
@@ -215,7 +215,7 @@ write('res/layout/fragment_chat.xml',f'''<LinearLayout {NS} android:layout_width
  </LinearLayout>
  {tv('send_hint','','Caption','android:paddingStart="@dimen/space_20" android:paddingEnd="@dimen/space_20" android:paddingBottom="@dimen/space_8"')}
  </LinearLayout>''')
-write('res/layout/item_message.xml',f'''<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="@dimen/space_12" android:paddingBottom="@dimen/space_12">
+write('res/layout/item_chat_message.xml',f'''<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:paddingTop="@dimen/space_12" android:paddingBottom="@dimen/space_12">
  <TextView android:id="@+id/avatar" style="@style/Heading" android:layout_width="@dimen/avatar" android:layout_height="@dimen/avatar" android:gravity="center" android:background="@drawable/bg_avatar" android:textColor="@color/surface"/>
  <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginStart="@dimen/space_12">
   <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical">
@@ -226,13 +226,13 @@ write('res/layout/item_message.xml',f'''<LinearLayout {NS} android:layout_width=
   {tv('status','','Caption','android:layout_marginTop="@dimen/space_4"')}
   <com.google.android.material.button.MaterialButton android:id="@+id/retry" style="@style/OutlineButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/retry" android:visibility="gone"/>
  </LinearLayout></LinearLayout>''')
-write('res/layout/item_separator.xml',f'<TextView {NS} android:id="@+id/text" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:padding="@dimen/space_12"/>')
-write('res/layout/sheet_members.xml',f'''<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="@dimen/sheet_height" android:orientation="vertical" android:padding="@dimen/space_20" android:background="@color/surface">
+write('res/layout/item_chat_separator.xml',f'<TextView {NS} android:id="@+id/text" style="@style/Caption" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:padding="@dimen/space_12"/>')
+write('res/layout/dialog_members.xml',f'''<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="@dimen/sheet_height" android:orientation="vertical" android:padding="@dimen/space_20" android:background="@color/surface">
  <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical"><TextView style="@style/Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/members"/>{icon('close','close','close')}</LinearLayout>
  {tv('subtitle','','Body','android:layout_marginBottom="@dimen/space_16"')}{inp('search','search_members','android:drawableStart="@drawable/ic_search" android:drawablePadding="@dimen/space_8"')}
  <androidx.recyclerview.widget.RecyclerView android:id="@+id/list" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:paddingTop="@dimen/space_12"/>
  </LinearLayout>''')
-write('res/layout/dialog_join.xml',f'<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="@dimen/space_20">{inp("channel","channel_name","android:inputType=\"textVisiblePassword\"")}{inp("key","channel_key",margin+"android:inputType=\"textPassword\" android:autofillHints=\"\"")}</LinearLayout>')
+write('res/layout/dialog_join_channel.xml',f'<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="@dimen/space_20">{inp("channel","channel_name","android:inputType=\"textVisiblePassword\"")}{inp("key","channel_key",margin+"android:inputType=\"textPassword\" android:autofillHints=\"\"")}</LinearLayout>')
 write('res/layout/dialog_input.xml',f'<LinearLayout {NS} android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="@dimen/space_20">{inp("input","nickname","android:inputType=\"textVisiblePassword\"")}</LinearLayout>')
 write('res/layout/fragment_profile.xml',f'''<ScrollView {NS} android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true"><LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="@dimen/space_20">
  {tv('title','profile','Title')}{underline}

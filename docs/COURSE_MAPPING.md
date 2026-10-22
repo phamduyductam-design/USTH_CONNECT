@@ -10,7 +10,7 @@
 | `4. fundamentals`: manifest, permissions, compilation/DEX | AndroidManifest.xml; app/build.gradle | Khai báo Activity, Application, INTERNET; Gradle biên dịch Java thành APK/DEX |
 | `4. fundamentals`: Activity lifecycle, Intent, Bundle, screen orientation | ConnectActivity; MainActivity; ChatFragment | Intent chuyển Activity; onStart/onStop quản lý listener; Bundle giữ target/vị trí khi tạo lại |
 | `4. fundamentals`: FragmentManager, DialogFragment | các Fragment; MembersBottomSheet; MainActivity | Một Activity điều phối từng Fragment, back stack, bottom sheet thành viên |
-| `4. fundamentals`: View/ViewGroup, Button/EditText, click handling | res/layout; Ui; ChatFragment | XML tạo View; đọc EditText; nút gọi repository; không networking trong callback UI |
+| `4. fundamentals`: View/ViewGroup, Button/EditText, click handling | res/layout; UiHelpers; ChatFragment | XML tạo View; đọc EditText; nút gọi repository; không networking trong callback UI |
 | `5. resources`: LinearLayout, FrameLayout, layout_weight, ScrollView, RecyclerView | activity_main.xml; fragment_chat.xml; fragment_profile.xml | Content co giãn bằng weight; chat/composer dùng không gian còn lại; form/profile cuộn |
 | `5. resources`: dp/sp, padding/margin, values, styles, Vietnamese resources | strings.xml; colors.xml; dimens.xml; themes.xml | Chữ Việt, bảng màu của ảnh, spacing/lề, font hệ thống; không khóa theo pixel ảnh |
 | `5. resources`: drawables, raw/assets, menus, adapter | ic_*.xml; courses.json; navigation.xml; CatalogAdapter; ChatAdapter | Vector icon nét, danh mục bundled, menu bottom nav, tái sử dụng row |
@@ -34,7 +34,7 @@ AsyncTask đã deprecated từ API 30; xem [Android AsyncTask reference](https:/
 | TLS hostname verification | Certificate chain hợp lệ chưa đủ nếu sai hostname | IrcClient, SSLParameters; [Java 17 reference](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/net/ssl/SSLParameters.html) |
 | Epoch để bỏ callback phiên cũ | Cancel/reconnect xảy ra đồng thời với reader/writer | IrcClient và SessionRepository |
 | Backoff, timer timeout, fixed delay heartbeat | Kết nối dài cần phục hồi và hủy đúng | IrcClient |
-| AndroidX, Material BottomSheet, insets/edge-to-edge | Thay Support Library cũ, hỗ trợ Android hiện tại | Gradle, MembersBottomSheet, Insets |
+| AndroidX, Material BottomSheet, insets/edge-to-edge | Thay Support Library cũ, hỗ trợ Android hiện tại | Gradle, MembersBottomSheet, WindowInsetsHelper |
 | POST_NOTIFICATIONS runtime từ Android 13 | Thông báo phải tuân theo quyền và thiết lập hệ thống | Manifest, ProfileFragment, ConnectApplication |
 | SharedPreferences cho nháp/cấu hình | Các tài liệu đính kèm không có chương Storage riêng | SettingsStore |
 | JUnit, Espresso, local IRC daemon smoke test | Kiểm chứng parser, lifecycle và dữ liệu thực | src/test, src/androidTest, tools/NetworkSmoke.java |
