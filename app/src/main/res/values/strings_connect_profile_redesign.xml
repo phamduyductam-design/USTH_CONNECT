@@ -1,0 +1,25 @@
+<resources>
+    <string name="cp_connect_intro">Không gian trò chuyện dành cho sinh viên USTH. Tham gia kênh môn học và trao đổi trực tiếp qua IRC.</string>
+    <string name="cp_nickname_help">Tên hiển thị của bạn trong các kênh IRC</string>
+    <string name="cp_server_title">Máy chủ IRC</string>
+    <string name="cp_server_help">Dùng máy chủ của bạn hoặc cấu hình đã lưu. Địa chỉ 10.0.2.2 kết nối đến máy host từ Android Emulator.</string>
+    <string name="cp_advanced">Cổng và tùy chọn nâng cao</string>
+    <string name="cp_server_summary">Cổng %1$s · %2$s</string>
+    <string name="cp_tls_enabled">Có bảo mật TLS</string>
+    <string name="cp_tls_disabled">Không dùng TLS</string>
+    <string name="cp_username">Tên tài khoản IRC</string>
+    <string name="cp_real_name">Tên hiển thị IRC</string>
+    <string name="cp_brand_label">USTH CONNECT</string>
+    <string name="cp_profile_server">Kết nối IRC</string>
+    <string name="cp_profile_settings">Cài đặt ứng dụng</string>
+    <string name="cp_server_address">%1$s : %2$d</string>
+    <string name="cp_server_details">%1$d kênh đã tham gia · %2$s</string>
+    <string name="cp_profile_nickname">@%1$s</string>
+    <string name="cp_reconnect_label">Tự khôi phục kết nối</string>
+    <string name="cp_reconnect_detail">Tự thử lại khi phiên đang dùng bị gián đoạn.</string>
+    <string name="cp_theme_label">Giao diện sáng/tối</string>
+    <string name="cp_theme_light">Sáng</string>
+    <string name="cp_theme_dark">Tối</string>
+    <string name="cp_presence_label">Trạng thái của bạn</string>
+    <string name="cp_edit_nickname">Đổi biệt danh IRC</string>
+</resources>

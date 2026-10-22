@@ -49,6 +49,10 @@ flowchart LR
 
 MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/Bundle và view hierarchy được Android lưu khi xoay. Chat lưu target, mốc chưa đọc và Parcelable của LinearLayoutManager; nháp ở SettingsStore. Không khai báo `configChanges` để né vòng đời. Một Application giữ nguyên SessionRepository và socket khi Activity được tạo lại.
 
+Điều hướng chính hiện có ba tab Môn học, Tin nhắn, Cá nhân. ServerChannelsFragment được mở qua nút Phòng trên server trong Môn học hoặc `/list`; có nút Back và vẫn gọi LIST thật. Chat kênh chọn tab Môn học, PM chọn tab Tin nhắn. Thanh tab hiện khi duyệt và ẩn khi bàn phím mở. WindowInsetsHelper áp dụng khoảng chừa system bars/IME cho root.
+
+UI tiếp tục dùng XML + Material + RecyclerView; không thêm Compose hoặc ViewModel. CatalogAdapter dùng lại card môn/kênh/hội thoại/thành viên. ChatAdapter nhóm tin cùng tác giả trong 5 phút nếu không có ranh giới ngày, tin chưa đọc hoặc sự kiện; DM căn trái/phải theo outgoing thật. Không sửa engine IRC, repository, model hay storage. Xem [UI_REDESIGN.md](UI_REDESIGN.md).
+
 ## Luồng gửi
 
 1. Người dùng bấm Gửi. ChatFragment gộp xuống dòng thành khoảng trắng. SlashCommand tách lệnh gõ thành thao tác typed; tin thường gọi SessionRepository.send. // gửi dấu / nguyên văn.

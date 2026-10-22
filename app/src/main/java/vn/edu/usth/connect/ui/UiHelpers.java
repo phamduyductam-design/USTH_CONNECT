@@ -40,9 +40,9 @@ public final class UiHelpers {
   }
 
   public static int courseColor(String icon) {
-    if (icon.equals("brain")) return R.color.teal;
-    if (icon.equals("phone")) return R.color.purple;
-    if (icon.equals("book")) return R.color.filled_red;
+    if (icon.equals("brain")) return R.color.purple;
+    if (icon.equals("phone")) return R.color.filled_red;
+    if (icon.equals("book")) return R.color.teal;
     return R.color.filled_primary;
   }
 
@@ -87,14 +87,12 @@ public final class UiHelpers {
   public static void avatar(TextView view, String nickname) {
     String initials = nickname.isEmpty() ? "?" : nickname.substring(0, 1).toUpperCase(Locale.ROOT);
     view.setText(initials);
-    int[] colors = {R.color.filled_badge, R.color.purple, R.color.teal, R.color.filled_primary};
+    int[] colors = {
+      R.color.avatar_blue, R.color.avatar_purple, R.color.avatar_coral, R.color.avatar_teal
+    };
     String lower = nickname.toLowerCase(Locale.ROOT);
-    int index =
-        lower.startsWith("minh")
-            ? 0
-            : lower.startsWith("an")
-                ? 1
-                : lower.startsWith("ha") ? 2 : Math.floorMod(lower.hashCode(), colors.length);
+    int index = Math.floorMod(lower.hashCode(), colors.length);
+    view.setTextColor(ContextCompat.getColor(view.getContext(), R.color.primary));
     view.setBackgroundTintList(
         ColorStateList.valueOf(ContextCompat.getColor(view.getContext(), colors[index])));
   }

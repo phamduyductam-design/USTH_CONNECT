@@ -38,6 +38,22 @@ public final class ProfileFragment extends SessionAwareFragment {
   @Override
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
+    if (b != null)
+      UiHelpers.visible(
+          v.findViewById(R.id.profile_nickname_panel), b.getBoolean("nickname_expanded"));
+    v.findViewById(R.id.profile_nickname_toggle)
+        .setOnClickListener(
+            w -> {
+              View panel = v.findViewById(R.id.profile_nickname_panel);
+              UiHelpers.visible(panel, panel.getVisibility() != View.VISIBLE);
+            });
+    v.findViewById(R.id.profile_theme_settings)
+        .setOnClickListener(
+            w -> {
+              boolean dark = !app.settings.darkMode();
+              app.settings.darkMode(dark);
+              ThemeMode.apply(requireContext(), dark);
+            });
     v.findViewById(R.id.change)
         .setOnClickListener(
             w -> {
@@ -111,23 +127,38 @@ public final class ProfileFragment extends SessionAwareFragment {
   protected void render() {
     if (root == null) return;
     UiHelpers.avatar(root.findViewById(R.id.avatar), session.data.nickname);
-    UiHelpers.avatar(root.findViewById(R.id.profile_account), session.data.nickname);
     ((TextView) root.findViewById(R.id.name)).setText(UiHelpers.displayName(session.data.nickname));
-    ((TextView) root.findViewById(R.id.profile_nick)).setText(session.data.nickname);
+    ((TextView) root.findViewById(R.id.profile_nick))
+        .setText(getString(R.string.cp_profile_nickname, session.data.nickname));
+    ((TextView) root.findViewById(R.id.profile_nickname_value)).setText(session.data.nickname);
+    ((TextView) root.findViewById(R.id.profile_theme_value))
+        .setText(app.settings.darkMode() ? R.string.cp_theme_dark : R.string.cp_theme_light);
     if (!renderedNick.equals(session.data.nickname)) {
       ((EditText) root.findViewById(R.id.nickname)).setText(session.data.nickname);
       renderedNick = session.data.nickname;
     }
-    ((TextView) root.findViewById(R.id.server)).setText(session.config.host);
+    ((TextView) root.findViewById(R.id.server))
+        .setText(getString(R.string.cp_server_address, session.config.host, session.config.port));
+    int joined = 0;
+    for (Channel channel : session.data.channels.values()) if (channel.joined) joined++;
+    ((TextView) root.findViewById(R.id.server_details))
+        .setText(
+            getString(
+                R.string.cp_server_details,
+                joined,
+                getString(
+                    session.config.tls ? R.string.cp_tls_enabled : R.string.cp_tls_disabled)));
     TextView status = root.findViewById(R.id.status);
     boolean online = session.data.connection == ConnectionState.CONNECTED;
+    UiHelpers.visible(root.findViewById(R.id.profile_presence_dot), online);
     String connection = UiHelpers.connection(requireContext(), session);
     status.setText(online ? getString(R.string.connected_indicator, connection) : connection);
     status.setTextColor(
         androidx.core.content.ContextCompat.getColor(
-            requireContext(), online ? R.color.success : R.color.error));
+            requireContext(), online ? R.color.success_text : R.color.error));
     ((TextView) root.findViewById(R.id.error))
         .setText(UiHelpers.error(requireContext(), session.data.errorCode));
+    UiHelpers.visible(root.findViewById(R.id.error), !session.data.errorCode.isEmpty());
     UiHelpers.visible(
         root.findViewById(R.id.reconnect), session.data.connection != ConnectionState.CONNECTED);
     root.findViewById(R.id.away_toggle).setEnabled(online);
@@ -146,6 +177,15 @@ public final class ProfileFragment extends SessionAwareFragment {
             app.settings.notifications()
                 && NotificationManagerCompat.from(requireContext()).areNotificationsEnabled());
     binding = false;
+  }
+
+  @Override
+  public void onSaveInstanceState(@NonNull Bundle out) {
+    super.onSaveInstanceState(out);
+    out.putBoolean(
+        "nickname_expanded",
+        root != null
+            && root.findViewById(R.id.profile_nickname_panel).getVisibility() == View.VISIBLE);
   }
 
   @Override

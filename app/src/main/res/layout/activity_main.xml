@@ -12,17 +12,18 @@
         android:layout_height="0dp"
         android:layout_weight="1" />
     <View
+        android:id="@+id/navigation_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/divider" />
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigation"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
+        android:layout_height="72dp"
         android:background="@color/surface"
         app:menu="@menu/navigation"
         app:labelVisibilityMode="labeled"
-        app:itemIconSize="21dp"
+        app:itemIconSize="24dp"
         app:itemIconTint="@color/navigation_item_tint"
         app:itemTextColor="@color/navigation_item_tint"
         app:itemTextAppearanceActive="@style/NavLabelActive"
