@@ -152,53 +152,86 @@ public class SessionStateTest {
     assertFalse(c.joining);
     assertFalse(c.wanted);
   }
-  @Test public void listUsesServerRepliesAndCompletesEmptyResults() {
+
+  @Test
+  public void listUsesServerRepliesAndCompletesEmptyResults() {
     SessionState s = session();
     feed(s, ":server 321 minh Channel :Users Name");
     feed(s, ":server 322 minh #live 3 :Chủ đề thật");
-    assertTrue(s.listing); assertEquals(3, s.availableChannels.get("#live").users);
+    assertTrue(s.listing);
+    assertEquals(3, s.availableChannels.get("#live").users);
     feed(s, ":server 323 minh :End of LIST");
-    assertFalse(s.listing); assertTrue(s.listLoaded);
-    feed(s, ":server 321 minh Channel :Users Name"); feed(s, ":server 323 minh :End");
+    assertFalse(s.listing);
+    assertTrue(s.listLoaded);
+    feed(s, ":server 321 minh Channel :Users Name");
+    feed(s, ":server 323 minh :End");
     assertTrue(s.availableChannels.isEmpty());
-    s.listing = true; feed(s, ":server 421 minh LIST :Unsupported"); assertFalse(s.listing);
+    s.listing = true;
+    feed(s, ":server 421 minh LIST :Unsupported");
+    assertFalse(s.listing);
   }
-  @Test public void modeParametersDoNotShiftRoleTargetsAndRefreshKeepsChanges() {
+
+  @Test
+  public void modeParametersDoNotShiftRoleTargetsAndRefreshKeepsChanges() {
     SessionState s = session();
-    feed(s, ":minh!u@h JOIN #c"); feed(s, ":s 353 minh = #c :@minh an ha"); feed(s, ":s 366 minh #c :end");
+    feed(s, ":minh!u@h JOIN #c");
+    feed(s, ":s 353 minh = #c :@minh an ha");
+    feed(s, ":s 366 minh #c :end");
     feed(s, ":minh!u@h MODE #c +kov secret an ha");
-    assertEquals("o", s.role("#c", "an")); assertEquals("v", s.role("#c", "ha"));
+    assertEquals("o", s.role("#c", "an"));
+    assertEquals("v", s.role("#c", "ha"));
     feed(s, ":s 353 minh = #c :@minh @an +ha");
-    feed(s, ":minh!u@h MODE #c -o+v an an"); feed(s, ":s 366 minh #c :end");
+    feed(s, ":minh!u@h MODE #c -o+v an an");
+    feed(s, ":s 366 minh #c :end");
     assertEquals("v", s.role("#c", "an"));
-    feed(s, ":s 324 minh #c +nt"); assertTrue(s.channel("#c").modes.contains('t'));
-    feed(s, ":minh!u@h MODE #c -t"); assertFalse(s.channel("#c").modes.contains('t'));
+    feed(s, ":s 324 minh #c +nt");
+    assertTrue(s.channel("#c").modes.contains('t'));
+    feed(s, ":minh!u@h MODE #c -t");
+    assertFalse(s.channel("#c").modes.contains('t'));
     assertTrue(s.canManage("#c"));
   }
-  @Test public void negotiatedPrefixesAndAwayStayInSyncAcrossNickAndQuit() {
+
+  @Test
+  public void negotiatedPrefixesAndAwayStayInSyncAcrossNickAndQuit() {
     SessionState s = session();
     feed(s, ":s 005 minh PREFIX=(ov)@+ CHANMODES=b,k,l,imnt :supported");
-    feed(s, ":minh!u@h JOIN #c"); feed(s, ":s 353 minh = #c :@minh @+an"); feed(s, ":s 366 minh #c :end");
+    feed(s, ":minh!u@h JOIN #c");
+    feed(s, ":s 353 minh = #c :@minh @+an");
+    feed(s, ":s 366 minh #c :end");
     assertEquals("o", s.role("#c", "an"));
-    feed(s, ":s 352 minh #c u h s an G@+ :0 An"); assertTrue(s.awayUsers.containsKey("an"));
-    feed(s, ":an!u@h AWAY :Đang học"); assertEquals("Đang học", s.awayUsers.get("an"));
-    feed(s, ":an!u@h NICK :ann"); assertEquals("Đang học", s.awayUsers.get("ann"));
-    feed(s, ":ann!u@h AWAY"); assertFalse(s.awayUsers.containsKey("ann"));
-    feed(s, ":s 301 minh ann :Bận"); assertTrue(s.awayUsers.containsKey("ann"));
-    feed(s, ":ann!u@h QUIT :bye"); assertFalse(s.awayUsers.containsKey("ann"));
-    s.requestedAway = "Bận"; feed(s, ":s 306 minh :away"); assertTrue(s.away);
-    feed(s, ":s 305 minh :back"); assertFalse(s.away);
+    feed(s, ":s 352 minh #c u h s an G@+ :0 An");
+    assertTrue(s.awayUsers.containsKey("an"));
+    feed(s, ":an!u@h AWAY :Đang học");
+    assertEquals("Đang học", s.awayUsers.get("an"));
+    feed(s, ":an!u@h NICK :ann");
+    assertEquals("Đang học", s.awayUsers.get("ann"));
+    feed(s, ":ann!u@h AWAY");
+    assertFalse(s.awayUsers.containsKey("ann"));
+    feed(s, ":s 301 minh ann :Bận");
+    assertTrue(s.awayUsers.containsKey("ann"));
+    feed(s, ":ann!u@h QUIT :bye");
+    assertFalse(s.awayUsers.containsKey("ann"));
+    s.requestedAway = "Bận";
+    feed(s, ":s 306 minh :away");
+    assertTrue(s.away);
+    feed(s, ":s 305 minh :back");
+    assertFalse(s.away);
   }
-  @Test public void mentionDetectionAndPermissionFailuresNeverGrantRights() {
-    SessionState s = session(); feed(s, ":minh!u@h JOIN #c");
+
+  @Test
+  public void mentionDetectionAndPermissionFailuresNeverGrantRights() {
+    SessionState s = session();
+    feed(s, ":minh!u@h JOIN #c");
     assertFalse(s.canManage("#c"));
-    feed(s, ":s 482 minh #c :Not operator"); assertFalse(s.canManage("#c"));
+    feed(s, ":s 482 minh #c :Not operator");
+    assertFalse(s.canManage("#c"));
     assertEquals("Not operator", s.errorDetail);
     ChatMessage m = s.accept(IrcParser.parse(":an!u@h PRIVMSG #c :Chào @minh!"));
     assertEquals("minh", m.mentionNick);
-    m = s.accept(IrcParser.parse(":an!u@h PRIVMSG #c :minh2")); assertEquals("", m.mentionNick);
-    feed(s, ":s 332 minh #c :old"); feed(s, ":an!u@h TOPIC #c :new");
+    m = s.accept(IrcParser.parse(":an!u@h PRIVMSG #c :minh2"));
+    assertEquals("", m.mentionNick);
+    feed(s, ":s 332 minh #c :old");
+    feed(s, ":an!u@h TOPIC #c :new");
     assertEquals("new", s.channel("#c").topic);
   }
-
 }

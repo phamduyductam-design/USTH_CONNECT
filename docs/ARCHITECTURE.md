@@ -98,3 +98,7 @@ Mentions giữ chỉ số UTF-16 khi fold nickname theo RFC1459, dùng ranh gi�
 Màu nền/chữ/viền và icon status/navigation có bản night. Màu nền nút, avatar và màu chữ trắng được tách khỏi surface để giữ độ tương phản. Logo gốc nằm trên nền trắng nhỏ ở cả hai chế độ.
 
 Tham khảo [Android dark theme](https://developer.android.com/develop/ui/views/theming/darktheme).
+
+## Tra cứu source sau đợt làm sạch
+
+Các dialog nằm trong `ui/dialog/`: ChannelDialogs cho kênh/phòng, UserDialogs cho thành viên/PM/away, CommonDialogs cho xác nhận/nhập liệu/help. SessionState.accept() điều phối tới các handler có tên theo sự kiện; ChatFragment.render() gọi các bước nhỏ theo phần màn hình. SessionRepository dùng mainHandler và notifyListeners() để cập nhật UI. Xem [CODE_MAP.md](CODE_MAP.md) để tìm từng tính năng.

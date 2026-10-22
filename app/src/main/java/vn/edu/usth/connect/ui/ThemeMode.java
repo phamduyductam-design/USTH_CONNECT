@@ -11,8 +11,10 @@ public final class ThemeMode {
 
   public static void apply(Context context, boolean dark) {
     if (Build.VERSION.SDK_INT >= 31) {
-      context.getSystemService(UiModeManager.class).setApplicationNightMode(
-          dark ? UiModeManager.MODE_NIGHT_YES : UiModeManager.MODE_NIGHT_NO);
+      context
+          .getSystemService(UiModeManager.class)
+          .setApplicationNightMode(
+              dark ? UiModeManager.MODE_NIGHT_YES : UiModeManager.MODE_NIGHT_NO);
     }
     AppCompatDelegate.setDefaultNightMode(
         dark ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);

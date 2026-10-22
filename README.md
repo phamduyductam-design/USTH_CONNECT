@@ -2,6 +2,10 @@
 
 Ứng dụng Android native Java/XML, có chế độ sáng/tối lưu theo lựa chọn người dùng: kết nối IRC, trao đổi theo môn học và nhắn riêng. Dự án này được tạo từ prompt và các ảnh mẫu đã cung cấp. Danh mục môn là metadata cục bộ; tin nhắn, topic, thành viên và xác nhận JOIN đến từ phiên IRC thật.
 
+## Đọc và tìm chức năng trong source
+
+Bắt đầu từ [bản đồ mã nguồn](docs/CODE_MAP.md): có bảng tính năng → file/hàm/layout, luồng gửi/nhận tin và thứ tự đọc cho người mới. Xem [nhận xét code và các phần đã làm sạch](docs/CODE_REVIEW.md).
+
 ## Mở và build
 
 Clone repository, rồi mở thư mục vừa clone bằng Android Studio hoặc VS Code:
