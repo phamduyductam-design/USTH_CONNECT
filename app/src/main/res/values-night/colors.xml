@@ -1,6 +1,5 @@
 <resources>
     <color name="primary">#B4C1FF</color>
-    <color name="brand_red">#FF7D86</color>
     <color name="surface">#1B2233</color>
     <color name="background">#121827</color>
     <color name="text_primary">#F0F3FF</color>
