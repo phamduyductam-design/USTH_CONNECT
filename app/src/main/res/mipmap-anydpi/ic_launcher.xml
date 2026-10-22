@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/usth_university_logo"
-    android:gravity="fill"
-    android:filter="true" />
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:width="48dp" android:height="48dp" android:gravity="center">
+        <inset android:insetTop="12dp" android:insetBottom="12dp">
+            <bitmap
+                android:src="@drawable/usth_university_logo"
+                android:gravity="fill"
+                android:filter="true" />
+        </inset>
+    </item>
+</layer-list>

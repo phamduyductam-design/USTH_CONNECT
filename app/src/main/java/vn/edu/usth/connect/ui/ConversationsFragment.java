@@ -23,7 +23,6 @@ public final class ConversationsFragment extends SessionAwareFragment {
   @Override
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
-    UiHelpers.brand(v.findViewById(R.id.brand));
     UiHelpers.visible(v.findViewById(R.id.back), false);
     UiHelpers.visible(v.findViewById(R.id.join), true);
     ((TextView) v.findViewById(R.id.join)).setText(R.string.catalog_start_conversation);
