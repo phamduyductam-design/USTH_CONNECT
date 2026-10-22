@@ -3,8 +3,8 @@ package vn.edu.usth.connect.irc;
 import java.util.*;
 
 /** Nickname boundaries and RFC1459 folding; indices remain valid in the original UTF-16 text. */
-public final class Mentions {
-  private Mentions() {}
+public final class NicknameMentions {
+  private NicknameMentions() {}
 
   private static String fold(String text) {
     StringBuilder out = new StringBuilder();

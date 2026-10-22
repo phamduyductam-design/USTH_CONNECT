@@ -17,7 +17,7 @@ import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
-public final class ProfileFragment extends SessionFragment {
+public final class ProfileFragment extends SessionAwareFragment {
   private boolean binding;
   private String renderedNick = "";
   private final ActivityResultLauncher<String> permission =
@@ -25,7 +25,7 @@ public final class ProfileFragment extends SessionFragment {
           new ActivityResultContracts.RequestPermission(),
           granted -> {
             app.settings.notifications(granted);
-            if (!granted) Ui.toast(requireContext(), R.string.permission_denied);
+            if (!granted) UiHelpers.toast(requireContext(), R.string.permission_denied);
             render();
           });
 
@@ -44,11 +44,11 @@ public final class ProfileFragment extends SessionFragment {
               try {
                 session.changeNick(
                     ((EditText) v.findViewById(R.id.nickname)).getText().toString().trim());
-                Ui.toast(requireContext(), R.string.nickname_pending);
+                UiHelpers.toast(requireContext(), R.string.nickname_pending);
               } catch (IllegalArgumentException e) {
                 ((EditText) v.findViewById(R.id.nickname)).setError(getString(R.string.error_nick));
               } catch (IllegalStateException e) {
-                Ui.toast(requireContext(), R.string.error_offline);
+                UiHelpers.toast(requireContext(), R.string.error_offline);
               }
             });
     SwitchMaterial toggle = v.findViewById(R.id.notifications);
@@ -65,7 +65,7 @@ public final class ProfileFragment extends SessionFragment {
             boolean enabled =
                 on && NotificationManagerCompat.from(requireContext()).areNotificationsEnabled();
             app.settings.notifications(enabled);
-            if (on && !enabled) Ui.toast(requireContext(), R.string.permission_denied);
+            if (on && !enabled) UiHelpers.toast(requireContext(), R.string.permission_denied);
             render();
           }
         });
@@ -110,9 +110,9 @@ public final class ProfileFragment extends SessionFragment {
   @Override
   protected void render() {
     if (root == null) return;
-    Ui.avatar(root.findViewById(R.id.avatar), session.data.nickname);
-    Ui.avatar(root.findViewById(R.id.profile_account), session.data.nickname);
-    ((TextView) root.findViewById(R.id.name)).setText(Ui.displayName(session.data.nickname));
+    UiHelpers.avatar(root.findViewById(R.id.avatar), session.data.nickname);
+    UiHelpers.avatar(root.findViewById(R.id.profile_account), session.data.nickname);
+    ((TextView) root.findViewById(R.id.name)).setText(UiHelpers.displayName(session.data.nickname));
     ((TextView) root.findViewById(R.id.profile_nick)).setText(session.data.nickname);
     if (!renderedNick.equals(session.data.nickname)) {
       ((EditText) root.findViewById(R.id.nickname)).setText(session.data.nickname);
@@ -121,14 +121,14 @@ public final class ProfileFragment extends SessionFragment {
     ((TextView) root.findViewById(R.id.server)).setText(session.config.host);
     TextView status = root.findViewById(R.id.status);
     boolean online = session.data.connection == ConnectionState.CONNECTED;
-    String connection = Ui.connection(requireContext(), session);
+    String connection = UiHelpers.connection(requireContext(), session);
     status.setText(online ? getString(R.string.connected_indicator, connection) : connection);
     status.setTextColor(
         androidx.core.content.ContextCompat.getColor(
             requireContext(), online ? R.color.success : R.color.error));
     ((TextView) root.findViewById(R.id.error))
-        .setText(Ui.error(requireContext(), session.data.errorCode));
-    Ui.visible(
+        .setText(UiHelpers.error(requireContext(), session.data.errorCode));
+    UiHelpers.visible(
         root.findViewById(R.id.reconnect), session.data.connection != ConnectionState.CONNECTED);
     root.findViewById(R.id.away_toggle).setEnabled(online);
     ((TextView) root.findViewById(R.id.away_toggle))

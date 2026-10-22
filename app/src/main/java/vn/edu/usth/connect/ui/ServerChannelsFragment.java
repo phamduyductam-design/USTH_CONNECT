@@ -13,7 +13,7 @@ import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
 /** This catalog is populated only by the IRC server's LIST replies. */
-public final class ServerChannelsFragment extends SessionFragment {
+public final class ServerChannelsFragment extends SessionAwareFragment {
   private CatalogAdapter adapter;
 
   @Override
@@ -24,8 +24,8 @@ public final class ServerChannelsFragment extends SessionFragment {
   @Override
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
-    Ui.brand(v.findViewById(R.id.brand));
-    Ui.visible(v.findViewById(R.id.back), false);
+    UiHelpers.brand(v.findViewById(R.id.brand));
+    UiHelpers.visible(v.findViewById(R.id.back), false);
     ((TextView) v.findViewById(R.id.title)).setText(R.string.server_rooms);
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_rooms);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_refresh);
@@ -33,12 +33,12 @@ public final class ServerChannelsFragment extends SessionFragment {
     v.findViewById(R.id.action).setOnClickListener(w -> refresh());
     ((TextView) v.findViewById(R.id.join)).setText(R.string.create_join_room);
     v.findViewById(R.id.join).setOnClickListener(w -> ChannelDialogs.showJoin(main(), ""));
-    Ui.visible(v.findViewById(R.id.catalog_footer), true);
+    UiHelpers.visible(v.findViewById(R.id.catalog_footer), true);
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     adapter = new CatalogAdapter();
     list.setAdapter(adapter);
-    Ui.watch(v.findViewById(R.id.search), this::render);
+    UiHelpers.watch(v.findViewById(R.id.search), this::render);
   }
 
   @Override
@@ -53,7 +53,7 @@ public final class ServerChannelsFragment extends SessionFragment {
     try {
       session.listChannels();
     } catch (IllegalStateException e) {
-      Ui.toast(requireContext(), R.string.error_offline);
+      UiHelpers.toast(requireContext(), R.string.error_offline);
     }
   }
 
@@ -104,7 +104,7 @@ public final class ServerChannelsFragment extends SessionFragment {
     ((TextView) root.findViewById(R.id.catalog_footer))
         .setText(
             !online
-                ? Ui.connection(requireContext(), session)
+                ? UiHelpers.connection(requireContext(), session)
                 : session.data.listing
                     ? getString(R.string.rooms_loading)
                     : getString(R.string.rooms_count, rooms.size()));

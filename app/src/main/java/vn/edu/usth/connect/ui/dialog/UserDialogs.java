@@ -12,7 +12,7 @@ import vn.edu.usth.connect.irc.IrcCommands;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.repository.SessionRepository;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.Ui;
+import vn.edu.usth.connect.ui.UiHelpers;
 
 /** Private conversations, member privileges and away presence. */
 public final class UserDialogs {
@@ -65,7 +65,7 @@ public final class UserDialogs {
             items,
             (dialog, which) -> {
               if (!session.data.canManage(target)) {
-                Ui.toast(activity, R.string.operator_required);
+                UiHelpers.toast(activity, R.string.operator_required);
                 return;
               }
               if (which == ACTION_KICK) {

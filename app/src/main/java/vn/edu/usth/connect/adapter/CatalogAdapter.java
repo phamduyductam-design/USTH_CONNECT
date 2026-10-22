@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import java.util.*;
 import vn.edu.usth.connect.R;
-import vn.edu.usth.connect.ui.Ui;
+import vn.edu.usth.connect.ui.UiHelpers;
 
 /** Shared visual rows for course/channel/PM/member lists. The fragments provide behavior. */
 public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Holder> {
@@ -86,21 +86,21 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     }
     ((TextView) v.findViewById(R.id.name)).setText(r.name);
     ((TextView) v.findViewById(R.id.detail)).setText(r.detail);
-    Ui.visible(v.findViewById(R.id.detail), !r.detail.isEmpty());
-    Ui.visible(v.findViewById(R.id.self_badge), r.self);
+    UiHelpers.visible(v.findViewById(R.id.detail), !r.detail.isEmpty());
+    UiHelpers.visible(v.findViewById(R.id.self_badge), r.self);
     TextView preview = v.findViewById(R.id.preview);
     preview.setText(r.preview);
-    Ui.visible(preview, !r.preview.isEmpty());
+    UiHelpers.visible(preview, !r.preview.isEmpty());
     TextView time = v.findViewById(R.id.time);
     time.setText(r.time);
-    Ui.visible(time, !r.time.isEmpty());
+    UiHelpers.visible(time, !r.time.isEmpty());
     TextView badge = v.findViewById(R.id.badge);
     badge.setText(String.valueOf(r.badge));
-    Ui.visible(badge, r.badge > 0);
+    UiHelpers.visible(badge, r.badge > 0);
     TextView avatar = v.findViewById(R.id.avatar);
-    Ui.visible(avatar, !r.avatar.isEmpty());
+    UiHelpers.visible(avatar, !r.avatar.isEmpty());
     ImageView icon = v.findViewById(R.id.icon);
-    Ui.visible(icon, r.avatar.isEmpty());
+    UiHelpers.visible(icon, r.avatar.isEmpty());
     icon.setImageResource(r.icon);
     icon.setBackgroundResource(r.iconColor == 0 ? 0 : R.drawable.bg_primary);
     icon.setBackgroundTintList(
@@ -119,10 +119,10 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
             (v.getResources().getDisplayMetrics().density
                 * (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));
     v.findViewById(R.id.icon_container).setLayoutParams(iconParams);
-    if (!r.avatar.isEmpty()) Ui.avatar(avatar, r.avatar);
-    Ui.visible(v.findViewById(R.id.chevron), r.click != null && !r.joinVisible && !r.self);
+    if (!r.avatar.isEmpty()) UiHelpers.avatar(avatar, r.avatar);
+    UiHelpers.visible(v.findViewById(R.id.chevron), r.click != null && !r.joinVisible && !r.self);
     MaterialButton join = v.findViewById(R.id.join);
-    Ui.visible(join, r.joinVisible);
+    UiHelpers.visible(join, r.joinVisible);
     join.setText(r.joining ? R.string.joining : r.actionText == 0 ? R.string.join : r.actionText);
     join.setEnabled(r.enabled && !r.joining);
     join.setOnClickListener(

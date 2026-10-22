@@ -9,7 +9,7 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.ConnectionState;
 import vn.edu.usth.connect.repository.SessionRepository;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.Ui;
+import vn.edu.usth.connect.ui.UiHelpers;
 
 /** Join, topic, room modes and channel menu. The server remains authoritative. */
 public final class ChannelDialogs {
@@ -22,7 +22,7 @@ public final class ChannelDialogs {
   private static final int ACTION_COMMANDS = 3;
 
   public static void showJoin(MainActivity activity, String preset) {
-    View view = activity.getLayoutInflater().inflate(R.layout.dialog_join, null);
+    View view = activity.getLayoutInflater().inflate(R.layout.dialog_join_channel, null);
     EditText channel = view.findViewById(R.id.channel), key = view.findViewById(R.id.key);
     channel.setText(preset);
     AlertDialog dialog =
@@ -48,7 +48,7 @@ public final class ChannelDialogs {
                       } catch (IllegalArgumentException e) {
                         channel.setError(activity.getString(R.string.error_channel));
                       } catch (IllegalStateException e) {
-                        Ui.toast(activity, R.string.error_offline);
+                        UiHelpers.toast(activity, R.string.error_offline);
                       }
                     }));
     dialog.show();
@@ -75,14 +75,14 @@ public final class ChannelDialogs {
                 return;
               }
               if (!session.canSend(target)) {
-                Ui.toast(activity, R.string.error_offline);
+                UiHelpers.toast(activity, R.string.error_offline);
                 return;
               }
               if (which == ACTION_REFRESH_MEMBERS) session.refreshNames(target);
               else if (which == ACTION_EDIT_TOPIC) {
                 if (session.data.channel(target).modes.contains('t')
                     && !session.data.canManage(target))
-                  Ui.toast(activity, R.string.operator_required);
+                  UiHelpers.toast(activity, R.string.operator_required);
                 else
                   CommonDialogs.input(
                       activity,
@@ -110,7 +110,7 @@ public final class ChannelDialogs {
   private static void showRoomModes(MainActivity activity, String target) {
     SessionRepository session = ConnectApplication.from(activity).session;
     if (!session.data.canManage(target)) {
-      Ui.toast(activity, R.string.operator_required);
+      UiHelpers.toast(activity, R.string.operator_required);
       return;
     }
     char[] flags = {'i', 'm', 't'};
@@ -130,7 +130,7 @@ public final class ChannelDialogs {
             R.string.apply,
             (d, which) -> {
               if (session.data.connection != ConnectionState.CONNECTED) {
-                Ui.toast(activity, R.string.error_offline);
+                UiHelpers.toast(activity, R.string.error_offline);
                 return;
               }
               for (int i = 0; i < flags.length; i++)
