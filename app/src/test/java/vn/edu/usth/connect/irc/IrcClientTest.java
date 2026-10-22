@@ -13,7 +13,8 @@ public class IrcClientTest {
   private static String[] registration(BufferedReader in, OutputStream output) throws IOException {
     if (!"CAP LS 302".equals(in.readLine())) throw new IOException("missing CAP LS");
     String nick = in.readLine(), user = in.readLine();
-    output.write(":server CAP * LS :\r\n".getBytes(StandardCharsets.UTF_8)); output.flush();
+    output.write(":server CAP * LS :\r\n".getBytes(StandardCharsets.UTF_8));
+    output.flush();
     if (!"CAP END".equals(in.readLine())) throw new IOException("missing CAP END");
     return new String[] {nick, user};
   }
@@ -108,7 +109,8 @@ public class IrcClientTest {
                       new PrintWriter(
                           new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
                   String[] registration = registration(in, socket.getOutputStream());
-                  sent.add(registration[0]); sent.add(registration[1]);
+                  sent.add(registration[0]);
+                  sent.add(registration[1]);
                   registered.countDown();
                   Thread.sleep(150);
                   out.print(":server 001 minh :Welcome\r\nPING :probe\r\n");
@@ -250,39 +252,67 @@ public class IrcClientTest {
       }
     }
   }
-  @Test public void capabilityNegotiationAndLegacyFallback() throws Exception {
+
+  @Test
+  public void capabilityNegotiationAndLegacyFallback() throws Exception {
     for (boolean legacy : new boolean[] {false, true}) {
       try (ServerSocket server = new ServerSocket(0)) {
         ExecutorService fixture = Executors.newSingleThreadExecutor();
-        Future<?> task = fixture.submit(() -> {
-          try (Socket socket = server.accept()) {
-            socket.setSoTimeout(4000);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-            assertEquals("CAP LS 302", in.readLine());
-            assertEquals("NICK minh", in.readLine()); assertTrue(in.readLine().startsWith("USER "));
-            OutputStream out = socket.getOutputStream();
-            if (legacy) out.write(":s 421 * CAP :Unknown command\r\n".getBytes(StandardCharsets.UTF_8));
-            else {
-              out.write(":s CAP * LS * :multi-prefix\r\n:s CAP * LS :away-notify sasl\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
-              assertEquals("CAP REQ :multi-prefix away-notify", in.readLine());
-              out.write(":s CAP * ACK :multi-prefix away-notify\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
-              assertEquals("CAP END", in.readLine());
-            }
-            out.write(":s 001 minh :Welcome\r\n".getBytes(StandardCharsets.UTF_8)); out.flush();
-            while (in.readLine() != null) { }
-          } catch (IOException e) { throw new RuntimeException(e); }
-        });
+        Future<?> task =
+            fixture.submit(
+                () -> {
+                  try (Socket socket = server.accept()) {
+                    socket.setSoTimeout(4000);
+                    BufferedReader in =
+                        new BufferedReader(
+                            new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+                    assertEquals("CAP LS 302", in.readLine());
+                    assertEquals("NICK minh", in.readLine());
+                    assertTrue(in.readLine().startsWith("USER "));
+                    OutputStream out = socket.getOutputStream();
+                    if (legacy)
+                      out.write(
+                          ":s 421 * CAP :Unknown command\r\n".getBytes(StandardCharsets.UTF_8));
+                    else {
+                      out.write(
+                          ":s CAP * LS * :multi-prefix\r\n:s CAP * LS :away-notify sasl\r\n"
+                              .getBytes(StandardCharsets.UTF_8));
+                      out.flush();
+                      assertEquals("CAP REQ :multi-prefix away-notify", in.readLine());
+                      out.write(
+                          ":s CAP * ACK :multi-prefix away-notify\r\n"
+                              .getBytes(StandardCharsets.UTF_8));
+                      out.flush();
+                      assertEquals("CAP END", in.readLine());
+                    }
+                    out.write(":s 001 minh :Welcome\r\n".getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                    while (in.readLine() != null) {}
+                  } catch (IOException e) {
+                    throw new RuntimeException(e);
+                  }
+                });
         CountDownLatch accepted = new CountDownLatch(1);
-        IrcClient client = new IrcClient(new IrcClient.Listener() {
-          public void onState(long e, ConnectionState s, String reason) { if (s == ConnectionState.CONNECTED) accepted.countDown(); }
-          public void onMessage(long e, IrcMessage m) { }
-        });
+        IrcClient client =
+            new IrcClient(
+                new IrcClient.Listener() {
+                  public void onState(long e, ConnectionState s, String reason) {
+                    if (s == ConnectionState.CONNECTED) accepted.countDown();
+                  }
+
+                  public void onMessage(long e, IrcMessage m) {}
+                });
         try {
-          client.connect(new ConnectionConfig("127.0.0.1", server.getLocalPort(), false, "minh", "u", "test"));
-          assertTrue(accepted.await(4, TimeUnit.SECONDS)); client.disconnect(); task.get(4, TimeUnit.SECONDS);
-        } finally { client.shutdown(); fixture.shutdownNow(); }
+          client.connect(
+              new ConnectionConfig("127.0.0.1", server.getLocalPort(), false, "minh", "u", "test"));
+          assertTrue(accepted.await(4, TimeUnit.SECONDS));
+          client.disconnect();
+          task.get(4, TimeUnit.SECONDS);
+        } finally {
+          client.shutdown();
+          fixture.shutdownNow();
+        }
       }
     }
   }
-
 }

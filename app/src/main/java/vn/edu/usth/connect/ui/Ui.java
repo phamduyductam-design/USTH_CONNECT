@@ -18,20 +18,25 @@ public final class Ui {
   public static void themeToggle(android.app.Activity activity, View root) {
     ImageButton button = root.findViewById(R.id.theme_toggle);
     if (button == null) return;
-    boolean dark = (activity.getResources().getConfiguration().uiMode
-        & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
-        == android.content.res.Configuration.UI_MODE_NIGHT_YES;
+    boolean dark =
+        (activity.getResources().getConfiguration().uiMode
+                & android.content.res.Configuration.UI_MODE_NIGHT_MASK)
+            == android.content.res.Configuration.UI_MODE_NIGHT_YES;
     button.setImageResource(dark ? R.drawable.ic_sun : R.drawable.ic_moon);
-    button.setContentDescription(activity.getString(dark ? R.string.switch_light_mode : R.string.switch_dark_mode));
-    button.setOnClickListener(v -> {
-      vn.edu.usth.connect.ConnectApplication.from(activity).settings.darkMode(!dark);
-      ThemeMode.apply(activity, !dark);
-    });
+    button.setContentDescription(
+        activity.getString(dark ? R.string.switch_light_mode : R.string.switch_dark_mode));
+    button.setOnClickListener(
+        v -> {
+          vn.edu.usth.connect.ConnectApplication.from(activity).settings.darkMode(!dark);
+          ThemeMode.apply(activity, !dark);
+        });
   }
 
   public static String displayName(String nickname) {
     String name = nickname.split("_", 2)[0];
-    return name.isEmpty() ? nickname : name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
+    return name.isEmpty()
+        ? nickname
+        : name.substring(0, 1).toUpperCase(Locale.ROOT) + name.substring(1);
   }
 
   public static int courseColor(String icon) {
@@ -42,16 +47,27 @@ public final class Ui {
   }
 
   public static String role(Context context, String role) {
-    int id = role.equals("q") ? R.string.owner_role : role.equals("a") ? R.string.admin_role
-        : role.equals("o") ? R.string.operator_role : role.equals("h") ? R.string.halfop_role
-        : role.equals("v") ? R.string.voice_role : R.string.member_role;
+    int id =
+        role.equals("q")
+            ? R.string.owner_role
+            : role.equals("a")
+                ? R.string.admin_role
+                : role.equals("o")
+                    ? R.string.operator_role
+                    : role.equals("h")
+                        ? R.string.halfop_role
+                        : role.equals("v") ? R.string.voice_role : R.string.member_role;
     return context.getString(id);
   }
 
   public static void brand(TextView view) {
     SpannableString text = new SpannableString(view.getContext().getString(R.string.app_name));
-    text.setSpan(new android.text.style.ForegroundColorSpan(
-        ContextCompat.getColor(view.getContext(), R.color.primary)), 0, 4, 0);
+    text.setSpan(
+        new android.text.style.ForegroundColorSpan(
+            ContextCompat.getColor(view.getContext(), R.color.primary)),
+        0,
+        4,
+        0);
     view.setText(text);
   }
 
@@ -69,20 +85,18 @@ public final class Ui {
   }
 
   public static void avatar(TextView view, String nickname) {
-    String initials =
-        nickname.isEmpty()
-            ? "?"
-            : nickname.substring(0, 1).toUpperCase(Locale.ROOT);
+    String initials = nickname.isEmpty() ? "?" : nickname.substring(0, 1).toUpperCase(Locale.ROOT);
     view.setText(initials);
     int[] colors = {R.color.filled_badge, R.color.purple, R.color.teal, R.color.filled_primary};
     String lower = nickname.toLowerCase(Locale.ROOT);
-    int index = lower.startsWith("minh") ? 0 : lower.startsWith("an") ? 1
-        : lower.startsWith("ha") ? 2 : Math.floorMod(lower.hashCode(), colors.length);
+    int index =
+        lower.startsWith("minh")
+            ? 0
+            : lower.startsWith("an")
+                ? 1
+                : lower.startsWith("ha") ? 2 : Math.floorMod(lower.hashCode(), colors.length);
     view.setBackgroundTintList(
-        ColorStateList.valueOf(
-            ContextCompat.getColor(
-                view.getContext(),
-                colors[index])));
+        ColorStateList.valueOf(ContextCompat.getColor(view.getContext(), colors[index])));
   }
 
   public static String time(long timestamp) {

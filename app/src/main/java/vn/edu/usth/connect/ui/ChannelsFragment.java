@@ -10,6 +10,7 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
 public final class ChannelsFragment extends SessionFragment {
   private CatalogAdapter adapter;
@@ -41,19 +42,26 @@ public final class ChannelsFragment extends SessionFragment {
     ((TextView) v.findViewById(R.id.course_name)).setText(course.name);
     ImageView icon = v.findViewById(R.id.course_icon);
     icon.setImageResource(Ui.courseIcon(course.icon));
-    icon.setImageTintList(android.content.res.ColorStateList.valueOf(
-        androidx.core.content.ContextCompat.getColor(requireContext(), R.color.on_primary)));
-    icon.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
-        androidx.core.content.ContextCompat.getColor(requireContext(), Ui.courseColor(course.icon))));
+    icon.setImageTintList(
+        android.content.res.ColorStateList.valueOf(
+            androidx.core.content.ContextCompat.getColor(requireContext(), R.color.on_primary)));
+    icon.setBackgroundTintList(
+        android.content.res.ColorStateList.valueOf(
+            androidx.core.content.ContextCompat.getColor(
+                requireContext(), Ui.courseColor(course.icon))));
     ((TextView) v.findViewById(R.id.description)).setText(course.description);
     Ui.visible(v.findViewById(R.id.description), true);
     Ui.visible(v.findViewById(R.id.search), false);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_info);
     v.findViewById(R.id.action).setContentDescription(getString(R.string.course_info));
-    v.findViewById(R.id.action).setOnClickListener(w ->
-        new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle(course.name).setMessage(course.description)
-            .setPositiveButton(R.string.close, null).show());
+    v.findViewById(R.id.action)
+        .setOnClickListener(
+            w ->
+                new com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(course.name)
+                    .setMessage(course.description)
+                    .setPositiveButton(R.string.close, null)
+                    .show());
     Ui.visible(v.findViewById(R.id.brand), false);
     Ui.visible(v.findViewById(R.id.join), false);
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());
@@ -89,7 +97,7 @@ public final class ChannelsFragment extends SessionFragment {
       row.click = () -> main().openChat(info.name);
       row.joinVisible = !in;
       row.joining = channel != null && channel.joining;
-      row.join = () -> Dialogs.join(main(), info.name);
+      row.join = () -> ChannelDialogs.showJoin(main(), info.name);
       (in ? joined : available).add(row);
     }
     if (!joined.isEmpty()) {

@@ -4,9 +4,9 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.*;
 import static androidx.test.espresso.assertion.ViewAssertions.*;
 import static androidx.test.espresso.matcher.ViewMatchers.*;
-import static org.junit.Assert.*;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.*;
 
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.*;
@@ -65,10 +65,12 @@ public class AppFlowTest {
             });
     scenario = ActivityScenario.launch(ConnectActivity.class);
     String host = InstrumentationRegistry.getArguments().getString("server", "10.0.2.2");
+    int port = Integer.parseInt(InstrumentationRegistry.getArguments().getString("port", "6667"));
     onView(withId(R.id.nickname)).perform(replaceText("minh_ui"), closeSoftKeyboard());
     onView(withId(R.id.host)).perform(replaceText(host), closeSoftKeyboard());
     onView(withId(R.id.advanced_toggle)).perform(scrollTo(), click());
-    onView(withId(R.id.port)).perform(scrollTo(), replaceText("6667"), closeSoftKeyboard());
+    onView(withId(R.id.port))
+        .perform(scrollTo(), replaceText(String.valueOf(port)), closeSoftKeyboard());
     onView(withId(R.id.tls)).perform(scrollTo());
     try {
       onView(withId(R.id.tls)).check(matches(isChecked()));
@@ -91,7 +93,7 @@ public class AppFlowTest {
                 received.add(m);
               }
             });
-    peer.connect(new ConnectionConfig(host, 6667, false, "an_ui", "usth", "Android UI test peer"));
+    peer.connect(new ConnectionConfig(host, port, false, "an_ui", "usth", "Android UI test peer"));
     assertTrue(connected.await(10, TimeUnit.SECONDS));
   }
 
@@ -108,7 +110,11 @@ public class AppFlowTest {
     onView(withText(R.string.no_courses)).check(matches(isDisplayed()));
     onView(withId(R.id.empty_join)).perform(click());
     onView(withText("Web Development")).perform(click());
-    onView(allOf(withId(R.id.join), isDisplayed(), withParent(hasDescendant(withText("web-general")))))
+    onView(
+            allOf(
+                withId(R.id.join),
+                isDisplayed(),
+                withParent(hasDescendant(withText("web-general")))))
         .perform(click());
     onView(withId(R.id.channel)).check(matches(withText("#web-general")));
     onView(withText(R.string.join)).perform(click());
@@ -142,18 +148,27 @@ public class AppFlowTest {
     boolean previousTheme = app.settings.darkMode();
     onView(withId(R.id.theme_toggle)).perform(click());
     onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
-    assertTrue(onMain(() -> app.session.data.connection == ConnectionState.CONNECTED
-        && app.session.data.channel("#web-general") == liveChannel && liveChannel.joined
-        && liveChannel.members.containsKey("an_ui")));
+    assertTrue(
+        onMain(
+            () ->
+                app.session.data.connection == ConnectionState.CONNECTED
+                    && app.session.data.channel("#web-general") == liveChannel
+                    && liveChannel.joined
+                    && liveChannel.members.containsKey("an_ui")));
     assertEquals(!previousTheme, app.settings.darkMode());
     onView(withId(R.id.theme_toggle)).perform(click());
     onView(withId(R.id.composer)).check(matches(withText("Nháp khi xoay")));
     assertEquals(previousTheme, app.settings.darkMode());
     peer.send(IrcCommands.message("#web-general", "Vẫn nhận tin sau khi đổi theme"), null);
-    waitFor(() -> onMain(() -> liveChannel.messages.stream()
-        .anyMatch(m -> m.text.equals("Vẫn nhận tin sau khi đổi theme"))));
+    waitFor(
+        () ->
+            onMain(
+                () ->
+                    liveChannel.messages.stream()
+                        .anyMatch(m -> m.text.equals("Vẫn nhận tin sau khi đổi theme"))));
     onView(withId(R.id.members)).perform(click());
-    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed())).perform(click());
+    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed()))
+        .perform(click());
     onView(withId(R.id.message_member)).perform(click());
     onView(withId(R.id.title)).check(matches(withText("An")));
     onView(withId(R.id.composer))
@@ -165,29 +180,42 @@ public class AppFlowTest {
                 .anyMatch(
                     m -> m.command.equals("PRIVMSG") && m.last().equals("Tin riêng trên Android")));
   }
+
   private void sendCommand(String text) {
     onView(withId(R.id.composer)).perform(replaceText(text), closeSoftKeyboard());
     onView(withId(R.id.send)).perform(click());
   }
 
   private void shell(String command) throws Exception {
-    android.os.ParcelFileDescriptor fd = InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
+    android.os.ParcelFileDescriptor fd =
+        InstrumentationRegistry.getInstrumentation().getUiAutomation().executeShellCommand(command);
     try (java.io.InputStream input = new android.os.ParcelFileDescriptor.AutoCloseInputStream(fd)) {
-      byte[] buffer = new byte[1024]; while (input.read(buffer) != -1) { }
+      byte[] buffer = new byte[1024];
+      while (input.read(buffer) != -1) {}
     }
   }
 
-  @Test public void serverRoomsRolesTopicAwayMentionsAndModeration() throws Exception {
+  @Test
+  public void serverRoomsRolesTopicAwayMentionsAndModeration() throws Exception {
     String room = "#usth-ui-" + Long.toString(System.nanoTime(), 36);
     onView(withId(R.id.empty_join)).perform(click());
-    onView(allOf(withId(R.id.join), withText(R.string.join_channel), isDisplayed())).perform(click());
+    onView(allOf(withId(R.id.join), withText(R.string.join_channel), isDisplayed()))
+        .perform(click());
     onView(withId(R.id.channel)).perform(replaceText(room), closeSoftKeyboard());
     onView(withText(R.string.join)).perform(click());
-    waitFor(() -> onMain(() -> app.session.data.channel(room).joined && app.session.data.canManage(room)));
+    waitFor(
+        () ->
+            onMain(
+                () -> app.session.data.channel(room).joined && app.session.data.canManage(room)));
     peer.send(IrcCommands.join(room, ""), null);
     waitFor(() -> onMain(() -> app.session.data.channel(room).members.containsKey("an_ui")));
     sendCommand("/list");
-    waitFor(() -> onMain(() -> app.session.data.listLoaded && app.session.data.availableChannels.containsKey(room)));
+    waitFor(
+        () ->
+            onMain(
+                () ->
+                    app.session.data.listLoaded
+                        && app.session.data.availableChannels.containsKey(room)));
     onView(withText(room)).check(matches(isDisplayed())).perform(click());
     onView(withId(R.id.more)).perform(click());
     onView(withText(R.string.edit_topic)).perform(click());
@@ -196,7 +224,8 @@ public class AppFlowTest {
     waitFor(() -> onMain(() -> app.session.data.channel(room).topic.equals("Chủ đề từ giao diện")));
     onView(withId(R.id.topic)).check(matches(withText("Chủ đề từ giao diện")));
     onView(withId(R.id.members)).perform(click());
-    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed())).perform(click());
+    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed()))
+        .perform(click());
     onView(withId(R.id.manage_member)).perform(click());
     onView(withText(R.string.give_voice)).perform(click());
     waitFor(() -> onMain(() -> app.session.data.role(room, "an_ui").equals("v")));
@@ -208,25 +237,51 @@ public class AppFlowTest {
 
     if (android.os.Build.VERSION.SDK_INT >= 33)
       shell("pm grant vn.edu.usth.connect android.permission.POST_NOTIFICATIONS");
-    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> app.settings.notifications(true));
+    InstrumentationRegistry.getInstrumentation()
+        .runOnMainSync(() -> app.settings.notifications(true));
     android.app.Activity[] foreground = new android.app.Activity[1];
-    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> foreground[0] =
-        androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
-            .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED).iterator().next());
+    InstrumentationRegistry.getInstrumentation()
+        .runOnMainSync(
+            () ->
+                foreground[0] =
+                    androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                        .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED)
+                        .iterator()
+                        .next());
     shell("input keyevent KEYCODE_HOME");
-    waitFor(() -> onMain(() -> androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
-        .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.STOPPED).contains(foreground[0])));
+    waitFor(
+        () ->
+            onMain(
+                () ->
+                    androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                        .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.STOPPED)
+                        .contains(foreground[0])));
     String mention = "Chào @minh_ui, đây là tin nhắc tên!";
     peer.send(IrcCommands.message(room, mention), null);
-    android.app.NotificationManager notifications = app.getSystemService(android.app.NotificationManager.class);
-    waitFor(() -> java.util.Arrays.stream(notifications.getActiveNotifications())
-        .anyMatch(n -> n.getId() == room.hashCode() && (android.os.Build.VERSION.SDK_INT < 26
-            || n.getNotification().getChannelId().equals("mentions"))));
-    InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> app.startActivity(
-        new android.content.Intent(app, MainActivity.class)
-            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
+    android.app.NotificationManager notifications =
+        app.getSystemService(android.app.NotificationManager.class);
+    waitFor(
+        () ->
+            java.util.Arrays.stream(notifications.getActiveNotifications())
+                .anyMatch(
+                    n ->
+                        n.getId() == room.hashCode()
+                            && (android.os.Build.VERSION.SDK_INT < 26
+                                || n.getNotification().getChannelId().equals("mentions"))));
+    InstrumentationRegistry.getInstrumentation()
+        .runOnMainSync(
+            () ->
+                app.startActivity(
+                    new android.content.Intent(app, MainActivity.class)
+                        .addFlags(
+                            android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+                                | android.content.Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)));
     onView(withText(mention)).check(matches(isDisplayed()));
-    assertTrue(onMain(() -> app.session.data.channel(room).messages.stream().anyMatch(m -> m.text.equals(mention) && m.mentionNick.equals("minh_ui"))));
+    assertTrue(
+        onMain(
+            () ->
+                app.session.data.channel(room).messages.stream()
+                    .anyMatch(m -> m.text.equals(mention) && m.mentionNick.equals("minh_ui"))));
     notifications.cancelAll();
 
     onView(withId(R.id.back)).perform(click());
@@ -243,7 +298,8 @@ public class AppFlowTest {
     sendCommand("/mode " + room + " -v an_ui");
     waitFor(() -> onMain(() -> app.session.data.role(room, "an_ui").equals("u")));
     onView(withId(R.id.members)).perform(click());
-    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed())).perform(click());
+    onView(allOf(withId(R.id.detail), withText(startsWith("an_ui ·")), isDisplayed()))
+        .perform(click());
     onView(withId(R.id.manage_member)).perform(click());
     onView(withText(R.string.kick_member)).perform(click());
     onView(withId(R.id.input)).perform(replaceText("Kiểm thử giao diện"), closeSoftKeyboard());
@@ -253,5 +309,4 @@ public class AppFlowTest {
     sendCommand("/part");
     waitFor(() -> onMain(() -> !app.session.data.channel(room).joined));
   }
-
 }
