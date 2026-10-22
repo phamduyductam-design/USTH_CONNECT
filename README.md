@@ -2,6 +2,18 @@
 
 Ứng dụng Android native Java/XML, có chế độ sáng/tối lưu theo lựa chọn người dùng: kết nối IRC, trao đổi theo môn học và nhắn riêng. Dự án này được tạo từ prompt và các ảnh mẫu đã cung cấp. Danh mục môn là metadata cục bộ; tin nhắn, topic, thành viên và xác nhận JOIN đến từ phiên IRC thật.
 
+## Mục lục
+
+- [Đọc và tìm chức năng trong source](#đọc-và-tìm-chức-năng-trong-source)
+- [Mở và build](#mở-và-build)
+- [Chạy ứng dụng lần đầu](#chạy-ứng-dụng-lần-đầu)
+- [Giả định và cách dùng](#giả-định-và-cách-dùng)
+- [Demo hai client trên server bạn kiểm soát](#demo-hai-client-trên-server-bạn-kiểm-soát)
+- [Chức năng IRC đầy đủ theo checklist](#chức-năng-irc-đầy-đủ-theo-checklist)
+- [Tổ chức source](#tổ-chức-source)
+- [Xử lý sự cố thường gặp](#xử-lý-sự-cố-thường-gặp)
+- [Các giới hạn được chủ động giữ rõ](#các-giới-hạn-được-chủ-động-giữ-rõ)
+
 ## Đọc và tìm chức năng trong source
 
 Bắt đầu từ [bản đồ mã nguồn](docs/CODE_MAP.md): có bảng tính năng → file/hàm/layout, luồng gửi/nhận tin và thứ tự đọc cho người mới. Xem [nhận xét code và các phần đã làm sạch](docs/CODE_REVIEW.md).
@@ -42,6 +54,28 @@ $env:JAVA_HOME = 'C:\path\to\jdk-17'
 macOS/Linux: `chmod +x gradlew`, rồi `./gradlew assembleDebug lintDebug testDebugUnitTest`. Đặt `sdk.dir=...` trong `local.properties` hoặc dùng `ANDROID_HOME`. Không đưa `local.properties`, `.tools/`, `.gradle/` hay `build/` lên Git. APK nằm ở `app/build/outputs/apk/debug/app-debug.apk`.
 
 SDK, AVD và server demo cục bộ có thể đặt trong `.tools/` (được Git bỏ qua). Các script chạy demo nằm trong `tools/`; không cần đưa SDK/JDK nhiều GB vào repository.
+
+## Chạy ứng dụng lần đầu
+
+Ứng dụng cần thiết bị hoặc máy ảo chạy **Android 7.0 (API 24) trở lên**. Build APK không yêu cầu máy chủ IRC; kết nối và trao đổi tin nhắn cần một máy chủ IRC đang hoạt động.
+
+1. Hoàn tất cấu hình JDK/SDK ở phần **Mở và build** và chờ Gradle Sync thành công.
+2. Trong Android Studio, chọn module `app`, chọn máy ảo hoặc điện thoại đã bật USB debugging, rồi nhấn **Run**. Nếu dùng VS Code, làm theo [hướng dẫn chạy bằng task](docs/VSCODE_RUN.md).
+3. Ở màn hình kết nối, nhập nickname riêng, địa chỉ máy chủ, cổng và lựa chọn TLS phù hợp. Không nhập `irc.example.edu` như một máy chủ thật.
+4. Nhấn **Kết nối** và chờ máy chủ chấp nhận phiên. Mở **Môn học**, chọn môn và kênh, rồi chọn **Tham gia**; hoặc vào **Phòng trên server** để duyệt phòng công khai.
+5. Sau khi JOIN được xác nhận, gửi tin nhắn. Để kiểm tra hai chiều, dùng client thứ hai với nickname khác trên cùng máy chủ và cùng kênh; xem kịch bản demo bên dưới.
+
+Thông số cho demo cục bộ với Android Emulator mặc định, sau khi đã khởi động daemon IRC trên máy tính:
+
+| Trường | Giá trị demo |
+|---|---|
+| Máy chủ | `10.0.2.2` |
+| Cổng | `6667` |
+| TLS | Tắt, với listener demo không dùng TLS |
+| Nickname | `minh_usth` và `an_usth` cho hai client |
+| Kênh | `#web-general` |
+
+`10.0.2.2` là địa chỉ máy host nhìn từ Android Emulator, không phải địa chỉ để điện thoại thật kết nối. Với điện thoại thật, dùng địa chỉ LAN của máy chạy daemon và cấu hình listener/firewall phù hợp như phần demo.
 
 ## Giả định và cách dùng
 
@@ -126,6 +160,23 @@ docs/                              # Kiến trúc, liên hệ slide, kịch bả
 ```
 
 Đọc tiếp [kiến trúc và luồng dữ liệu](docs/ARCHITECTURE.md), [bảng liên hệ tài liệu môn học](docs/COURSE_MAPPING.md), [kịch bản bảo vệ](docs/DEFENSE.md) và [báo cáo kiểm thử](docs/TEST_REPORT.md).
+
+## Xử lý sự cố thường gặp
+
+| Hiện tượng | Cách kiểm tra / xử lý |
+|---|---|
+| Gradle không chạy hoặc báo JDK không phù hợp | Chạy `java -version` và `./gradlew --version` (Windows: `.\gradlew.bat --version`); kiểm tra Gradle dùng JDK 17. Trong Android Studio, kiểm tra riêng mục Gradle JDK. |
+| Báo không tìm thấy Android SDK | Cấu hình `sdk.dir` trong `local.properties` hoặc biến `ANDROID_HOME` trỏ đến SDK đã cài; kiểm tra có SDK Platform 35. Không commit đường dẫn riêng của máy. |
+| Gradle không tải được distribution/dependency | Kiểm tra kết nối mạng và cấu hình proxy nếu có. Lần build đầu cần tải Gradle và các dependency chưa có trong cache. |
+| Không thấy thiết bị để chạy app | Khởi động AVD trong Device Manager hoặc bật USB debugging và chấp nhận yêu cầu cho phép gỡ lỗi trên điện thoại. |
+| Không kết nối được IRC | Kiểm tra daemon đang chạy, host/cổng chính xác, TLS khớp listener và firewall cho phép kết nối. Trên emulator, `127.0.0.1` là chính emulator; demo trên máy host dùng `10.0.2.2`. |
+| Nickname bị từ chối hoặc đang được sử dụng | Chọn nickname ASCII khác, tối đa 30 ký tự; tuân theo giới hạn riêng của server nếu thấp hơn. |
+| Nhìn thấy môn học nhưng chưa gửi được tin | Danh mục môn là dữ liệu cục bộ. Cần kết nối IRC và chờ server xác nhận JOIN kênh; kiểm tra lỗi key/quyền truy cập nếu có. |
+| Đổi topic, cấp quyền hoặc KICK bị từ chối | Kiểm tra quyền của nickname trong kênh. Quyền thao tác do server quyết định, không phải chỉ do giao diện ứng dụng. |
+| Không nhận thông báo khi app ở nền | Kiểm tra quyền thông báo và trạng thái kết nối. Phiên chỉ hoạt động khi process còn sống; ứng dụng không dùng foreground service. |
+| Mở lại app không thấy lịch sử chat | Lịch sử chỉ nằm trong RAM. Sau khi process bị hủy, cần kết nối và JOIN lại; ứng dụng chưa lưu hoặc tải lại lịch sử. |
+
+Khi báo lỗi, ghi rõ bước tái hiện, phiên bản Android, thiết bị/máy ảo, lệnh đã chạy và thông báo lỗi. Nếu gửi log, loại bỏ thông tin riêng tư và nội dung hội thoại không cần thiết.
 
 ## Các giới hạn được chủ động giữ rõ
 
