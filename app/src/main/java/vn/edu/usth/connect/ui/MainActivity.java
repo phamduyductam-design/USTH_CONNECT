@@ -54,7 +54,8 @@ public final class MainActivity extends AppCompatActivity {
     Fragment fragment =
         id == R.id.nav_messages
             ? new ConversationsFragment()
-            : id == R.id.nav_profile ? new ProfileFragment()
+            : id == R.id.nav_profile
+                ? new ProfileFragment()
                 : id == R.id.nav_server ? new ServerChannelsFragment() : new CoursesFragment();
     getSupportFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
   }
@@ -72,7 +73,9 @@ public final class MainActivity extends AppCompatActivity {
     open(ChatFragment.create(target));
   }
 
-  public void showServerChannels() { navigation.setSelectedItemId(R.id.nav_server); }
+  public void showServerChannels() {
+    navigation.setSelectedItemId(R.id.nav_server);
+  }
 
   public void showProfile() {
     navigation.setSelectedItemId(R.id.nav_profile);

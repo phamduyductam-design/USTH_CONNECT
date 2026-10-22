@@ -9,6 +9,7 @@ import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
 public final class ConversationsFragment extends SessionFragment {
   private CatalogAdapter adapter;
@@ -30,7 +31,7 @@ public final class ConversationsFragment extends SessionFragment {
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_nick);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_edit);
     v.findViewById(R.id.action).setContentDescription(getString(R.string.new_conversation));
-    v.findViewById(R.id.action).setOnClickListener(w -> Dialogs.newConversation(main()));
+    v.findViewById(R.id.action).setOnClickListener(w -> UserDialogs.showNewConversation(main()));
     adapter = new CatalogAdapter();
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));

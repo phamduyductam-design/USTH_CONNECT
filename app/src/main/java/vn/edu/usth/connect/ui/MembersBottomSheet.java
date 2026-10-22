@@ -12,6 +12,7 @@ import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
 public final class MembersBottomSheet extends BottomSheetDialogFragment
     implements SessionRepository.Listener {
@@ -44,7 +45,11 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     if (b != null) selectedNick = b.getString("selected", "");
     v.findViewById(R.id.close).setOnClickListener(w -> dismiss());
     v.findViewById(R.id.refresh_members).setOnClickListener(w -> refresh());
-    v.findViewById(R.id.manage_member).setOnClickListener(w -> Dialogs.member((MainActivity) requireActivity(), target, selectedNick));
+    v.findViewById(R.id.manage_member)
+        .setOnClickListener(
+            w ->
+                UserDialogs.showMemberActions(
+                    (MainActivity) requireActivity(), target, selectedNick));
     adapter = new CatalogAdapter();
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -84,7 +89,8 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
   public void changed() {
     if (root == null) return;
     Channel c = session.data.channel(target);
-    if (!selectedNick.isEmpty() && !c.members.containsKey(IrcParser.fold(selectedNick))) selectedNick = "";
+    if (!selectedNick.isEmpty() && !c.members.containsKey(IrcParser.fold(selectedNick)))
+      selectedNick = "";
     ((TextView) root.findViewById(R.id.subtitle))
         .setText(
             getString(
@@ -95,22 +101,34 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
         ((EditText) root.findViewById(R.id.search)).getText().toString().toLowerCase(Locale.ROOT);
     List<CatalogAdapter.Row> rows = new ArrayList<>();
     List<IrcUser> users = new ArrayList<>(c.members.values());
-    users.sort(Comparator.comparing((IrcUser u) ->
-        !IrcParser.fold(u.nickname).equals(IrcParser.fold(session.data.nickname)))
-        .thenComparing(u -> IrcParser.fold(u.nickname)));
+    users.sort(
+        Comparator.comparing(
+                (IrcUser u) ->
+                    !IrcParser.fold(u.nickname).equals(IrcParser.fold(session.data.nickname)))
+            .thenComparing(u -> IrcParser.fold(u.nickname)));
     for (IrcUser user : users)
       if (user.nickname.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
         row.name = Ui.displayName(user.nickname);
-        row.detail = user.nickname + " · " + Ui.role(requireContext(), session.data.role(target, user.nickname));
+        row.detail =
+            user.nickname
+                + " · "
+                + Ui.role(requireContext(), session.data.role(target, user.nickname));
         if (session.data.awayUsers.containsKey(IrcParser.fold(user.nickname)))
-          row.preview = getString(R.string.away_presence) + (session.data.awayUsers.get(IrcParser.fold(user.nickname)).isEmpty()
-              ? "" : ": " + session.data.awayUsers.get(IrcParser.fold(user.nickname)));
+          row.preview =
+              getString(R.string.away_presence)
+                  + (session.data.awayUsers.get(IrcParser.fold(user.nickname)).isEmpty()
+                      ? ""
+                      : ": " + session.data.awayUsers.get(IrcParser.fold(user.nickname)));
         row.avatar = user.nickname;
         row.self = IrcParser.fold(user.nickname).equals(IrcParser.fold(session.data.nickname));
         row.selected = IrcParser.fold(user.nickname).equals(IrcParser.fold(selectedNick));
         if (!row.self) {
-          row.click = () -> { selectedNick = user.nickname; changed(); };
+          row.click =
+              () -> {
+                selectedNick = user.nickname;
+                changed();
+              };
           row.joinVisible = row.selected;
           row.actionText = R.string.private_message;
           row.join = this::openSelected;
@@ -119,12 +137,17 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
       }
     if (rows.isEmpty()) rows.add(CatalogAdapter.Row.empty(getString(R.string.empty_members), ""));
     adapter.submit(rows);
-    root.findViewById(R.id.refresh_members).setEnabled(session.canSend(target) && !c.namesInProgress);
-    Ui.visible(root.findViewById(R.id.manage_member), !selectedNick.isEmpty() && session.canSend(target) && session.data.canManage(target));
+    root.findViewById(R.id.refresh_members)
+        .setEnabled(session.canSend(target) && !c.namesInProgress);
+    Ui.visible(
+        root.findViewById(R.id.manage_member),
+        !selectedNick.isEmpty() && session.canSend(target) && session.data.canManage(target));
     android.widget.TextView action = root.findViewById(R.id.message_member);
     action.setEnabled(!selectedNick.isEmpty());
-    action.setText(selectedNick.isEmpty() ? getString(R.string.private_message)
-        : getString(R.string.message_member, Ui.displayName(selectedNick)));
+    action.setText(
+        selectedNick.isEmpty()
+            ? getString(R.string.private_message)
+            : getString(R.string.message_member, Ui.displayName(selectedNick)));
   }
 
   private void openSelected() {

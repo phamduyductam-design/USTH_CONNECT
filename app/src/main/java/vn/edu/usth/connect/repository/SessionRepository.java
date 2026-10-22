@@ -9,6 +9,10 @@ import vn.edu.usth.connect.storage.SettingsStore;
 
 /** Application owns this object. Never holds an Activity, Fragment, View or lifecycle owner. */
 public final class SessionRepository implements IrcClient.Listener {
+  private static final long JOIN_TIMEOUT_MS = 15000;
+  private static final long NAMES_TIMEOUT_MS = 15000;
+  private static final long LIST_TIMEOUT_MS = 30000;
+
   public interface Listener {
     void changed();
   }
@@ -18,7 +22,7 @@ public final class SessionRepository implements IrcClient.Listener {
   }
 
   public final SessionState data = new SessionState();
-  private final Handler main = new Handler(Looper.getMainLooper());
+  private final Handler mainHandler = new Handler(Looper.getMainLooper());
   private final Set<Listener> listeners = new LinkedHashSet<>();
   private final Map<String, String> channelKeys = new HashMap<>();
   private final SettingsStore settings;
@@ -40,32 +44,38 @@ public final class SessionRepository implements IrcClient.Listener {
     listeners.remove(listener);
   }
 
-  private void publish() {
+  private void notifyListeners() {
     for (Listener listener : new ArrayList<>(listeners)) listener.changed();
   }
 
-  public void connect(ConnectionConfig c) {
+  public void connect(ConnectionConfig newConfig) {
     if (config == null
-        || !config.serverId().equals(c.serverId())
-        || !IrcParser.fold(config.nickname).equals(IrcParser.fold(c.nickname))) {
-      data.availableChannels.clear(); data.awayUsers.clear(); data.onlineUsers.clear();
-      data.listing = false; data.listLoaded = false; data.requestedAway = "";
-      data.prefixModes = "qaohv"; data.prefixSymbols = "~&@%+"; data.channelModes = "beI,k,l,imnpst";
+        || !config.serverId().equals(newConfig.serverId())
+        || !IrcParser.fold(config.nickname).equals(IrcParser.fold(newConfig.nickname))) {
+      data.availableChannels.clear();
+      data.awayUsers.clear();
+      data.onlineUsers.clear();
+      data.listing = false;
+      data.listLoaded = false;
+      data.requestedAway = "";
+      data.prefixModes = "qaohv";
+      data.prefixSymbols = "~&@%+";
+      data.channelModes = "beI,k,l,imnpst";
       data.channels.clear();
       data.conversations.clear();
       channelKeys.clear();
       data.activeTarget = "";
     }
-    config = c;
-    settings.save(c);
-    data.nickname = c.nickname;
+    config = newConfig;
+    settings.save(newConfig);
+    data.nickname = newConfig.nickname;
     data.errorCode = "";
-    client.connect(c);
+    client.connect(newConfig);
   }
 
   @Override
   public void onState(long epoch, ConnectionState state, String reason) {
-    main.post(
+    mainHandler.post(
         () -> {
           if (epoch != client.epoch()) return;
           data.connection = state;
@@ -79,13 +89,13 @@ public final class SessionRepository implements IrcClient.Listener {
               if (c.wanted && !c.joined)
                 join(c.target, channelKeys.getOrDefault(IrcParser.fold(c.target), ""));
           }
-          publish();
+          notifyListeners();
         });
   }
 
   @Override
   public void onMessage(long epoch, IrcMessage message) {
-    main.post(
+    mainHandler.post(
         () -> {
           if (epoch != client.epoch()) return;
           ChatMessage received = data.accept(message);
@@ -102,7 +112,7 @@ public final class SessionRepository implements IrcClient.Listener {
             incomingListener.incoming(
                 IrcParser.isChannel(message.param(0)) ? message.param(0) : message.nick(),
                 received);
-          publish();
+          notifyListeners();
         });
   }
 
@@ -119,28 +129,28 @@ public final class SessionRepository implements IrcClient.Listener {
     client.send(
         line,
         (written, uncertain) ->
-            main.post(
+            mainHandler.post(
                 () -> {
                   if (epoch != client.epoch()) return;
                   if (!written) {
                     c.joining = false;
                     data.errorCode = "network";
-                    publish();
+                    notifyListeners();
                   }
                 }));
     // A server that silently drops JOIN must not leave the button pending forever.
-    main.postDelayed(
+    mainHandler.postDelayed(
         () -> {
           if (epoch == client.epoch() && c.joining && !c.joined) {
             c.joining = false;
             c.wanted = false;
             data.errorCode = "join_timeout";
             data.errorTarget = name;
-            publish();
+            notifyListeners();
           }
         },
-        15000);
-    publish();
+        JOIN_TIMEOUT_MS);
+    notifyListeners();
   }
 
   public void part(String target) {
@@ -149,7 +159,7 @@ public final class SessionRepository implements IrcClient.Listener {
     channelKeys.remove(IrcParser.fold(target));
     if (data.connection == ConnectionState.CONNECTED && c.joined)
       client.send(IrcCommands.part(target), null);
-    publish();
+    notifyListeners();
   }
 
   public void changeNick(String nick) {
@@ -158,27 +168,42 @@ public final class SessionRepository implements IrcClient.Listener {
     client.send(IrcCommands.nick(nick), null);
   }
 
-  private void command(String line) {
+  private void sendCommand(String line) {
     if (data.connection != ConnectionState.CONNECTED) throw new IllegalStateException("offline");
-    data.errorCode = ""; data.errorDetail = "";
+    data.errorCode = "";
+    data.errorDetail = "";
     long epoch = client.epoch();
-    client.send(line, (written, uncertain) -> main.post(() -> {
-      if (epoch == client.epoch() && !written) { data.errorCode = "network"; publish(); }
-    }));
-    publish();
+    client.send(
+        line,
+        (written, uncertain) ->
+            mainHandler.post(
+                () -> {
+                  if (epoch == client.epoch() && !written) {
+                    data.errorCode = "network";
+                    notifyListeners();
+                  }
+                }));
+    notifyListeners();
   }
 
   public void listChannels() {
     if (data.listing) return;
-    command(IrcCommands.list());
-    data.availableChannels.clear(); data.listing = true; data.listLoaded = false;
+    sendCommand(IrcCommands.list());
+    data.availableChannels.clear();
+    data.listing = true;
+    data.listLoaded = false;
     long epoch = client.epoch();
-    main.postDelayed(() -> {
-      if (epoch == client.epoch() && data.listing) {
-        data.listing = false; data.errorCode = "timeout"; data.errorTarget = "LIST"; publish();
-      }
-    }, 30000);
-    publish();
+    mainHandler.postDelayed(
+        () -> {
+          if (epoch == client.epoch() && data.listing) {
+            data.listing = false;
+            data.errorCode = "timeout";
+            data.errorTarget = "LIST";
+            notifyListeners();
+          }
+        },
+        LIST_TIMEOUT_MS);
+    notifyListeners();
   }
 
   public void refreshNames(String target) {
@@ -186,48 +211,91 @@ public final class SessionRepository implements IrcClient.Listener {
     if (!canSend(target)) throw new IllegalStateException("offline");
     Channel c = data.channel(target);
     if (c.namesInProgress) return;
-    c.namesInProgress = true; c.namesBatch.clear(); c.namesRemoved.clear();
-    command(line); refreshWho(target);
+    c.namesInProgress = true;
+    c.namesBatch.clear();
+    c.namesRemoved.clear();
+    sendCommand(line);
+    refreshWho(target);
     long epoch = client.epoch();
-    main.postDelayed(() -> {
-      if (epoch == client.epoch() && c.namesInProgress) {
-        c.namesInProgress = false; c.namesBatch.clear(); c.namesRemoved.clear();
-        data.errorCode = "timeout"; data.errorTarget = target; publish();
-      }
-    }, 15000);
+    mainHandler.postDelayed(
+        () -> {
+          if (epoch == client.epoch() && c.namesInProgress) {
+            c.namesInProgress = false;
+            c.namesBatch.clear();
+            c.namesRemoved.clear();
+            data.errorCode = "timeout";
+            data.errorTarget = target;
+            notifyListeners();
+          }
+        },
+        NAMES_TIMEOUT_MS);
   }
 
   public void refreshWho(String target) {
     String line = IrcCommands.who(target);
     if (!IrcParser.isChannel(target)) {
-      data.onlineUsers.remove(IrcParser.fold(target)); data.awayUsers.remove(IrcParser.fold(target));
+      data.onlineUsers.remove(IrcParser.fold(target));
+      data.awayUsers.remove(IrcParser.fold(target));
     }
-    command(line);
+    sendCommand(line);
   }
-  public void topic(String target, String text) { command(IrcCommands.topic(target, text)); }
-  public void mode(String target, String flags, String arguments) { command(IrcCommands.mode(target, flags, arguments)); }
-  public void kick(String target, String nick, String reason) { command(IrcCommands.kick(target, nick, reason)); }
+
+  public void topic(String target, String text) {
+    sendCommand(IrcCommands.topic(target, text));
+  }
+
+  public void mode(String target, String flags, String arguments) {
+    sendCommand(IrcCommands.mode(target, flags, arguments));
+  }
+
+  public void kick(String target, String nick, String reason) {
+    sendCommand(IrcCommands.kick(target, nick, reason));
+  }
+
   public void setAway(String reason) {
     String line = IrcCommands.away(reason);
     if (data.connection != ConnectionState.CONNECTED) throw new IllegalStateException("offline");
     data.requestedAway = reason == null ? "" : reason;
-    command(line);
+    sendCommand(line);
   }
 
   public void execute(SlashCommand command) {
     switch (command.name) {
-      case "join": join(command.target, command.extra); break;
-      case "nick": changeNick(command.target); break;
-      case "msg": send(command.target, command.text); break;
-      case "part": part(command.target); break;
-      case "names": refreshNames(command.target); break;
-      case "who": refreshWho(command.target); break;
-      case "list": listChannels(); break;
-      case "topic": topic(command.target, command.text); break;
-      case "mode": mode(command.target, command.text, command.extra); break;
-      case "kick": kick(command.target, command.text, command.extra); break;
-      case "away": setAway(command.text); break;
-      default: throw new IllegalArgumentException("command");
+      case "join":
+        join(command.target, command.extra);
+        break;
+      case "nick":
+        changeNick(command.target);
+        break;
+      case "msg":
+        send(command.target, command.text);
+        break;
+      case "part":
+        part(command.target);
+        break;
+      case "names":
+        refreshNames(command.target);
+        break;
+      case "who":
+        refreshWho(command.target);
+        break;
+      case "list":
+        listChannels();
+        break;
+      case "topic":
+        topic(command.target, command.text);
+        break;
+      case "mode":
+        mode(command.target, command.text, command.extra);
+        break;
+      case "kick":
+        kick(command.target, command.text, command.extra);
+        break;
+      case "away":
+        setAway(command.text);
+        break;
+      default:
+        throw new IllegalArgumentException("command");
     }
   }
 
@@ -258,7 +326,7 @@ public final class SessionRepository implements IrcClient.Listener {
     client.send(
         line,
         (written, uncertain) ->
-            main.post(
+            mainHandler.post(
                 () -> {
                   if (epoch != client.epoch()) return;
                   // A rejection can arrive before the write callback is processed.
@@ -267,15 +335,15 @@ public final class SessionRepository implements IrcClient.Listener {
                         written
                             ? ChatMessage.Status.WRITTEN
                             : uncertain ? ChatMessage.Status.UNCERTAIN : ChatMessage.Status.FAILED;
-                  publish();
+                  notifyListeners();
                 }));
-    publish();
+    notifyListeners();
   }
 
   public void setActive(String target) {
     data.activeTarget = target;
     if (!target.isEmpty()) data.markRead(target);
-    publish();
+    notifyListeners();
   }
 
   public void clearActive(String target) {

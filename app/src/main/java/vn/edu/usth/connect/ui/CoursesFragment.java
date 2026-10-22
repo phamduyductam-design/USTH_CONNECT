@@ -10,6 +10,7 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
 public final class CoursesFragment extends SessionFragment {
   private CatalogAdapter adapter;
@@ -32,8 +33,13 @@ public final class CoursesFragment extends SessionFragment {
     Ui.visible(view.findViewById(R.id.account_avatar), true);
     view.findViewById(R.id.account_avatar).setOnClickListener(v -> main().showProfile());
     view.findViewById(R.id.account_avatar).setContentDescription(getString(R.string.profile));
-    view.findViewById(R.id.empty_join).setOnClickListener(v -> { discovering = true; render(); });
-    view.findViewById(R.id.join).setOnClickListener(v -> Dialogs.join(main(), ""));
+    view.findViewById(R.id.empty_join)
+        .setOnClickListener(
+            v -> {
+              discovering = true;
+              render();
+            });
+    view.findViewById(R.id.join).setOnClickListener(v -> ChannelDialogs.showJoin(main(), ""));
     adapter = new CatalogAdapter();
     RecyclerView list = view.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
