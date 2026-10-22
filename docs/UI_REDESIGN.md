@@ -18,7 +18,7 @@ Tham chiếu trực tiếp tám ảnh `01_Ket_noi` đến `08_Ca_nhan` trong b�
 
 - Màu chính #2E3B8F, đỏ USTH #EF2028, nền #F5F7FB, surface trắng, chữ #19233C/#667085, đường viền #E5E9F2. Chấm kết nối dùng #12B76A; chữ trạng thái xanh đậm hơn để đọc rõ trên nền sáng. Dark mode có palette riêng và giữ lựa chọn đã lưu.
 - Font sans hệ thống hỗ trợ tiếng Việt; tiêu đề 26sp, section 18sp, body 16sp, supporting 14sp, timestamp/nav 12sp. Bo góc 12–16dp; các nút và vùng thao tác chính tối thiểu 48dp. Hạn chế shadow.
-- Logo JPG được sao chép nguyên bản từ asset được cung cấp vào drawable-nodpi, giữ tỷ lệ bằng fitCenter; SHA-256 trùng file gốc. Không vẽ lại logo, không đổi màu. Chỉ dùng logo lớn ở màn Kết nối.
+- Logo hiện dùng PNG tách nền trong suốt từ ảnh người dùng cung cấp; dùng chung ở màn Kết nối, đầu các trang chính và icon ứng dụng, giữ tỷ lệ bằng fitCenter. Chi tiết cập nhật và phạm vi xử lý ảnh ở [LOGO_BRANDING.md](LOGO_BRANDING.md).
 
 | Màn hình | Triển khai |
 |---|---|
@@ -77,7 +77,7 @@ Các drawable/string/dimen/style không còn được app sử dụng sau redesi
 - Android API 35, kích thước tham chiếu 390×844dp: 3 instrumentation test qua. Hai luồng cũ tiếp tục xác nhận JOIN/chat/PM, khôi phục Activity/nháp, đổi theme, LIST, TOPIC, NAMES/WHO, cấp/thu Voice, AWAY, notification nhắc tên, KICK, PART. Kiểm tra thêm nhóm tin liên tiếp, ba tab, empty PM → tạo PM, multiline/IME, đổi nickname qua GUI và ngắt có xác nhận.
 - Chạy thêm bài ba tab/PM/bàn phím/đổi nick/ngắt trên 360×740dp, cỡ chữ hệ thống 115%: `OK (1 test)`. Không thay đổi màn hình hoặc cỡ chữ của emulator người dùng.
 - NetworkSmoke và AdvancedNetworkSmoke: 21 bước PASS qua IRC TCP thật trên Ergo riêng. Không dùng bot phản hồi giả để thay kiểm tra giao thức.
-- Logo JPG trùng SHA-256 bản người dùng; engine/repository/model/storage/assets/Gradle/manifest không có diff.
+- Ở bản redesign ban đầu, logo JPG trùng SHA-256 bản người dùng; engine/repository/model/storage/assets/Gradle/manifest không có diff. Logo sau đó được cập nhật thành PNG trong suốt theo yêu cầu; xem LOGO_BRANDING.md.
 - Formatter và `git diff --check` qua. Screenshot lấy trực tiếp từ máy ảo trong các test, không phải render lại mockup.
 
 Máy ảo kiểm thử là bản sao read-only `emulator-5556`; daemon riêng `127.0.0.1:16667` và database riêng. Không cài lại hoặc xóa app/dữ liệu ở emulator-5554 đang mở của người dùng.

@@ -4,6 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:ignore="MonochromeLauncherIcon">
     <!-- Preserve the supplied red/blue logo instead of inventing a monochrome version. -->
-    <background android:drawable="@android:color/white" />
+    <background android:drawable="@android:color/transparent" />
     <foreground android:drawable="@drawable/ic_launcher_foreground" />
 </adaptive-icon>

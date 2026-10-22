@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="42dp"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:baselineAligned="false">
+    <ImageView
+        android:layout_width="84dp"
+        android:layout_height="42dp"
+        android:src="@drawable/usth_university_logo"
+        android:scaleType="fitCenter"
+        android:contentDescription="@string/usth" />
+    <TextView
+        style="@style/Heading"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="@string/connect_word"
+        android:textSize="14sp"
+        android:textColor="@color/primary" />
+</LinearLayout>

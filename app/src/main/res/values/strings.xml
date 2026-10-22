@@ -1,5 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">USTH Connect</string>
+    <string name="connect_word">Connect</string>
     <string name="usth">USTH</string>
     <string name="tagline">Kết nối cùng bạn học</string>
     <string name="nickname">Biệt danh</string>
