@@ -60,17 +60,6 @@ public final class UiHelpers {
     return context.getString(id);
   }
 
-  public static void brand(TextView view) {
-    SpannableString text = new SpannableString(view.getContext().getString(R.string.app_name));
-    text.setSpan(
-        new android.text.style.ForegroundColorSpan(
-            ContextCompat.getColor(view.getContext(), R.color.primary)),
-        0,
-        4,
-        0);
-    view.setText(text);
-  }
-
   public static void watch(EditText edit, Runnable action) {
     edit.addTextChangedListener(
         new TextWatcher() {

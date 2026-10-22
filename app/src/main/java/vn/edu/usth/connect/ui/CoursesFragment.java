@@ -27,7 +27,6 @@ public final class CoursesFragment extends SessionAwareFragment {
   public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
     super.onViewCreated(view, saved);
     discovering = saved != null && saved.getBoolean("discovering");
-    UiHelpers.brand(view.findViewById(R.id.brand));
     UiHelpers.visible(view.findViewById(R.id.back), false);
     UiHelpers.visible(view.findViewById(R.id.action), false);
     UiHelpers.visible(view.findViewById(R.id.account_avatar), true);

@@ -1,5 +1,4 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="catalog_brand">USTH CONNECT</string>
     <string name="catalog_discover_channels">Khám phá kênh</string>
     <string name="catalog_browse_server">Phòng trên server</string>
     <string name="catalog_course_joined">%1$d kênh · %2$d đã tham gia</string>

@@ -27,15 +27,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:orientation="vertical">
-                <TextView
-                    style="@style/Caption"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/cp_brand_label"
-                    android:textColor="@color/primary"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.15"
-                    android:textStyle="bold" />
+                <include
+                    layout="@layout/view_app_brand" />
                 <TextView
                     android:id="@+id/title"
                     style="@style/Title"
