@@ -9,7 +9,6 @@
     <string name="cp_tls_disabled">Không dùng TLS</string>
     <string name="cp_username">Tên tài khoản IRC</string>
     <string name="cp_real_name">Tên hiển thị IRC</string>
-    <string name="cp_brand_label">USTH CONNECT</string>
     <string name="cp_profile_server">Kết nối IRC</string>
     <string name="cp_profile_settings">Cài đặt ứng dụng</string>
     <string name="cp_server_address">%1$s : %2$d</string>

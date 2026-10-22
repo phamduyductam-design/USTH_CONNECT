@@ -119,7 +119,7 @@ icons={
 for name,path in icons.items():
  write(f'res/drawable/ic_{name}.xml',f'<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:pathData="{path}" android:fillColor="@android:color/transparent" android:strokeColor="@color/primary" android:strokeWidth="1.8" android:strokeLineCap="round" android:strokeLineJoin="round"/></vector>')
 write('res/drawable/ic_send.xml','<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24"><path android:pathData="M2,11 L22,2 L15,22 L10,14 L17,7 L8,12 Z" android:fillColor="@color/surface"/></vector>')
-# Launcher icons reuse the supplied USTH JPG through mipmap XML; maintained separately.
+# Launcher icons reuse the transparent USTH PNG through mipmap XML; maintained separately.
 write('res/menu/navigation.xml','<menu xmlns:android="http://schemas.android.com/apk/res/android">'+''.join(f'<item android:id="@+id/nav_{k}" android:title="@string/{k}" android:icon="@drawable/ic_{ic}"/>' for k,ic in [('courses','book'),('messages','chat'),('profile','person')])+'</menu>')
 
 NS='xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"'

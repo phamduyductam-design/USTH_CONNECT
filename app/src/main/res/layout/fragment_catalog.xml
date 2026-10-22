@@ -33,16 +33,12 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1">
-                <TextView
+                <include
                     android:id="@+id/brand"
-                    style="@style/Heading"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:text="@string/catalog_brand"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.14"
-                    android:textColor="@color/primary" />
+                    layout="@layout/view_app_brand"
+                    android:layout_width="wrap_content"
+                    android:layout_height="42dp"
+                    android:layout_gravity="center_vertical" />
             </FrameLayout>
             <TextView
                 android:id="@+id/toolbar_title"
