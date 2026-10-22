@@ -74,11 +74,11 @@ public class ExtendedCommandsTest {
 
   @Test
   public void mentionsRespectBoundariesRfcFoldingAndOriginalIndices() {
-    assertTrue(Mentions.ranges("minh_usth2 aminh_usth minh_usth_x", "minh_usth").isEmpty());
-    assertEquals(2, Mentions.ranges("@MINH_usth, chào minh_usth!", "minh_usth").size());
-    assertEquals(1, Mentions.ranges("Chào n{ck~!", "N[CK^").size());
+    assertTrue(NicknameMentions.ranges("minh_usth2 aminh_usth minh_usth_x", "minh_usth").isEmpty());
+    assertEquals(2, NicknameMentions.ranges("@MINH_usth, chào minh_usth!", "minh_usth").size());
+    assertEquals(1, NicknameMentions.ranges("Chào n{ck~!", "N[CK^").size());
     String text = "İ 😊 @minh, xin chào";
-    int[] range = Mentions.ranges(text, "minh").get(0);
+    int[] range = NicknameMentions.ranges(text, "minh").get(0);
     assertEquals("minh", text.substring(range[0], range[1]));
   }
 }

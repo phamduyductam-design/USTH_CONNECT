@@ -12,7 +12,7 @@ import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
-public final class CoursesFragment extends SessionFragment {
+public final class CoursesFragment extends SessionAwareFragment {
   private CatalogAdapter adapter;
   private boolean discovering;
 
@@ -27,10 +27,10 @@ public final class CoursesFragment extends SessionFragment {
   public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
     super.onViewCreated(view, saved);
     discovering = saved != null && saved.getBoolean("discovering");
-    Ui.brand(view.findViewById(R.id.brand));
-    Ui.visible(view.findViewById(R.id.back), false);
-    Ui.visible(view.findViewById(R.id.action), false);
-    Ui.visible(view.findViewById(R.id.account_avatar), true);
+    UiHelpers.brand(view.findViewById(R.id.brand));
+    UiHelpers.visible(view.findViewById(R.id.back), false);
+    UiHelpers.visible(view.findViewById(R.id.action), false);
+    UiHelpers.visible(view.findViewById(R.id.account_avatar), true);
     view.findViewById(R.id.account_avatar).setOnClickListener(v -> main().showProfile());
     view.findViewById(R.id.account_avatar).setContentDescription(getString(R.string.profile));
     view.findViewById(R.id.empty_join)
@@ -44,7 +44,7 @@ public final class CoursesFragment extends SessionFragment {
     RecyclerView list = view.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     list.setAdapter(adapter);
-    Ui.watch(view.findViewById(R.id.search), this::render);
+    UiHelpers.watch(view.findViewById(R.id.search), this::render);
   }
 
   @Override
@@ -57,7 +57,7 @@ public final class CoursesFragment extends SessionFragment {
             .trim()
             .toLowerCase(Locale.ROOT);
     List<CatalogAdapter.Row> joined = new ArrayList<>(), discover = new ArrayList<>();
-    Ui.avatar(root.findViewById(R.id.account_avatar), session.data.nickname);
+    UiHelpers.avatar(root.findViewById(R.id.account_avatar), session.data.nickname);
     int totalJoined = 0;
     for (Course course : app.courses.courses) {
       int count = 0, unread = 0;
@@ -74,11 +74,11 @@ public final class CoursesFragment extends SessionFragment {
       if (!match) continue;
       CatalogAdapter.Row row = new CatalogAdapter.Row();
       row.name = course.name;
-      row.icon = Ui.courseIcon(course.icon);
-      row.iconColor = Ui.courseColor(course.icon);
+      row.icon = UiHelpers.courseIcon(course.icon);
+      row.iconColor = UiHelpers.courseColor(course.icon);
       row.detail = count > 0 ? getString(R.string.course_count, count, unread) : course.description;
       row.badge = unread;
-      row.click = () -> main().open(ChannelsFragment.create(course.id));
+      row.click = () -> main().open(CourseChannelsFragment.create(course.id));
       (count > 0 ? joined : discover).add(row);
     }
     List<CatalogAdapter.Row> other = new ArrayList<>();
@@ -96,9 +96,9 @@ public final class CoursesFragment extends SessionFragment {
       }
     List<CatalogAdapter.Row> rows = new ArrayList<>();
     boolean empty = query.isEmpty() && totalJoined == 0 && !discovering;
-    Ui.visible(root.findViewById(R.id.catalog_empty), empty);
-    Ui.visible(root.findViewById(R.id.list), !empty);
-    Ui.visible(root.findViewById(R.id.join), !empty);
+    UiHelpers.visible(root.findViewById(R.id.catalog_empty), empty);
+    UiHelpers.visible(root.findViewById(R.id.list), !empty);
+    UiHelpers.visible(root.findViewById(R.id.join), !empty);
     if (!joined.isEmpty()) {
       rows.add(CatalogAdapter.Row.header(getString(R.string.joined)));
       rows.addAll(joined);

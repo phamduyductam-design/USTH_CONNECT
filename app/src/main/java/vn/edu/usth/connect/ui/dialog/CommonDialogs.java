@@ -8,7 +8,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.function.Consumer;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.Ui;
+import vn.edu.usth.connect.ui.UiHelpers;
 
 /** Shared confirmation, validated text input and IRC command help. */
 public final class CommonDialogs {
@@ -65,7 +65,7 @@ public final class CommonDialogs {
                       } catch (IllegalArgumentException e) {
                         input.setError(activity.getString(R.string.error_message));
                       } catch (IllegalStateException e) {
-                        Ui.toast(activity, R.string.error_offline);
+                        UiHelpers.toast(activity, R.string.error_offline);
                       }
                     }));
     dialog.show();

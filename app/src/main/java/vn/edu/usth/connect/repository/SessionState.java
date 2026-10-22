@@ -351,7 +351,7 @@ public final class SessionState {
     }
     ChatMessage receivedMessage =
         new ChatMessage(senderNickname, text, ownMessage, ChatMessage.Status.RECEIVED);
-    if (!ownMessage && !Mentions.ranges(text, nickname).isEmpty())
+    if (!ownMessage && !NicknameMentions.ranges(text, nickname).isEmpty())
       receivedMessage.mentionNick = nickname;
     chat.add(receivedMessage);
     if (!ownMessage && !IrcParser.fold(target).equals(IrcParser.fold(activeTarget))) {

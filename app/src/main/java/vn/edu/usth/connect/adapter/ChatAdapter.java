@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.ChatMessage;
-import vn.edu.usth.connect.ui.Ui;
+import vn.edu.usth.connect.ui.UiHelpers;
 
 public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> {
   public interface Retry {
@@ -42,7 +42,7 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
     rows.clear();
     String previousDate = "";
     for (ChatMessage message : messages) {
-      String date = Ui.date(context, message.timestamp);
+      String date = UiHelpers.date(context, message.timestamp);
       if (!date.equals(previousDate)) {
         rows.add(new Row(null, date, false));
         previousDate = date;
@@ -82,7 +82,10 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
   public Holder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
     return new Holder(
         LayoutInflater.from(parent.getContext())
-            .inflate(type == 1 ? R.layout.item_separator : R.layout.item_message, parent, false));
+            .inflate(
+                type == 1 ? R.layout.item_chat_separator : R.layout.item_chat_message,
+                parent,
+                false));
   }
 
   @Override
@@ -107,16 +110,16 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
       text.setText(value);
       text.setTextColor(
           ContextCompat.getColor(context, row.unread ? R.color.badge : R.color.text_secondary));
-      Ui.visible(v.findViewById(R.id.separator_left), row.unread);
-      Ui.visible(v.findViewById(R.id.separator_right), row.unread);
+      UiHelpers.visible(v.findViewById(R.id.separator_left), row.unread);
+      UiHelpers.visible(v.findViewById(R.id.separator_right), row.unread);
       return;
     }
-    Ui.avatar(v.findViewById(R.id.avatar), m.sender);
-    ((TextView) v.findViewById(R.id.name)).setText(Ui.displayName(m.sender));
-    ((TextView) v.findViewById(R.id.time)).setText(Ui.time(m.timestamp));
+    UiHelpers.avatar(v.findViewById(R.id.avatar), m.sender);
+    ((TextView) v.findViewById(R.id.name)).setText(UiHelpers.displayName(m.sender));
+    ((TextView) v.findViewById(R.id.time)).setText(UiHelpers.time(m.timestamp));
     TextView body = v.findViewById(R.id.text);
     android.text.SpannableString content = new android.text.SpannableString(m.text);
-    for (int[] range : vn.edu.usth.connect.irc.Mentions.ranges(m.text, m.mentionNick)) {
+    for (int[] range : vn.edu.usth.connect.irc.NicknameMentions.ranges(m.text, m.mentionNick)) {
       content.setSpan(
           new android.text.style.BackgroundColorSpan(
               ContextCompat.getColor(context, R.color.selected)),
@@ -136,11 +139,11 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
           android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
     body.setText(content);
-    body.setBackgroundResource(m.outgoing ? R.drawable.bg_bubble : 0);
+    body.setBackgroundResource(m.outgoing ? R.drawable.bg_outgoing_message : 0);
     int padding = m.outgoing ? (int) (8 * v.getResources().getDisplayMetrics().density) : 0;
     body.setPadding(padding, padding, padding, padding);
     TextView status = v.findViewById(R.id.status);
-    Ui.visible(
+    UiHelpers.visible(
         status,
         m.outgoing
             && m.status != ChatMessage.Status.WRITTEN
@@ -161,7 +164,7 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
                 ? R.color.error
                 : R.color.text_secondary));
     View button = v.findViewById(R.id.retry);
-    Ui.visible(
+    UiHelpers.visible(
         button, m.status == ChatMessage.Status.FAILED || m.status == ChatMessage.Status.UNCERTAIN);
     button.setOnClickListener(ignored -> retry.retry(m));
   }

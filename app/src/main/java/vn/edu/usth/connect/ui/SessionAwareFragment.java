@@ -7,7 +7,7 @@ import androidx.fragment.app.Fragment;
 import vn.edu.usth.connect.ConnectApplication;
 import vn.edu.usth.connect.repository.SessionRepository;
 
-public abstract class SessionFragment extends Fragment implements SessionRepository.Listener {
+public abstract class SessionAwareFragment extends Fragment implements SessionRepository.Listener {
   protected View root;
   protected ConnectApplication app;
   protected SessionRepository session;
@@ -24,7 +24,7 @@ public abstract class SessionFragment extends Fragment implements SessionReposit
   public void onViewCreated(@NonNull View view, @Nullable Bundle saved) {
     super.onViewCreated(view, saved);
     root = view;
-    Ui.themeToggle(requireActivity(), view);
+    UiHelpers.themeToggle(requireActivity(), view);
   }
 
   @Override
@@ -47,7 +47,7 @@ public abstract class SessionFragment extends Fragment implements SessionReposit
     if (!session.data.errorCode.isEmpty() && !error.equals(lastError)) {
       android.widget.Toast.makeText(
               requireContext(),
-              Ui.error(requireContext(), session.data.errorCode)
+              UiHelpers.error(requireContext(), session.data.errorCode)
                   + (session.data.errorDetail.isEmpty() ? "" : "\n" + session.data.errorDetail),
               android.widget.Toast.LENGTH_LONG)
           .show();

@@ -33,7 +33,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
   @Nullable
   @Override
   public View onCreateView(@NonNull LayoutInflater i, @Nullable ViewGroup p, @Nullable Bundle b) {
-    return i.inflate(R.layout.sheet_members, p, false);
+    return i.inflate(R.layout.dialog_members, p, false);
   }
 
   @Override
@@ -54,7 +54,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     list.setAdapter(adapter);
-    Ui.watch(v.findViewById(R.id.search), this::changed);
+    UiHelpers.watch(v.findViewById(R.id.search), this::changed);
     v.findViewById(R.id.message_member).setOnClickListener(w -> openSelected());
   }
 
@@ -109,11 +109,11 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     for (IrcUser user : users)
       if (user.nickname.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
-        row.name = Ui.displayName(user.nickname);
+        row.name = UiHelpers.displayName(user.nickname);
         row.detail =
             user.nickname
                 + " · "
-                + Ui.role(requireContext(), session.data.role(target, user.nickname));
+                + UiHelpers.role(requireContext(), session.data.role(target, user.nickname));
         if (session.data.awayUsers.containsKey(IrcParser.fold(user.nickname)))
           row.preview =
               getString(R.string.away_presence)
@@ -139,7 +139,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     adapter.submit(rows);
     root.findViewById(R.id.refresh_members)
         .setEnabled(session.canSend(target) && !c.namesInProgress);
-    Ui.visible(
+    UiHelpers.visible(
         root.findViewById(R.id.manage_member),
         !selectedNick.isEmpty() && session.canSend(target) && session.data.canManage(target));
     android.widget.TextView action = root.findViewById(R.id.message_member);
@@ -147,7 +147,7 @@ public final class MembersBottomSheet extends BottomSheetDialogFragment
     action.setText(
         selectedNick.isEmpty()
             ? getString(R.string.private_message)
-            : getString(R.string.message_member, Ui.displayName(selectedNick)));
+            : getString(R.string.message_member, UiHelpers.displayName(selectedNick)));
   }
 
   private void openSelected() {

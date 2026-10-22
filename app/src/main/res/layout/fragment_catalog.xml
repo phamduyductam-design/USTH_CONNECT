@@ -61,7 +61,7 @@
             android:src="@drawable/ic_person"
             android:contentDescription="@string/profile" />
         <include
-            layout="@layout/theme_toggle" />
+            layout="@layout/view_theme_toggle" />
     </LinearLayout>
     <TextView
         android:id="@+id/title"
