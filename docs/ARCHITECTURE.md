@@ -89,11 +89,11 @@ ServerChannelsFragment đọc availableChannels, độc lập với CourseReposi
 
 WHO lấy presence ban đầu; AWAY cập nhật trực tiếp khi đã thương lượng away-notify. NICK đổi khóa presence, QUIT/mất kết nối xóa presence. Hộp thông tin PM đăng ký listener trong lúc mở và hủy khi đóng/Activity bị hủy.
 
-Mentions giữ chỉ số UTF-16 khi fold nickname theo RFC1459, dùng ranh giới nickname. ChatAdapter tô các vùng được nhắc; ConnectApplication dùng notification channel mentions có importance HIGH khi app ở nền.
+NicknameMentions giữ chỉ số UTF-16 khi fold nickname theo RFC1459, dùng ranh giới nickname. ChatAdapter tô các vùng được nhắc; ConnectApplication dùng notification channel mentions có importance HIGH khi app ở nền.
 
 ## Chuyển chế độ sáng/tối
 
-`theme_toggle.xml` được dùng ở header đăng nhập, danh mục, chat và cá nhân. `Ui.themeToggle` đọc uiMode hiện tại, đổi icon/nhãn rồi lưu boolean darkMode qua SettingsStore. `ThemeMode.apply` cập nhật UiModeManager (API 31+) và AppCompatDelegate; màn hình được tái tạo với resources `values-night`, giữ session trong Application và state/nháp như khi xoay. ConnectApplication áp dụng lựa chọn lưu trước khi Activity được mở.
+`view_theme_toggle.xml` được dùng ở header đăng nhập, danh mục, chat và cá nhân. `UiHelpers.themeToggle` đọc uiMode hiện tại, đổi icon/nhãn rồi lưu boolean darkMode qua SettingsStore. `ThemeMode.apply` cập nhật UiModeManager (API 31+) và AppCompatDelegate; màn hình được tái tạo với resources `values-night`, giữ session trong Application và state/nháp như khi xoay. ConnectApplication áp dụng lựa chọn lưu trước khi Activity được mở.
 
 Màu nền/chữ/viền và icon status/navigation có bản night. Màu nền nút, avatar và màu chữ trắng được tách khỏi surface để giữ độ tương phản. Logo gốc nằm trên nền trắng nhỏ ở cả hai chế độ.
 

@@ -14,7 +14,7 @@ import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
-public final class ChatFragment extends SessionFragment {
+public final class ChatFragment extends SessionAwareFragment {
   private String target;
   private Conversation chat;
   private ChatAdapter adapter;
@@ -83,11 +83,11 @@ public final class ChatFragment extends SessionFragment {
         .setOnClickListener(
             w -> {
               if (session.data.connection == ConnectionState.CONNECTED) showChatMenu();
-              else Ui.toast(requireContext(), R.string.error_offline);
+              else UiHelpers.toast(requireContext(), R.string.error_offline);
             });
     EditText composer = v.findViewById(R.id.composer);
     composer.setText(session.draft(target));
-    Ui.watch(
+    UiHelpers.watch(
         composer,
         () -> {
           composer.setError(null);
@@ -100,7 +100,7 @@ public final class ChatFragment extends SessionFragment {
             w -> {
               pinned = true;
               list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
-              Ui.visible(v.findViewById(R.id.latest), false);
+              UiHelpers.visible(v.findViewById(R.id.latest), false);
             });
   }
 
@@ -142,7 +142,7 @@ public final class ChatFragment extends SessionFragment {
                   : getString(R.string.command_invalid)
               : getString(R.string.error_message));
     } catch (IllegalStateException e) {
-      Ui.toast(requireContext(), R.string.error_offline);
+      UiHelpers.toast(requireContext(), R.string.error_offline);
     }
   }
 
@@ -163,7 +163,7 @@ public final class ChatFragment extends SessionFragment {
 
   private void retry(ChatMessage message) {
     if (!session.canSend(target)) {
-      Ui.toast(requireContext(), R.string.error_offline);
+      UiHelpers.toast(requireContext(), R.string.error_offline);
       return;
     }
     CommonDialogs.confirm(
@@ -212,9 +212,10 @@ public final class ChatFragment extends SessionFragment {
   private void renderHeader() {
     boolean channel = chat instanceof Channel;
     Channel c = channel ? (Channel) chat : null;
-    ((TextView) root.findViewById(R.id.title)).setText(channel ? target : Ui.displayName(target));
-    Ui.visible(root.findViewById(R.id.chat_avatar), !channel);
-    if (!channel) Ui.avatar(root.findViewById(R.id.chat_avatar), target);
+    ((TextView) root.findViewById(R.id.title))
+        .setText(channel ? target : UiHelpers.displayName(target));
+    UiHelpers.visible(root.findViewById(R.id.chat_avatar), !channel);
+    if (!channel) UiHelpers.avatar(root.findViewById(R.id.chat_avatar), target);
     Course course = channel ? app.courses.forChannel(target) : null;
     ((TextView) root.findViewById(R.id.subtitle))
         .setText(
@@ -228,11 +229,11 @@ public final class ChatFragment extends SessionFragment {
                             : session.data.onlineUsers.contains(IrcParser.fold(target))
                                 ? R.string.online_presence
                                 : R.string.presence_unknown));
-    Ui.visible(root.findViewById(R.id.members), channel);
-    Ui.visible(root.findViewById(R.id.more), true);
+    UiHelpers.visible(root.findViewById(R.id.members), channel);
+    UiHelpers.visible(root.findViewById(R.id.more), true);
     ((TextView) root.findViewById(R.id.members))
         .setText(String.valueOf(channel ? c.members.size() : 0));
-    Ui.visible(root.findViewById(R.id.topic), channel);
+    UiHelpers.visible(root.findViewById(R.id.topic), channel);
     ((TextView) root.findViewById(R.id.topic))
         .setText(channel ? (c.topic.isEmpty() ? getString(R.string.no_topic) : c.topic) : "");
   }
@@ -242,7 +243,7 @@ public final class ChatFragment extends SessionFragment {
     boolean channel = chat instanceof Channel;
     Channel c = channel ? (Channel) chat : null;
     boolean online = session.data.connection == ConnectionState.CONNECTED;
-    Ui.visible(root.findViewById(R.id.banner), !online || (channel && !c.joined));
+    UiHelpers.visible(root.findViewById(R.id.banner), !online || (channel && !c.joined));
     ((TextView) root.findViewById(R.id.connection_status))
         .setText(
             online
@@ -256,13 +257,13 @@ public final class ChatFragment extends SessionFragment {
     composer.setHint(
         getString(
             channel ? R.string.chat_hint : R.string.pm_hint,
-            channel ? target : Ui.displayName(target)));
+            channel ? target : UiHelpers.displayName(target)));
     ((TextView) root.findViewById(R.id.send_hint))
         .setText(
             !online
                 ? getString(R.string.offline_hint)
                 : channel && !c.joined ? getString(R.string.not_joined) : "");
-    Ui.visible(root.findViewById(R.id.send_hint), !online || (channel && !c.joined));
+    UiHelpers.visible(root.findViewById(R.id.send_hint), !online || (channel && !c.joined));
   }
 
   private void renderMessages() {
@@ -275,9 +276,9 @@ public final class ChatFragment extends SessionFragment {
         hasChat = true;
         break;
       }
-    Ui.visible(root.findViewById(R.id.empty), !hasChat);
+    UiHelpers.visible(root.findViewById(R.id.empty), !hasChat);
     RecyclerView list = root.findViewById(R.id.list);
-    Ui.visible(list, hasChat);
+    UiHelpers.visible(list, hasChat);
     Parcelable anchor = list.getLayoutManager().onSaveInstanceState();
     int currentSize = chat.messages.size();
     adapter.submit(chat.messages, unreadBoundary);
@@ -288,7 +289,7 @@ public final class ChatFragment extends SessionFragment {
     } else if (pinned) list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
     else {
       list.getLayoutManager().onRestoreInstanceState(anchor);
-      if (currentSize > messageCount) Ui.visible(root.findViewById(R.id.latest), true);
+      if (currentSize > messageCount) UiHelpers.visible(root.findViewById(R.id.latest), true);
     }
     messageCount = currentSize;
   }

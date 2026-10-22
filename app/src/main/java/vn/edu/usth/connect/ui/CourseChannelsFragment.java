@@ -12,12 +12,12 @@ import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
-public final class ChannelsFragment extends SessionFragment {
+public final class CourseChannelsFragment extends SessionAwareFragment {
   private CatalogAdapter adapter;
   private Course course;
 
-  public static ChannelsFragment create(String id) {
-    ChannelsFragment f = new ChannelsFragment();
+  public static CourseChannelsFragment create(String id) {
+    CourseChannelsFragment f = new CourseChannelsFragment();
     Bundle b = new Bundle();
     b.putString("course", id);
     f.setArguments(b);
@@ -35,23 +35,23 @@ public final class ChannelsFragment extends SessionFragment {
     super.onViewCreated(v, b);
     course = app.courses.find(requireArguments().getString("course"));
     ((TextView) v.findViewById(R.id.toolbar_title)).setText(course.name);
-    Ui.visible(v.findViewById(R.id.toolbar_title), true);
-    Ui.visible(v.findViewById(R.id.title), false);
-    Ui.visible(v.findViewById(R.id.brand_container), false);
-    Ui.visible(v.findViewById(R.id.course_summary), true);
+    UiHelpers.visible(v.findViewById(R.id.toolbar_title), true);
+    UiHelpers.visible(v.findViewById(R.id.title), false);
+    UiHelpers.visible(v.findViewById(R.id.brand_container), false);
+    UiHelpers.visible(v.findViewById(R.id.course_summary), true);
     ((TextView) v.findViewById(R.id.course_name)).setText(course.name);
     ImageView icon = v.findViewById(R.id.course_icon);
-    icon.setImageResource(Ui.courseIcon(course.icon));
+    icon.setImageResource(UiHelpers.courseIcon(course.icon));
     icon.setImageTintList(
         android.content.res.ColorStateList.valueOf(
             androidx.core.content.ContextCompat.getColor(requireContext(), R.color.on_primary)));
     icon.setBackgroundTintList(
         android.content.res.ColorStateList.valueOf(
             androidx.core.content.ContextCompat.getColor(
-                requireContext(), Ui.courseColor(course.icon))));
+                requireContext(), UiHelpers.courseColor(course.icon))));
     ((TextView) v.findViewById(R.id.description)).setText(course.description);
-    Ui.visible(v.findViewById(R.id.description), true);
-    Ui.visible(v.findViewById(R.id.search), false);
+    UiHelpers.visible(v.findViewById(R.id.description), true);
+    UiHelpers.visible(v.findViewById(R.id.search), false);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_info);
     v.findViewById(R.id.action).setContentDescription(getString(R.string.course_info));
     v.findViewById(R.id.action)
@@ -62,14 +62,14 @@ public final class ChannelsFragment extends SessionFragment {
                     .setMessage(course.description)
                     .setPositiveButton(R.string.close, null)
                     .show());
-    Ui.visible(v.findViewById(R.id.brand), false);
-    Ui.visible(v.findViewById(R.id.join), false);
+    UiHelpers.visible(v.findViewById(R.id.brand), false);
+    UiHelpers.visible(v.findViewById(R.id.join), false);
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());
     adapter = new CatalogAdapter();
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     list.setAdapter(adapter);
-    Ui.watch(v.findViewById(R.id.search), this::render);
+    UiHelpers.watch(v.findViewById(R.id.search), this::render);
   }
 
   @Override

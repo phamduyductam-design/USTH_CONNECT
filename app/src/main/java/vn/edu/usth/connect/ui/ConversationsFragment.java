@@ -11,7 +11,7 @@ import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
-public final class ConversationsFragment extends SessionFragment {
+public final class ConversationsFragment extends SessionAwareFragment {
   private CatalogAdapter adapter;
 
   @Nullable
@@ -23,10 +23,10 @@ public final class ConversationsFragment extends SessionFragment {
   @Override
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
-    Ui.brand(v.findViewById(R.id.brand));
-    Ui.visible(v.findViewById(R.id.back), false);
-    Ui.visible(v.findViewById(R.id.join), false);
-    Ui.visible(v.findViewById(R.id.catalog_footer), true);
+    UiHelpers.brand(v.findViewById(R.id.brand));
+    UiHelpers.visible(v.findViewById(R.id.back), false);
+    UiHelpers.visible(v.findViewById(R.id.join), false);
+    UiHelpers.visible(v.findViewById(R.id.catalog_footer), true);
     ((TextView) v.findViewById(R.id.title)).setText(R.string.messages);
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_nick);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_edit);
@@ -36,7 +36,7 @@ public final class ConversationsFragment extends SessionFragment {
     RecyclerView list = v.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
     list.setAdapter(adapter);
-    Ui.watch(v.findViewById(R.id.search), this::render);
+    UiHelpers.watch(v.findViewById(R.id.search), this::render);
   }
 
   @Override
@@ -50,7 +50,7 @@ public final class ConversationsFragment extends SessionFragment {
     for (Conversation c : chats)
       if (c.target.toLowerCase(Locale.ROOT).contains(query)) {
         CatalogAdapter.Row row = new CatalogAdapter.Row();
-        row.name = Ui.displayName(c.target);
+        row.name = UiHelpers.displayName(c.target);
         row.avatar = c.target;
         row.detail = c.target;
         row.badge = c.unread;
@@ -58,7 +58,7 @@ public final class ConversationsFragment extends SessionFragment {
             c.messages.isEmpty()
                 ? getString(R.string.conversation_empty)
                 : c.messages.get(c.messages.size() - 1).text;
-        row.time = c.messages.isEmpty() ? "" : Ui.time(lastTime(c));
+        row.time = c.messages.isEmpty() ? "" : UiHelpers.time(lastTime(c));
         row.click = () -> main().openChat(c.target);
         rows.add(row);
       }

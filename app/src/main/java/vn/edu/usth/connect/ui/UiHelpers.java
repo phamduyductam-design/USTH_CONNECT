@@ -12,8 +12,8 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.repository.SessionRepository;
 
-public final class Ui {
-  private Ui() {}
+public final class UiHelpers {
+  private UiHelpers() {}
 
   public static void themeToggle(android.app.Activity activity, View root) {
     ImageButton button = root.findViewById(R.id.theme_toggle);

@@ -76,7 +76,7 @@ public final class AdvancedNetworkSmoke {
       b.send(IrcCommands.message(room, "Chào @" + owner + "!"));
       IrcMessage mention =
           a.await(m -> m.command.equals("PRIVMSG") && m.last().contains("@" + owner));
-      if (Mentions.ranges(mention.last(), owner).isEmpty())
+      if (NicknameMentions.ranges(mention.last(), owner).isEmpty())
         throw new IllegalStateException("Missing mention");
       pass("real incoming nickname mention");
       a.send(IrcCommands.kick(room, user, "Kiểm thử mời ra khỏi phòng"));

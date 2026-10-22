@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.view.View;
 import androidx.core.view.*;
 
-final class Insets {
+final class WindowInsetsHelper {
   static void apply(Activity activity, View root) {
     WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
     ViewCompat.setOnApplyWindowInsetsListener(
