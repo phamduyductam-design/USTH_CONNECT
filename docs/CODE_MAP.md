@@ -40,6 +40,7 @@ Trong các mục Java bên dưới, tiền tố chung là `app/src/main/java/vn/
 | Nhắc nickname và thông báo | `irc/NicknameMentions`; `ConnectApplication` | `ChatAdapter`; notification channels `messages`, `mentions` |
 | Sáng/tối | `ui/UiHelpers.themeToggle()` → `ThemeMode.apply()` | `storage/SettingsStore.darkMode()`; `res/values-night/`; `view_theme_toggle.xml` |
 | Điều hướng, back stack | `ui/MainActivity` | `activity_main.xml`; `res/menu/navigation.xml`; `res/color/navigation_item_tint.xml` |
+| Logo USTH và icon ứng dụng | `AndroidManifest.xml`: icon/roundIcon cùng `@mipmap/ic_launcher` | `drawable-nodpi/usth_university_logo.jpg`; fallback `mipmap-anydpi/`, adaptive `mipmap-anydpi-v26/`; [chi tiết branding](LOGO_BRANDING.md) |
 | Xác nhận / nhập liệu dùng chung | `ui/dialog/CommonDialogs` | `dialog_confirm.xml`, `dialog_input.xml` |
 | Listener/lifecycle dùng chung cho Fragment | `ui/SessionAwareFragment` | Lớp nền trừu tượng; đăng ký/hủy listener phiên theo onStart/onStop |
 | Khoảng chừa thanh hệ thống/bàn phím | `ui/WindowInsetsHelper.apply()` | Dùng ở `ConnectActivity` và `MainActivity`; phân biệt với kiểu giá trị `androidx.core.graphics.Insets` |
