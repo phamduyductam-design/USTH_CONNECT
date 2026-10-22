@@ -40,6 +40,8 @@ public final class CoursesFragment extends SessionAwareFragment {
               render();
             });
     view.findViewById(R.id.join).setOnClickListener(v -> ChannelDialogs.showJoin(main(), ""));
+    UiHelpers.visible(view.findViewById(R.id.browse_server), true);
+    view.findViewById(R.id.browse_server).setOnClickListener(v -> main().showServerChannels());
     adapter = new CatalogAdapter();
     RecyclerView list = view.findViewById(R.id.list);
     list.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -76,7 +78,8 @@ public final class CoursesFragment extends SessionAwareFragment {
       row.name = course.name;
       row.icon = UiHelpers.courseIcon(course.icon);
       row.iconColor = UiHelpers.courseColor(course.icon);
-      row.detail = count > 0 ? getString(R.string.course_count, count, unread) : course.description;
+      row.detail = getString(R.string.catalog_course_joined, course.channels.size(), count);
+      row.preview = course.description;
       row.badge = unread;
       row.click = () -> main().open(CourseChannelsFragment.create(course.id));
       (count > 0 ? joined : discover).add(row);
@@ -97,10 +100,40 @@ public final class CoursesFragment extends SessionAwareFragment {
     List<CatalogAdapter.Row> rows = new ArrayList<>();
     boolean empty = query.isEmpty() && totalJoined == 0 && !discovering;
     UiHelpers.visible(root.findViewById(R.id.catalog_empty), empty);
-    UiHelpers.visible(root.findViewById(R.id.list), !empty);
-    UiHelpers.visible(root.findViewById(R.id.join), !empty);
+    UiHelpers.visible(root.findViewById(R.id.list), true);
+    UiHelpers.visible(root.findViewById(R.id.join), true);
+    boolean online = session.data.connection == ConnectionState.CONNECTED;
+    root.findViewById(R.id.join).setEnabled(online);
+    TextView connection = root.findViewById(R.id.catalog_connection);
+    connection.setText(UiHelpers.connection(requireContext(), session));
+    connection.setTextColor(
+        androidx.core.content.ContextCompat.getColor(
+            requireContext(), online ? R.color.success_text : R.color.error));
+    UiHelpers.visible(connection, true);
+    Channel active = null;
+    for (Channel channel : session.data.channels.values()) {
+      if (channel.joined && (active == null || lastTime(channel) > lastTime(active)))
+        active = channel;
+    }
+    UiHelpers.visible(root.findViewById(R.id.active_channel), active != null && query.isEmpty());
+    if (active != null) {
+      Channel selected = active;
+      ((TextView) root.findViewById(R.id.active_channel_name)).setText(active.target);
+      Course course = app.courses.forChannel(active.target);
+      ((TextView) root.findViewById(R.id.active_channel_detail))
+          .setText(
+              getString(
+                  R.string.catalog_active_detail,
+                  course == null ? getString(R.string.other_channels) : course.name,
+                  active.unread));
+      root.findViewById(R.id.active_channel)
+          .setOnClickListener(v -> main().openChat(selected.target));
+    }
     if (!joined.isEmpty()) {
-      rows.add(CatalogAdapter.Row.header(getString(R.string.joined)));
+      CatalogAdapter.Row header =
+          CatalogAdapter.Row.header(getString(R.string.catalog_courses_yours));
+      header.headerCount = getString(R.string.catalog_courses_count, joined.size());
+      rows.add(header);
       rows.addAll(joined);
     }
     if (!other.isEmpty()) {
@@ -108,11 +141,19 @@ public final class CoursesFragment extends SessionAwareFragment {
       rows.addAll(other);
     }
     if (!discover.isEmpty()) {
-      rows.add(CatalogAdapter.Row.header(getString(R.string.discover)));
+      CatalogAdapter.Row header = CatalogAdapter.Row.header(getString(R.string.discover));
+      header.headerCount = getString(R.string.catalog_courses_count, discover.size());
+      rows.add(header);
       rows.addAll(discover);
     }
     if (rows.isEmpty()) rows.add(CatalogAdapter.Row.empty(getString(R.string.no_results), ""));
     adapter.submit(rows);
+  }
+
+  private long lastTime(Channel channel) {
+    return channel.messages.isEmpty()
+        ? 0
+        : channel.messages.get(channel.messages.size() - 1).timestamp;
   }
 
   @Override

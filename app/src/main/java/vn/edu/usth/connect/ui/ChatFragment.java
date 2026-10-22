@@ -59,7 +59,7 @@ public final class ChatFragment extends SessionAwareFragment {
     RecyclerView list = v.findViewById(R.id.list);
     LinearLayoutManager manager = new LinearLayoutManager(requireContext());
     list.setLayoutManager(manager);
-    adapter = new ChatAdapter(requireContext(), this::retry);
+    adapter = new ChatAdapter(requireContext(), this::retry, !IrcParser.isChannel(target));
     list.setAdapter(adapter);
     list.addOnScrollListener(
         new RecyclerView.OnScrollListener() {
@@ -69,6 +69,8 @@ public final class ChatFragment extends SessionAwareFragment {
           }
         });
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());
+    v.findViewById(R.id.chat_commands)
+        .setOnClickListener(w -> CommonDialogs.showCommandHelp(main()));
     v.findViewById(R.id.members)
         .setOnClickListener(
             w -> MembersBottomSheet.create(target).show(getParentFragmentManager(), "members"));
@@ -184,7 +186,7 @@ public final class ChatFragment extends SessionAwareFragment {
             && !input.isEmpty()
             && (command || session.canSend(target));
     send.setEnabled(enabled);
-    send.setAlpha(1f);
+    send.setAlpha(enabled ? 1f : 0.4f);
   }
 
   @Override
@@ -214,8 +216,15 @@ public final class ChatFragment extends SessionAwareFragment {
     Channel c = channel ? (Channel) chat : null;
     ((TextView) root.findViewById(R.id.title))
         .setText(channel ? target : UiHelpers.displayName(target));
-    UiHelpers.visible(root.findViewById(R.id.chat_avatar), !channel);
-    if (!channel) UiHelpers.avatar(root.findViewById(R.id.chat_avatar), target);
+    TextView avatar = root.findViewById(R.id.chat_avatar);
+    if (channel) {
+      avatar.setText("#");
+      avatar.setBackgroundTintList(
+          android.content.res.ColorStateList.valueOf(
+              androidx.core.content.ContextCompat.getColor(requireContext(), R.color.selected)));
+      avatar.setTextColor(
+          androidx.core.content.ContextCompat.getColor(requireContext(), R.color.primary));
+    } else UiHelpers.avatar(avatar, target);
     Course course = channel ? app.courses.forChannel(target) : null;
     ((TextView) root.findViewById(R.id.subtitle))
         .setText(

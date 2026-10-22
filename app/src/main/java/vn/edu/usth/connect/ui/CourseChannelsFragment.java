@@ -90,13 +90,18 @@ public final class CourseChannelsFragment extends SessionAwareFragment {
       Channel channel = session.data.channels.get(IrcParser.fold(info.name));
       boolean in = channel != null && channel.joined;
       CatalogAdapter.Row row = new CatalogAdapter.Row();
-      row.name = info.name.substring(1);
+      row.name = info.name;
       row.detail = info.description;
       row.badge = channel == null ? 0 : channel.unread;
       row.selected = row.badge > 0;
-      row.click = () -> main().openChat(info.name);
+      row.click =
+          () -> {
+            if (in) main().openChat(info.name);
+            else ChannelDialogs.showJoin(main(), info.name);
+          };
       row.joinVisible = !in;
       row.joining = channel != null && channel.joining;
+      row.enabled = session.data.connection == ConnectionState.CONNECTED;
       row.join = () -> ChannelDialogs.showJoin(main(), info.name);
       (in ? joined : available).add(row);
     }

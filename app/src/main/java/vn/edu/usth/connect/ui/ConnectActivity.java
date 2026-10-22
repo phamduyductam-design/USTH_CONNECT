@@ -45,7 +45,10 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
         (button, on) -> {
           if (port.getText().toString().equals(on ? "6667" : "6697"))
             port.setText(on ? "6697" : "6667");
+          renderServerSummary();
         });
+    UiHelpers.watch(port, this::renderServerSummary);
+    renderServerSummary();
     findViewById(R.id.advanced_toggle)
         .setOnClickListener(
             v -> {
@@ -54,6 +57,15 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
             });
     findViewById(R.id.connect).setOnClickListener(v -> connect());
     findViewById(R.id.cancel).setOnClickListener(v -> session.disconnect());
+  }
+
+  private void renderServerSummary() {
+    ((TextView) findViewById(R.id.server_summary))
+        .setText(
+            getString(
+                R.string.cp_server_summary,
+                port.getText().toString(),
+                getString(tls.isChecked() ? R.string.cp_tls_enabled : R.string.cp_tls_disabled)));
   }
 
   private void connect() {
@@ -74,7 +86,11 @@ public final class ConnectActivity extends AppCompatActivity implements SessionR
               realName.getText().toString().trim());
       session.connect(config);
     } catch (IllegalArgumentException e) {
+      UiHelpers.visible(findViewById(R.id.connect_status_panel), true);
+      findViewById(R.id.connect_status_panel).setBackgroundResource(R.drawable.bg_error);
       ((TextView) findViewById(R.id.status)).setText(R.string.error_config);
+      ((TextView) findViewById(R.id.status))
+          .setTextColor(androidx.core.content.ContextCompat.getColor(this, R.color.error));
     }
   }
 

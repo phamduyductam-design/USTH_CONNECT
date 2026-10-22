@@ -4,47 +4,67 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="10dp"
-    android:paddingBottom="10dp">
+    android:gravity="start"
+    android:paddingTop="12dp"
+    android:paddingBottom="4dp">
     <TextView
         android:id="@+id/avatar"
         style="@style/Heading"
-        android:layout_width="@dimen/avatar"
-        android:layout_height="@dimen/avatar"
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:layout_gravity="top"
         android:gravity="center"
+        android:textSize="14sp"
         android:background="@drawable/bg_avatar"
-        android:textColor="@color/on_primary" />
+        android:textColor="@color/primary" />
     <LinearLayout
-        android:layout_width="0dp"
+        android:id="@+id/message_content"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_marginStart="12dp">
+        android:layout_marginStart="10dp"
+        android:orientation="vertical">
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/message_heading"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:layout_marginBottom="6dp">
             <TextView
                 android:id="@+id/name"
                 style="@style/Heading"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="13sp" />
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textSize="14sp"
+                android:textColor="@color/primary" />
             <TextView
                 android:id="@+id/time"
                 style="@style/Caption"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textSize="12sp"
                 android:layout_marginStart="8dp" />
         </LinearLayout>
         <TextView
             android:id="@+id/text"
             style="@style/Body"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="5dp"
+            android:background="@drawable/bg_chat_incoming"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="11dp"
+            android:textSize="16sp"
             android:lineSpacingExtra="3dp"
             android:textIsSelectable="true" />
+        <TextView
+            android:id="@+id/message_time"
+            style="@style/Caption"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textSize="12sp"
+            android:visibility="gone" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -55,12 +75,15 @@
                 style="@style/Caption"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:textSize="12sp"
+                android:accessibilityLiveRegion="polite" />
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/retry"
                 style="@style/SmallOutlineButton"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="48dp"
+                android:minHeight="48dp"
                 android:text="@string/retry"
                 android:visibility="gone" />
         </LinearLayout>

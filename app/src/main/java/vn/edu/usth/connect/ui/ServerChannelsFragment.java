@@ -25,7 +25,8 @@ public final class ServerChannelsFragment extends SessionAwareFragment {
   public void onViewCreated(@NonNull View v, @Nullable Bundle b) {
     super.onViewCreated(v, b);
     UiHelpers.brand(v.findViewById(R.id.brand));
-    UiHelpers.visible(v.findViewById(R.id.back), false);
+    UiHelpers.visible(v.findViewById(R.id.back), true);
+    v.findViewById(R.id.back).setOnClickListener(w -> main().back());
     ((TextView) v.findViewById(R.id.title)).setText(R.string.server_rooms);
     ((EditText) v.findViewById(R.id.search)).setHint(R.string.search_rooms);
     ((ImageButton) v.findViewById(R.id.action)).setImageResource(R.drawable.ic_refresh);

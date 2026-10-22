@@ -14,6 +14,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
   public static final class Row {
     public int type, icon = R.drawable.ic_hash, badge, iconColor, actionText;
     public String name = "", detail = "", preview = "", time = "", avatar = "";
+    public String headerCount = "";
     public boolean selected, joinVisible, joining, self;
     public boolean enabled = true;
     public Runnable click, join;
@@ -77,6 +78,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
     View v = h.itemView;
     if (r.type == 1) {
       ((TextView) v.findViewById(R.id.text)).setText(r.name);
+      ((TextView) v.findViewById(R.id.header_count)).setText(r.headerCount);
       return;
     }
     if (r.type == 2) {
@@ -114,10 +116,7 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
                 v.getContext(), r.iconColor == 0 ? R.color.text_secondary : R.color.on_primary)));
     android.view.ViewGroup.LayoutParams iconParams =
         v.findViewById(R.id.icon_container).getLayoutParams();
-    iconParams.width =
-        (int)
-            (v.getResources().getDisplayMetrics().density
-                * (r.avatar.isEmpty() && r.iconColor == 0 ? 28 : 40));
+    iconParams.width = (int) (v.getResources().getDisplayMetrics().density * 48);
     v.findViewById(R.id.icon_container).setLayoutParams(iconParams);
     if (!r.avatar.isEmpty()) UiHelpers.avatar(avatar, r.avatar);
     UiHelpers.visible(v.findViewById(R.id.chevron), r.click != null && !r.joinVisible && !r.self);
@@ -129,7 +128,8 @@ public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Ho
         ignored -> {
           if (r.join != null) r.join.run();
         });
-    v.setBackgroundResource(r.selected ? R.drawable.bg_selected : R.drawable.bg_row);
+    v.setBackgroundResource(
+        r.selected ? R.drawable.bg_catalog_selected : R.drawable.bg_catalog_card);
     v.setOnClickListener(
         ignored -> {
           if (r.click != null) r.click.run();

@@ -1,16 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">USTH Connect</string>
     <string name="usth">USTH</string>
-    <string name="connect_word">Connect</string>
     <string name="tagline">Kết nối cùng bạn học</string>
     <string name="nickname">Biệt danh</string>
-    <string name="server">Máy chủ</string>
     <string name="server_hint">irc.example.edu</string>
-    <string name="advanced">Tùy chọn nâng cao</string>
     <string name="port">Cổng</string>
     <string name="tls">Kết nối bảo mật TLS</string>
-    <string name="username">Username</string>
-    <string name="real_name">Real name</string>
     <string name="connect">Kết nối</string>
     <string name="cancel">Hủy</string>
     <string name="retry">Thử lại</string>
@@ -20,22 +15,19 @@
     <string name="connected">Đã kết nối</string>
     <string name="disconnected">Đã ngắt kết nối</string>
     <string name="reconnecting">Đang kết nối lại…</string>
-    <string name="connect_footer">Biệt danh sẽ hiển thị trong các kênh.</string>
     <string name="courses">Môn học</string>
     <string name="messages">Tin nhắn</string>
     <string name="profile">Cá nhân</string>
     <string name="search_courses">Tìm môn hoặc kênh</string>
-    <string name="joined">Đã tham gia</string>
     <string name="discover">Khám phá</string>
     <string name="join_channel">Tham gia kênh</string>
     <string name="channel_name">Tên kênh, ví dụ #web-general</string>
-    <string name="channel_key">Key (nếu kênh yêu cầu)</string>
+    <string name="channel_key">Khóa kênh (nếu có)</string>
     <string name="join">Tham gia</string>
     <string name="joining">Đang tham gia…</string>
     <string name="joined_channels">Kênh đã tham gia</string>
     <string name="available_channels">Kênh có thể tham gia</string>
     <string name="other_channels">Kênh khác</string>
-    <string name="course_count" tools:ignore="PluralsCandidate">%1$d kênh · %2$d tin mới</string>
     <string name="no_courses">Bạn chưa tham gia môn nào</string>
     <string name="no_courses_detail">Tìm môn học hoặc nhập tên kênh
 để bắt đầu trao đổi.</string>
@@ -81,7 +73,6 @@ Gửi lời chào đến các bạn cùng nhóm.</string>
     <string name="event_quit">%1$s đã ngắt kết nối</string>
     <string name="event_kick">%1$s bị đưa ra khỏi kênh</string>
     <string name="event_nick">%1$s đổi biệt danh thành %2$s</string>
-    <string name="connection">Kết nối</string>
     <string name="options">Tùy chọn</string>
     <string name="notifications">Thông báo</string>
     <string name="connection_options">Tùy chọn kết nối</string>
@@ -92,15 +83,15 @@ Gửi lời chào đến các bạn cùng nhóm.</string>
     <string name="settings_detail">Máy chủ: %1$s
 Cổng: %2$d
 TLS: %3$s
-Username: %4$s
-Real name: %5$s
+Tên đăng nhập IRC: %4$s
+Tên hiển thị IRC: %5$s
 
 Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn hình Kết nối.</string>
     <string name="yes">Bật</string>
     <string name="no">Tắt</string>
     <string name="permission_denied">Thông báo chưa được cấp quyền trong Android. Bạn có thể bật trong Cài đặt hệ thống.</string>
     <string name="notification_title">%1$s · %2$s</string>
-    <string name="error_config">Kiểm tra máy chủ, cổng (1–65535), username và real name.</string>
+    <string name="error_config">Kiểm tra máy chủ, cổng (1–65535), tên đăng nhập và tên hiển thị IRC.</string>
     <string name="error_nick">Biệt danh bắt đầu bằng chữ hoặc _; tối đa 30 ký tự ASCII, không có khoảng trắng.</string>
     <string name="error_channel">Nhập tên kênh bắt đầu bằng # hoặc &amp;; không có khoảng trắng, dấu phẩy hay ký tự điều khiển.</string>
     <string name="error_message">Tin nhắn trống, có ký tự điều khiển hoặc quá dài (tối đa 512 byte gồm lệnh IRC và CRLF).</string>
@@ -116,7 +107,7 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="error_471">Kênh đã đủ thành viên.</string>
     <string name="error_473">Kênh chỉ dành cho người được mời.</string>
     <string name="error_474">Bạn bị cấm tham gia kênh.</string>
-    <string name="error_475">Key của kênh không đúng.</string>
+    <string name="error_475">Khóa kênh không đúng.</string>
     <string name="error_403">Kênh không tồn tại hoặc tên kênh không hợp lệ.</string>
     <string name="error_442">Bạn chưa tham gia kênh.</string>
     <string name="error_482">Bạn không có quyền thực hiện thao tác này.</string>
@@ -128,8 +119,6 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="empty_members">Chưa nhận danh sách thành viên.</string>
     <string name="nickname_pending">Đang chờ máy chủ xác nhận biệt danh.</string>
     <string name="network_retry">Thử kết nối lại sau %1$s giây…</string>
-    <string name="server_note_short">Máy chủ minh họa</string>
-    <string name="conversations_footer">Chọn một người để tiếp tục trò chuyện.</string>
     <string name="message_member">Nhắn riêng với %1$s</string>
     <string name="connection_lost_title">Mất kết nối với máy chủ</string>
     <string name="connection_lost_detail">Tin nhắn chưa được cập nhật.</string>
@@ -138,7 +127,6 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="course_info">Thông tin môn học</string>
     <string name="connected_indicator">● %1$s</string>
     <string name="server_rooms">Phòng trên server</string>
-    <string name="rooms_tab">Phòng</string>
     <string name="search_rooms">Tìm phòng hoặc chủ đề</string>
     <string name="refresh">Làm mới</string>
     <string name="refresh_members">Làm mới thành viên</string>
@@ -148,12 +136,12 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="rooms_count">%1$d phòng công khai</string>
     <string name="create_join_room">Tham gia / tạo phòng</string>
     <string name="room_users">%1$d thành viên</string>
-    <string name="operator_role">Operator</string>
-    <string name="voice_role">Voice</string>
+    <string name="operator_role">Điều hành viên</string>
+    <string name="voice_role">Được phép nhắn</string>
     <string name="member_role">Thành viên</string>
     <string name="owner_role">Chủ phòng</string>
-    <string name="admin_role">Admin</string>
-    <string name="halfop_role">Half-operator</string>
+    <string name="admin_role">Quản trị viên</string>
+    <string name="halfop_role">Phó điều hành viên</string>
     <string name="online_presence">Trực tuyến</string>
     <string name="away_presence">Vắng mặt</string>
     <string name="away_set">Đặt trạng thái vắng mặt</string>
@@ -166,14 +154,14 @@ Muốn sửa cấu hình, hãy ngắt kết nối rồi nhập lại trên màn 
     <string name="topic_hint">Chủ đề mới (để trống để xóa)</string>
     <string name="room_modes">Chế độ phòng</string>
     <string name="mode_invite">Chỉ tham gia khi được mời (+i)</string>
-    <string name="mode_moderated">Chỉ Operator / Voice được nhắn (+m)</string>
-    <string name="mode_topic">Chỉ Operator được đổi chủ đề (+t)</string>
-    <string name="operator_required">Thao tác này cần quyền quản trị phòng. Quyền được xác nhận bởi server.</string>
+    <string name="mode_moderated">Chỉ người có quyền được nhắn (+m)</string>
+    <string name="mode_topic">Chỉ điều hành viên được đổi chủ đề (+t)</string>
+    <string name="operator_required">Thao tác này cần quyền quản trị phòng. Quyền được máy chủ xác nhận.</string>
     <string name="manage_member">Quản lý thành viên</string>
-    <string name="give_operator">Cấp quyền Operator</string>
-    <string name="remove_operator">Thu quyền Operator</string>
-    <string name="give_voice">Cấp quyền Voice</string>
-    <string name="remove_voice">Thu quyền Voice</string>
+    <string name="give_operator">Cấp quyền điều hành</string>
+    <string name="remove_operator">Thu quyền điều hành</string>
+    <string name="give_voice">Cấp quyền nhắn</string>
+    <string name="remove_voice">Thu quyền nhắn</string>
     <string name="kick_member">Mời ra khỏi phòng</string>
     <string name="kick_reason">Lý do (không bắt buộc)</string>
     <string name="commands_title">Lệnh IRC</string>

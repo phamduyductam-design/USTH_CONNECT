@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="catalog_brand">USTH CONNECT</string>
+    <string name="catalog_discover_channels">Khám phá kênh</string>
+    <string name="catalog_browse_server">Phòng trên server</string>
+    <string name="catalog_course_joined">%1$d kênh · %2$d đã tham gia</string>
+    <string name="catalog_courses_yours">Môn học của bạn</string>
+    <string name="catalog_courses_count">%1$d môn</string>
+    <string name="catalog_recent_count" tools:ignore="PluralsCandidate">%1$d hội thoại</string>
+    <string name="catalog_start_conversation">Bắt đầu trò chuyện</string>
+    <string name="catalog_conversation_hint">Chạm vào một hội thoại để nhắn riêng trực tiếp qua IRC.</string>
+    <string name="catalog_active_detail" tools:ignore="PluralsCandidate">%1$s · %2$d tin chưa đọc</string>
+</resources>
