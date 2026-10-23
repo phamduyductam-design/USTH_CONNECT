@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.profile;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -14,6 +14,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.common.SessionAwareFragment;
+import vn.edu.usth.connect.ui.common.ThemeMode;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 

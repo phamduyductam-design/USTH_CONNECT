@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.button.MaterialButton;
 import java.util.*;
 import vn.edu.usth.connect.R;
-import vn.edu.usth.connect.ui.UiHelpers;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 
 /** Shared visual rows for course/channel/PM/member lists. The fragments provide behavior. */
 public final class CatalogAdapter extends RecyclerView.Adapter<CatalogAdapter.Holder> {

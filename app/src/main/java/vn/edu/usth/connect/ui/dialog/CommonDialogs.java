@@ -8,7 +8,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import java.util.function.Consumer;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.UiHelpers;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 
 /** Shared confirmation, validated text input and IRC command help. */
 public final class CommonDialogs {

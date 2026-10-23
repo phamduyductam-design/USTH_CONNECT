@@ -27,7 +27,7 @@ public final class ConnectApplication extends Application {
   public void onCreate() {
     super.onCreate();
     settings = new SettingsStore(this);
-    vn.edu.usth.connect.ui.ThemeMode.apply(this, settings.darkMode());
+    vn.edu.usth.connect.ui.common.ThemeMode.apply(this, settings.darkMode());
     courses = new CourseRepository(this);
     session = new SessionRepository(settings);
     NotificationManager manager = getSystemService(NotificationManager.class);
