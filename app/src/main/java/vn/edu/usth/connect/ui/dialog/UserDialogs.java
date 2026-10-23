@@ -12,7 +12,7 @@ import vn.edu.usth.connect.irc.IrcCommands;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.repository.SessionRepository;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.UiHelpers;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 
 /** Private conversations, member privileges and away presence. */
 public final class UserDialogs {

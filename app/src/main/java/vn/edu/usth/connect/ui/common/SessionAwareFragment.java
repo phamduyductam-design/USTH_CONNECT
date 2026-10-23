@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.common;
 
 import android.os.Bundle;
 import android.view.View;
@@ -6,6 +6,7 @@ import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
 import vn.edu.usth.connect.ConnectApplication;
 import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.ui.MainActivity;
 
 public abstract class SessionAwareFragment extends Fragment implements SessionRepository.Listener {
   protected View root;

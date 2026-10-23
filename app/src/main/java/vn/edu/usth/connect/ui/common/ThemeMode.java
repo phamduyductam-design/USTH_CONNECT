@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.common;
 
 import android.app.UiModeManager;
 import android.content.Context;

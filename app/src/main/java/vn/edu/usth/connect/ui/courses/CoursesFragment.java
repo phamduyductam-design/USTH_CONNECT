@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.courses;
 
 import android.os.Bundle;
 import android.view.*;
@@ -10,6 +10,8 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.common.SessionAwareFragment;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 
 public final class CoursesFragment extends SessionAwareFragment {

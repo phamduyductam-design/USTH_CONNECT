@@ -146,7 +146,13 @@ bash tools/interactive-peer.sh 127.0.0.1 6667 false an_demo '#web-general'
 app/src/main/
   java/vn/edu/usth/connect/
     ConnectApplication.java        # Khởi tạo các repository và thông báo
-    ui/                            # Activity, Fragment, BottomSheet, dialog, insets
+    ui/                            # ConnectActivity, MainActivity: khởi chạy/điều hướng
+      courses/                     # Môn học, kênh môn, phòng trên server
+      chat/                        # Chat kênh/PM và danh sách hội thoại
+      members/                     # Danh sách thành viên
+      profile/                     # Hồ sơ, nickname, trạng thái
+      common/                      # Lifecycle, theme, helper, insets, restore tương thích
+      dialog/                      # Menu/quản trị kênh, thành viên, dialog chung
     adapter/                       # RecyclerView course/channel/member/PM/message rows
     model/                         # Các đối tượng dữ liệu và trạng thái
     irc/                           # Parser, command builder, Socket/SSLSocket client
@@ -158,6 +164,8 @@ app/src/test/                      # Unit test không cần thiết bị
 app/src/androidTest/               # Test UI với IRC daemon thật
 docs/                              # Kiến trúc, liên hệ slide, kịch bản bảo vệ, báo cáo test
 ```
+
+Bắt đầu bằng [bản đồ source](docs/CODE_MAP.md) và [bảng tra cứu khi thầy hỏi](docs/QUICK_REFERENCE.md).
 
 Đọc tiếp [kiến trúc và luồng dữ liệu](docs/ARCHITECTURE.md), [bảng liên hệ tài liệu môn học](docs/COURSE_MAPPING.md), [kịch bản bảo vệ](docs/DEFENSE.md) và [báo cáo kiểm thử](docs/TEST_REPORT.md).
 
