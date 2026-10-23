@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.chat;
 
 import android.os.*;
 import android.view.*;
@@ -10,9 +10,12 @@ import vn.edu.usth.connect.adapter.ChatAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.irc.SlashCommand;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.common.SessionAwareFragment;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.ChannelDialogs;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
+import vn.edu.usth.connect.ui.members.MembersBottomSheet;
 
 public final class ChatFragment extends SessionAwareFragment {
   private String target;

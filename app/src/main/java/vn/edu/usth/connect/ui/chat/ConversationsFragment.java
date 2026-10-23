@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.chat;
 
 import android.os.Bundle;
 import android.view.*;
@@ -9,6 +9,8 @@ import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.common.SessionAwareFragment;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
 public final class ConversationsFragment extends SessionAwareFragment {

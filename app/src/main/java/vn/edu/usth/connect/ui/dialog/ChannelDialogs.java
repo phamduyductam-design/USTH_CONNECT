@@ -9,7 +9,7 @@ import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.ConnectionState;
 import vn.edu.usth.connect.repository.SessionRepository;
 import vn.edu.usth.connect.ui.MainActivity;
-import vn.edu.usth.connect.ui.UiHelpers;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 
 /** Join, topic, room modes and channel menu. The server remains authoritative. */
 public final class ChannelDialogs {
