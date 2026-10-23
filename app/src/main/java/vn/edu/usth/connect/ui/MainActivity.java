@@ -7,6 +7,13 @@ import androidx.fragment.app.Fragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import vn.edu.usth.connect.*;
 import vn.edu.usth.connect.irc.IrcParser;
+import vn.edu.usth.connect.ui.chat.ChatFragment;
+import vn.edu.usth.connect.ui.chat.ConversationsFragment;
+import vn.edu.usth.connect.ui.common.UiHelpers;
+import vn.edu.usth.connect.ui.common.WindowInsetsHelper;
+import vn.edu.usth.connect.ui.courses.CoursesFragment;
+import vn.edu.usth.connect.ui.courses.ServerChannelsFragment;
+import vn.edu.usth.connect.ui.profile.ProfileFragment;
 
 public final class MainActivity extends AppCompatActivity {
   private BottomNavigationView navigation;
@@ -15,6 +22,8 @@ public final class MainActivity extends AppCompatActivity {
 
   @Override
   protected void onCreate(Bundle saved) {
+    getSupportFragmentManager()
+        .setFragmentFactory(new vn.edu.usth.connect.ui.common.FeatureFragmentFactory());
     super.onCreate(saved);
     if (ConnectApplication.from(this).session.config == null) {
       openConnect();

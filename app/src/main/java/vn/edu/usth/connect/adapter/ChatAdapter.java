@@ -10,7 +10,7 @@ import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.ChatMessage;
-import vn.edu.usth.connect.ui.UiHelpers;
+import vn.edu.usth.connect.ui.common.UiHelpers;
 
 public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> {
   public interface Retry {

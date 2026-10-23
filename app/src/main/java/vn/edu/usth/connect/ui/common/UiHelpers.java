@@ -1,4 +1,4 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.common;
 
 import android.content.Context;
 import android.content.res.ColorStateList;

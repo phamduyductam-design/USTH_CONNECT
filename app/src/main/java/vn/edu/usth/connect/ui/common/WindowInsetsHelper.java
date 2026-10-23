@@ -1,15 +1,16 @@
-package vn.edu.usth.connect.ui;
+package vn.edu.usth.connect.ui.common;
 
 import android.app.Activity;
 import android.view.View;
 import androidx.core.view.*;
 
-final class WindowInsetsHelper {
-  static void apply(Activity activity, View root) {
+public final class WindowInsetsHelper {
+  public static void apply(Activity activity, View root) {
     apply(activity, root, null);
   }
 
-  static void apply(Activity activity, View root, java.util.function.Consumer<Boolean> keyboard) {
+  public static void apply(
+      Activity activity, View root, java.util.function.Consumer<Boolean> keyboard) {
     WindowCompat.setDecorFitsSystemWindows(activity.getWindow(), false);
     ViewCompat.setOnApplyWindowInsetsListener(
         root,

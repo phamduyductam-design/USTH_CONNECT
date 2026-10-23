@@ -73,3 +73,7 @@ Không đổi tên biến/hàm, view ID, package/applicationId, action/extra/Bun
 ## Kiểm chứng
 
 Kết quả thực tế và lệnh tái chạy được ghi trong [FILE_NAMING_VALIDATION.md](FILE_NAMING_VALIDATION.md).
+
+## Cập nhật tổ chức package — 23/10/2026
+
+Báo cáo phía trên mô tả đợt đổi tên ngày 22/10, trước khi gom UI theo nhóm chức năng. Đường dẫn hiện tại nằm ở [CODE_MAP.md](CODE_MAP.md), bảng chuyển vị trí ở [UI_ORGANIZATION.md](UI_ORGANIZATION.md). Tên lớp rõ ràng được giữ nguyên. Việc chọn `ui/courses`, `ui/chat`, `ui/common` là quyết định tổ chức dự án theo chức năng; lecture không đưa ra quy ước cụ thể các package này, nên không coi đây là mẫu bắt buộc của thầy.

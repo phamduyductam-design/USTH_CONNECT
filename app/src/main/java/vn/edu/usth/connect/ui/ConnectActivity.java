@@ -10,6 +10,8 @@ import vn.edu.usth.connect.*;
 import vn.edu.usth.connect.irc.IrcCommands;
 import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.ui.common.UiHelpers;
+import vn.edu.usth.connect.ui.common.WindowInsetsHelper;
 
 public final class ConnectActivity extends AppCompatActivity implements SessionRepository.Listener {
   private SessionRepository session;
