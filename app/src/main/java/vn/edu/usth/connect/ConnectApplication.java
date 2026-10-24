@@ -16,7 +16,7 @@ import vn.edu.usth.connect.ui.MainActivity;
 public final class ConnectApplication extends Application {
   public SettingsStore settings;
   public CourseRepository courses;
-  public SessionRepository session;
+  public IrcSessionController session;
   private int started;
 
   public static ConnectApplication from(Context context) {
@@ -27,9 +27,9 @@ public final class ConnectApplication extends Application {
   public void onCreate() {
     super.onCreate();
     settings = new SettingsStore(this);
-    vn.edu.usth.connect.ui.common.ThemeMode.apply(this, settings.darkMode());
+    vn.edu.usth.connect.ui.common.AppTheme.apply(this, settings.darkMode());
     courses = new CourseRepository(this);
-    session = new SessionRepository(settings);
+    session = new IrcSessionController(settings);
     NotificationManager manager = getSystemService(NotificationManager.class);
     if (Build.VERSION.SDK_INT >= 26) {
       manager.createNotificationChannel(

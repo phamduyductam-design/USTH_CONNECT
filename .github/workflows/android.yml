@@ -1,0 +1,39 @@
+name: Android Java and Python checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+    steps:
+      - name: Check out source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # same pin as Dart project
+        with:
+          persist-credentials: false
+      - name: Prepare JDK 17 and Android SDK 35
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y openjdk-17-jdk openssl
+          echo "$JAVA_HOME/bin" >> "$GITHUB_PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Test, lint and build Android
+        run: bash gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest --no-daemon --max-workers=2 --console=plain
+      - name: Test Python tools
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Check Java and XML formatting
+        run: python3 tools/format_code.py --check
+      - name: Verify TLS trust and hostname checks
+        run: python3 tools/tls_smoke.py

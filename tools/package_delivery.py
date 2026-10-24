@@ -1,29 +1,43 @@
-"""Package sources and verification artifacts without machine-specific SDK/cache/preferences."""
+#!/usr/bin/env python3
+"""Package committed source and an optional debug APK; omit SDKs, caches and local data."""
+
+import argparse
+import hashlib
 from pathlib import Path
-from zipfile import ZipFile, ZIP_DEFLATED
-import shutil, hashlib
-ROOT=Path(__file__).resolve().parents[1]
-OUT=ROOT/'output'; OUT.mkdir(exist_ok=True)
-def copy(source,name):
-    target=OUT/name;target.parent.mkdir(parents=True,exist_ok=True)
-    shutil.copy2(ROOT/source,target)
-copy('app/build/outputs/apk/debug/app-debug.apk','USTH-Connect-debug.apk')
-copy('app/build/reports/lint-results-debug.html','verification/lint-results-debug.html')
-copy('app/build/reports/lint-results-debug.xml','verification/lint-results-debug.xml')
-for p in (ROOT/'app/build/test-results/testDebugUnitTest').glob('*.xml'):
-    copy(p.relative_to(ROOT),f'verification/unit-tests/{p.name}')
-for name in ['build.log','network-local.log','network-public.log','emulator-final-attempt.log','apk-signature.log']:
-    copy(Path('.tools')/name, 'verification/'+name)
-with ZipFile(OUT/'USTH-Connect-source.zip','w',ZIP_DEFLATED) as archive:
-    for folder in ['app/src','docs','tools','gradle','.vscode']:
-        for p in (ROOT/folder).rglob('*'):
-            if p.is_file() and 'sources' not in p.relative_to(ROOT).parts and '__pycache__' not in p.parts:
-                archive.write(p,Path('USTHConnect')/p.relative_to(ROOT))
-    for name in ['settings.gradle','build.gradle','gradle.properties','gradlew','gradlew.bat','.gitignore','.gitattributes','README.md','app/build.gradle']:
-        archive.write(ROOT/name,Path('USTHConnect')/name)
-lines=[]
-for p in sorted(OUT.glob('*')):
-    if p.is_file() and p.name!='SHA256SUMS.txt':
-        lines.append(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.name)
-(OUT/'SHA256SUMS.txt').write_text('\n'.join(lines)+'\n',encoding='utf-8')
-print('\n'.join(lines))
+import shutil
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def package(root=ROOT):
+    status = subprocess.run(["git", "status", "--porcelain"], cwd=root, check=True,
+                            capture_output=True, text=True)
+    if status.stdout.strip():
+        raise RuntimeError("Commit project changes first: the source archive is built from HEAD.")
+    output = root / "output"
+    output.mkdir(exist_ok=True)
+    archive = output / "USTH-Connect-source.zip"
+    subprocess.run(["git", "archive", "--format=zip", "--prefix=USTH_CONNECT/",
+                    f"--output={archive}", "HEAD"], cwd=root, check=True)
+    artifacts = [archive]
+    apk = root / "app/build/outputs/apk/debug/app-debug.apk"
+    if apk.is_file():
+        target = output / "USTH-Connect-debug.apk"
+        shutil.copy2(apk, target)
+        artifacts.append(target)
+    sums = "".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in artifacts)
+    (output / "SHA256SUMS.txt").write_text(sums, encoding="utf-8")
+    return output
+
+
+def main():
+    argparse.ArgumentParser(description=__doc__).parse_args()
+    try:
+        print(f"Source archive and optional debug APK: {package()}")
+    except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
+        raise SystemExit(str(error)) from error
+
+
+if __name__ == "__main__":
+    main()

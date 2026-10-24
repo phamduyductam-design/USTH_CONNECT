@@ -1,14 +1,21 @@
 """Legacy baseline generator, retained for historical reference.
 
-The redesigned UI is maintained directly in app/src/main/res. Do not run this
-script on the current app: it recreates the old design and can overwrite it.
+The redesigned UI is maintained directly in app/src/main/res. This script
+exports the historical design into .tools/legacy-resources by default.
 """
 from pathlib import Path
+import argparse
 import json
 import xml.etree.ElementTree as ET
 from xml.sax.saxutils import escape
 
-ROOT = Path(__file__).resolve().parents[1] / 'app/src/main'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output', type=Path,
+                    default=Path(__file__).resolve().parents[1] / '.tools/legacy-resources',
+                    help='Destination for historical resources (default: .tools/legacy-resources)')
+ROOT = parser.parse_args().output.resolve()
+if ROOT == (Path(__file__).resolve().parents[1] / 'app/src/main').resolve():
+    parser.error('Use a separate output folder; the current app resources are maintained by hand.')
 def write(name, text):
     p = ROOT / name
     p.parent.mkdir(parents=True, exist_ok=True)

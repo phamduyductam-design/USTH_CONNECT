@@ -10,7 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.*;
-import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.repository.IrcSessionController;
 
 public final class UiHelpers {
   private UiHelpers() {}
@@ -28,7 +28,7 @@ public final class UiHelpers {
     button.setOnClickListener(
         v -> {
           vn.edu.usth.connect.ConnectApplication.from(activity).settings.darkMode(!dark);
-          ThemeMode.apply(activity, !dark);
+          AppTheme.apply(activity, !dark);
         });
   }
 
@@ -169,7 +169,7 @@ public final class UiHelpers {
     return c.getString(resource);
   }
 
-  public static String connection(Context context, SessionRepository session) {
+  public static String connection(Context context, IrcSessionController session) {
     switch (session.data.connection) {
       case CONNECTING:
         return context.getString(R.string.connecting);

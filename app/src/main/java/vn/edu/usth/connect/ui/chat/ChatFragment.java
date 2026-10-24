@@ -25,6 +25,8 @@ public final class ChatFragment extends SessionAwareFragment {
   private long unreadBoundary;
   private boolean firstRender = true, pinned = true;
   private int messageCount;
+  private boolean draftOwner;
+  private String observedDraft = "";
 
   public static ChatFragment create(String target) {
     ChatFragment f = new ChatFragment();
@@ -91,12 +93,16 @@ public final class ChatFragment extends SessionAwareFragment {
               else UiHelpers.toast(requireContext(), R.string.error_offline);
             });
     EditText composer = v.findViewById(R.id.composer);
-    composer.setText(session.draft(target));
+    observedDraft = session.draft(target);
+    composer.setText(observedDraft);
     UiHelpers.watch(
         composer,
         () -> {
           composer.setError(null);
-          session.saveDraft(target, composer.getText().toString());
+          if (draftOwner) {
+            session.saveDraft(target, composer.getText().toString());
+            observedDraft = session.draft(target);
+          }
           updateSend();
         });
     v.findViewById(R.id.send).setOnClickListener(w -> send());
@@ -112,15 +118,53 @@ public final class ChatFragment extends SessionAwareFragment {
   @Override
   public void onStart() {
     super.onStart();
-    session.setActive(target);
     if (!IrcParser.isChannel(target) && session.data.connection == ConnectionState.CONNECTED)
       session.refreshWho(target);
   }
 
   @Override
   public void onStop() {
-    session.clearActive(target);
+    updateChatVisibility(false);
     super.onStop();
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    updateChatVisibility(requireActivity().hasWindowFocus());
+  }
+
+  @Override
+  public void onPause() {
+    updateChatVisibility(false);
+    super.onPause();
+  }
+
+  /** Window focus also excludes sheets and dialogs that leave the Fragment resumed. */
+  public void updateChatVisibility(boolean focused) {
+    boolean visible = focused && isResumed() && isVisible() && root != null;
+    if (!visible) {
+      if (draftOwner && root != null) {
+        syncTargetAndDraft();
+        session.saveDraft(
+            target, ((EditText) root.findViewById(R.id.composer)).getText().toString());
+        observedDraft = session.draft(target);
+      }
+      draftOwner = false;
+      session.clearActive(target);
+      return;
+    }
+    if (!draftOwner) {
+      syncTargetAndDraft();
+      unreadBoundary = chat.firstUnreadId;
+      EditText composer = root.findViewById(R.id.composer);
+      String draft = session.draft(target);
+      // A dialog should not discard an in-memory JOIN/MODE that is deliberately not persisted.
+      if (!observedDraft.equals(draft)) composer.setText(draft);
+      observedDraft = draft;
+      draftOwner = true;
+    }
+    session.setActive(target);
   }
 
   private void send() {
@@ -203,14 +247,22 @@ public final class ChatFragment extends SessionAwareFragment {
   }
 
   private void syncTargetAndDraft() {
-    // A PM conversation object remains stable when the peer changes nickname.
+    // The destination of a renamed PM can be merged into a different conversation object.
     EditText composer = root.findViewById(R.id.composer);
     String oldTarget = target;
     target = chat.target;
-    if (!oldTarget.equals(target)) {
+    Conversation current = session.data.conversation(target);
+    if (current != chat) chat = current;
+    target = chat.target;
+    if (!oldTarget.equals(target) && draftOwner) {
       String draft = composer.getText().toString();
       session.saveDraft(oldTarget, "");
       session.saveDraft(target, draft);
+      observedDraft = session.draft(target);
+    }
+    if (draftOwner) {
+      session.data.activeTarget = target;
+      session.data.markRead(target);
     }
   }
 
@@ -326,7 +378,7 @@ public final class ChatFragment extends SessionAwareFragment {
     if (root != null) {
       scrollState =
           ((RecyclerView) root.findViewById(R.id.list)).getLayoutManager().onSaveInstanceState();
-      session.saveDraft(target, ((EditText) root.findViewById(R.id.composer)).getText().toString());
+      // onPause saved the owner draft; a covered/stale view must not overwrite a newer one.
     }
     adapter = null;
     super.onDestroyView();

@@ -7,7 +7,7 @@ Nền `fbc1a8e`, nhánh `codex/organize-android-features`; JDK 17, compile/targe
 | assembleDebug, assembleDebugAndroidTest | Thành công |
 | testDebugUnitTest | 30/30: parser/commands 11, transport 5, SessionState 14 |
 | lintDebug | Thành công, 0 lỗi / 9 cảnh báo về target SDK, bản thư viện và notifyDataSetChanged; các dependency/phương thức này không đổi |
-| format-code.py --check | 47 Java, 66 XML; không có khác biệt XML |
+| format_code.py --check | 47 Java, 66 XML; không có khác biệt XML |
 | Kiểm tra diff resource, manifest, assets, IRC/model/repository/storage | Không thay đổi so với nền |
 | So sánh 11 lớp di chuyển | Thân lớp tương đương sau chuẩn hóa package/import/khoảng trắng; WindowInsetsHelper chỉ thêm public cho class/hai hàm apply |
 | AndroidJUnitRunner | 4/4 test trên emulator, 38.936 giây |

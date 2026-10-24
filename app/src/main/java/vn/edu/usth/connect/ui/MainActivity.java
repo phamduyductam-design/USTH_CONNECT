@@ -66,6 +66,7 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   private void select(int id) {
+    updateChatVisibility(false);
     getSupportFragmentManager()
         .popBackStackImmediate(
             null, androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -77,6 +78,7 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   public void open(Fragment fragment) {
+    updateChatVisibility(false);
     getSupportFragmentManager()
         .beginTransaction()
         .replace(R.id.container, fragment)
@@ -99,7 +101,33 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   public void back() {
+    updateChatVisibility(false);
     getOnBackPressedDispatcher().onBackPressed();
+  }
+
+  private void updateChatVisibility(boolean focused) {
+    Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
+    if (current instanceof ChatFragment) ((ChatFragment) current).updateChatVisibility(focused);
+  }
+
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    updateChatVisibility(hasFocus);
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    ConnectApplication.from(this).session.setForeground(true);
+    updateChatVisibility(hasWindowFocus());
+  }
+
+  @Override
+  protected void onPause() {
+    updateChatVisibility(false);
+    ConnectApplication.from(this).session.setForeground(false);
+    super.onPause();
   }
 
   private void updateNavigation() {

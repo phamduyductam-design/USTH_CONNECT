@@ -10,7 +10,7 @@ import vn.edu.usth.connect.ConnectApplication;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.irc.IrcCommands;
 import vn.edu.usth.connect.irc.IrcParser;
-import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 import vn.edu.usth.connect.ui.common.UiHelpers;
 
@@ -49,7 +49,7 @@ public final class UserDialogs {
   }
 
   public static void showMemberActions(MainActivity activity, String target, String nick) {
-    SessionRepository session = ConnectApplication.from(activity).session;
+    IrcSessionController session = ConnectApplication.from(activity).session;
     int[] labels = {
       R.string.give_operator,
       R.string.remove_operator,
@@ -90,7 +90,7 @@ public final class UserDialogs {
   }
 
   public static void showPrivateInfo(MainActivity activity, String target) {
-    SessionRepository session = ConnectApplication.from(activity).session;
+    IrcSessionController session = ConnectApplication.from(activity).session;
     AlertDialog dialog =
         new MaterialAlertDialogBuilder(activity)
             .setTitle(target)
@@ -98,7 +98,7 @@ public final class UserDialogs {
                 R.string.commands_title, (d, which) -> CommonDialogs.showCommandHelp(activity))
             .setNegativeButton(R.string.close, null)
             .create();
-    SessionRepository.Listener listener =
+    IrcSessionController.Listener listener =
         () -> {
           String key = IrcParser.fold(target);
           String status =

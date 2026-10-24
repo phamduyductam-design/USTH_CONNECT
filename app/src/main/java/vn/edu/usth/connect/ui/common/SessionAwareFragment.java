@@ -5,13 +5,14 @@ import android.view.View;
 import androidx.annotation.*;
 import androidx.fragment.app.Fragment;
 import vn.edu.usth.connect.ConnectApplication;
-import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 
-public abstract class SessionAwareFragment extends Fragment implements SessionRepository.Listener {
+public abstract class SessionAwareFragment extends Fragment
+    implements IrcSessionController.Listener {
   protected View root;
   protected ConnectApplication app;
-  protected SessionRepository session;
+  protected IrcSessionController session;
   private String lastError = "";
 
   @Override

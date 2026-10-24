@@ -156,7 +156,7 @@ app/src/main/
     adapter/                       # RecyclerView course/channel/member/PM/message rows
     model/                         # Các đối tượng dữ liệu và trạng thái
     irc/                           # Parser, command builder, Socket/SSLSocket client
-    repository/                    # SessionState, SessionRepository, CourseRepository
+    repository/                    # SessionState, IrcSessionController, CourseRepository
     storage/                       # SharedPreferences
   assets/courses.json              # Danh mục môn/kênh cục bộ
   res/                             # XML layout, strings, colors, dimens, icons, styles
@@ -185,6 +185,50 @@ Bắt đầu bằng [bản đồ source](docs/CODE_MAP.md) và [bảng tra cứu
 | Mở lại app không thấy lịch sử chat | Lịch sử chỉ nằm trong RAM. Sau khi process bị hủy, cần kết nối và JOIN lại; ứng dụng chưa lưu hoặc tải lại lịch sử. |
 
 Khi báo lỗi, ghi rõ bước tái hiện, phiên bản Android, thiết bị/máy ảo, lệnh đã chạy và thông báo lỗi. Nếu gửi log, loại bỏ thông tin riêng tư và nội dung hội thoại không cần thiết.
+
+## Đồng bộ cải tiến từ Dart (24/10/2026)
+
+Giữ cấu trúc Android Java hiện có (`ui/chat`, `ui/courses`, `ui/profile`,
+`ui/members`, `ui/common`, `repository`, `irc`, `model`, `storage`, `adapter`)
+và công cụ Python trong `tools/`. `IrcSessionController` vẫn nằm trong
+`repository/` để giữ cấu trúc package; tên mới phản ánh việc điều phối phiên
+và lệnh mạng. `AppTheme` áp dụng giao diện sáng/tối, không phải enum chế độ.
+
+- JOIN/LIST/NAMES có deadline riêng theo từng lần yêu cầu; hủy khi hoàn tất,
+  bị từ chối hoặc mất kết nối. Callback JOIN cũ không hủy lần thử mới.
+- NAMES tự động sau JOIN cũng hết hạn sau 15 giây. Phản hồi muộn không tự mở
+  batch; retry chồng phản hồi cũ chỉ gộp bổ sung, giữ thành viên/vai trò đã biết
+  và không khôi phục nickname đã PART/QUIT/NICK.
+- Lỗi 263 được hiển thị và cho phép thử lại. Khi nhiều NAMES cùng chờ, phản hồi
+  263 không có tên kênh không được gán tùy ý cho một yêu cầu.
+- Chỉ 404 có thể đánh dấu tin kênh gần đây bị từ chối. Lỗi MODE/TOPIC/KICK
+  không đổi trạng thái một tin chat trước đó; WRITTEN chỉ xác nhận ghi socket.
+- Chỉ chat đang hiện, được resume và có window focus mới đánh dấu đã đọc.
+  Trang che, dialog/sheet và background tạm dừng đọc. PM đổi/gộp nickname giữ
+  lịch sử, mốc unread và nháp của hội thoại đang hiển thị.
+- Không lưu nháp JOIN/MODE hoặc tên lệnh gõ dở; dọn nháp nhạy cảm từ phiên bản
+  cũ. Composer không ghi vào Android saved view state. Tin thường và `//` vẫn
+  lưu theo server/target; lệnh nhạy cảm còn trong view chỉ tồn tại ở RAM.
+- Công cụ Python dùng tên snake_case, hỗ trợ đường dẫn Windows/macOS/Linux,
+  bot bỏ CTCP và giới hạn byte UTF-8, dịch vụ demo được dừng khi thoát.
+  `generate_legacy_resources.py` mặc định xuất ra `.tools/legacy-resources`.
+  `package_delivery.py` đóng gói từ Git HEAD sạch, APK tùy chọn, có checksum.
+- GitHub Actions kiểm tra Java/XML, unit test, lint, APK, Python và TLS cục bộ.
+
+Chạy kiểm tra từ thư mục gốc với JDK 17 và Android SDK 35:
+
+```sh
+./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
+python3 -m unittest discover -s tools -p 'test_*.py' -v
+python3 tools/format_code.py --check
+python3 tools/tls_smoke.py
+```
+
+TLS smoke cần OpenSSL; chứng chỉ/khóa thử chỉ được tạo tạm trong `.tools/`.
+`ChatLifecycleTest` kiểm tra vòng đời không cần IRC daemon; chạy trên thiết bị
+bằng `./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=vn.edu.usth.connect.ChatLifecycleTest`.
+`AppFlowTest` vẫn cần IRC daemon thật. Báo cáo kiểm thử cũ trong `docs/` là
+kết quả lịch sử, không thay thế kết quả kiểm tra lần đồng bộ này.
 
 ## Các giới hạn được chủ động giữ rõ
 

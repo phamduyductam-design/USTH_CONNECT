@@ -5,7 +5,8 @@ import vn.edu.usth.connect.irc.*;
 import vn.edu.usth.connect.model.*;
 
 /**
- * Protocol-driven state. All access in Android is confined to the main thread by SessionRepository.
+ * Protocol-driven state. All access in Android is confined to the main thread by
+ * IrcSessionController.
  */
 public final class SessionState {
   private static final int MAX_LIST_CHANNELS = 5000;
@@ -46,9 +47,7 @@ public final class SessionState {
       channel.joining = false;
       channel.members.clear();
       channel.modes.clear();
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-      channel.namesInProgress = false;
+      channel.resetNames();
     }
     for (Conversation conversation : all())
       for (ChatMessage message : conversation.messages)
@@ -216,14 +215,13 @@ public final class SessionState {
   private void handleJoin(
       IrcMessage message, String senderNickname, String senderKey, boolean ownMessage) {
     onlineUsers.add(senderKey);
-    Channel channel = channel(message.last());
+    Channel channel = channel(message.param(0));
     if (ownMessage) {
       channel.joined = true;
       channel.wanted = true;
       channel.joining = false;
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-      channel.namesInProgress = true;
+      channel.resetNames();
+      channel.beginNames();
     }
     memberAdd(channel, new IrcUser(senderNickname, ""));
     event(channel, senderNickname, "", "JOIN");
@@ -238,9 +236,8 @@ public final class SessionState {
       channel.wanted = false;
       channel.joining = false;
       channel.members.clear();
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-      channel.namesInProgress = false;
+      channel.resetNames();
+      channel.modes.clear();
     }
     event(channel, senderNickname, "", "PART");
   }
@@ -251,10 +248,10 @@ public final class SessionState {
     if (IrcParser.fold(message.param(1)).equals(IrcParser.fold(nickname))) {
       channel.joined = false;
       channel.wanted = false;
+      channel.joining = false;
       channel.members.clear();
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-      channel.namesInProgress = false;
+      channel.resetNames();
+      channel.modes.clear();
     }
     event(channel, message.param(1), "", "KICK");
   }
@@ -266,7 +263,7 @@ public final class SessionState {
       if (ch.members.containsKey(senderKey) || ch.namesBatch.containsKey(senderKey)) {
         memberRemove(ch, senderKey);
         event(ch, senderNickname, "", "QUIT");
-      }
+      } else if (ch.awaitingNamesReplies()) ch.namesRemoved.add(senderKey);
   }
 
   private void handleNicknameChange(
@@ -276,11 +273,13 @@ public final class SessionState {
     if (awayUsers.containsKey(senderKey)) awayUsers.put(key, awayUsers.remove(senderKey));
     for (Channel ch : channels.values()) {
       IrcUser user = ch.members.get(senderKey);
+      if (user == null) user = ch.namesBatch.get(senderKey);
       if (user != null || ch.namesBatch.containsKey(senderKey)) {
         memberRemove(ch, senderKey);
         memberAdd(ch, new IrcUser(newNick, user == null ? "" : user.prefixes));
         event(ch, senderNickname, newNick, "NICK");
-      }
+      } else if (ch.awaitingNamesReplies() && !senderKey.equals(key))
+        ch.namesRemoved.add(senderKey);
     }
     if (ownMessage) nickname = newNick;
     Conversation pm = conversations.remove(senderKey);
@@ -292,6 +291,9 @@ public final class SessionState {
         pm.messages.sort(Comparator.comparingLong(a -> a.timestamp));
         while (pm.messages.size() > Conversation.MAX_HISTORY_MESSAGES) pm.messages.remove(0);
         pm.unread += existing.unread;
+        if (pm.firstUnreadId == 0
+            || (existing.firstUnreadId != 0 && existing.firstUnreadId < pm.firstUnreadId))
+          pm.firstUnreadId = existing.firstUnreadId;
       }
       conversations.put(key, pm);
       if (IrcParser.fold(activeTarget).equals(senderKey)) activeTarget = newNick;
@@ -300,12 +302,7 @@ public final class SessionState {
 
   private void handleNamesBatch(IrcMessage message) {
     Channel channel = channel(message.param(2));
-    if (!channel.joined) return;
-    if (!channel.namesInProgress) {
-      channel.namesInProgress = true;
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-    }
+    if (!channel.joined || !channel.namesInProgress) return;
     for (String value : message.last().split(" +")) {
       int i = 0;
       while (i < value.length() && prefixSymbols.indexOf(value.charAt(i)) >= 0) i++;
@@ -318,20 +315,13 @@ public final class SessionState {
   }
 
   private void handleNamesComplete(IrcMessage message) {
-    Channel channel = channel(message.param(1));
-    if (!channel.joined) return;
-    if (channel.namesInProgress) {
-      channel.members.clear();
-      channel.members.putAll(channel.namesBatch);
-      channel.namesBatch.clear();
-      channel.namesRemoved.clear();
-      channel.namesInProgress = false;
-    }
+    channel(message.param(1)).finishNames();
   }
 
   private ChatMessage handleChatMessage(
       IrcMessage message, String senderNickname, boolean ownMessage) {
-    String target = IrcParser.isChannel(message.param(0)) ? message.param(0) : senderNickname;
+    String target =
+        IrcParser.isChannel(message.param(0)) || ownMessage ? message.param(0) : senderNickname;
     Conversation chat = conversation(target);
     String text = message.last();
     if (text.startsWith("\u0001")) {
@@ -362,7 +352,7 @@ public final class SessionState {
   }
 
   private void handleErrorReply(IrcMessage message) {
-    if (message.command.matches("[45][0-9]{2}")) {
+    if (message.command.equals("263") || message.command.matches("[45][0-9]{2}")) {
       errorCode = message.command;
       errorDetail = message.last();
       if (message.param(1).equalsIgnoreCase("LIST")) listing = false;
@@ -372,18 +362,16 @@ public final class SessionState {
         failed.joining = false;
         failed.wanted = false;
       }
-      if (Arrays.asList("401", "404", "407", "411", "412", "421", "442", "482")
-          .contains(message.command)) {
-        Conversation failedChat =
-            IrcParser.isChannel(errorTarget)
-                ? failed
-                : conversations.get(IrcParser.fold(errorTarget));
+      // Administrative/query errors cannot safely be attributed to an earlier PRIVMSG.
+      if (message.command.equals("404")) {
+        Conversation failedChat = failed;
         if (failedChat != null) {
           for (int i = failedChat.messages.size() - 1; i >= 0; i--) {
             ChatMessage sent = failedChat.messages.get(i);
             if (sent.outgoing
                 && System.currentTimeMillis() - sent.timestamp < ERROR_MESSAGE_WINDOW_MS) {
-              sent.status = ChatMessage.Status.FAILED;
+              if (sent.status != ChatMessage.Status.RECEIVED)
+                sent.status = ChatMessage.Status.FAILED;
               break;
             }
           }
@@ -450,8 +438,8 @@ public final class SessionState {
 
   private static void memberAdd(Channel channel, IrcUser u) {
     channel.members.put(IrcParser.fold(u.nickname), u);
+    if (channel.awaitingNamesReplies()) channel.namesRemoved.remove(IrcParser.fold(u.nickname));
     if (channel.namesInProgress) {
-      channel.namesRemoved.remove(IrcParser.fold(u.nickname));
       channel.namesBatch.put(IrcParser.fold(u.nickname), u);
     }
   }
@@ -459,7 +447,7 @@ public final class SessionState {
   private static void memberRemove(Channel channel, String key) {
     channel.members.remove(key);
     channel.namesBatch.remove(key);
-    if (channel.namesInProgress) channel.namesRemoved.add(key);
+    if (channel.namesInProgress || channel.awaitingNamesReplies()) channel.namesRemoved.add(key);
   }
 
   private static void event(Channel channel, String senderNickname, String extra, String code) {

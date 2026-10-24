@@ -14,8 +14,8 @@
 | `5. resources`: LinearLayout, FrameLayout, layout_weight, ScrollView, RecyclerView | activity_main.xml; fragment_chat.xml; fragment_profile.xml | Content co giãn bằng weight; chat/composer dùng không gian còn lại; form/profile cuộn |
 | `5. resources`: dp/sp, padding/margin, values, styles, Vietnamese resources | strings.xml; colors.xml; dimens.xml; themes.xml | Chữ Việt, bảng màu của ảnh, spacing/lề, font hệ thống; không khóa theo pixel ảnh |
 | `5. resources`: drawables, raw/assets, menus, adapter | ic_*.xml; courses.json; navigation.xml; CatalogAdapter; ChatAdapter | Vector icon nét, danh mục bundled, menu bottom nav, tái sử dụng row |
-| `6. tasks`: main/worker thread, Thread, Handler, Looper | IrcClient; SessionRepository | Reader/writer chạy ngoài UI; Handler(Looper.getMainLooper()) chuyển kết quả về UI |
-| `6. tasks`: AsyncTask bao gói Thread/Handler | IrcClient/SessionRepository; giải thích dưới đây | Giữ nguyên ý tưởng tách background và main callback, dùng ExecutorService cho code mới |
+| `6. tasks`: main/worker thread, Thread, Handler, Looper | IrcClient; IrcSessionController | Reader/writer chạy ngoài UI; Handler(Looper.getMainLooper()) chuyển kết quả về UI |
+| `6. tasks`: AsyncTask bao gói Thread/Handler | IrcClient/IrcSessionController; giải thích dưới đây | Giữ nguyên ý tưởng tách background và main callback, dùng ExecutorService cho code mới |
 | `7. networking.p1`: INTERNET, java.net, streams, client/server | Manifest; IrcClient | Permission INTERNET normal; Socket/SSLSocket, InputStream/OutputStream TCP |
 | `7. networking.p2`: JSONObject/JSONArray, structured data | CourseRepository; courses.json | Đọc nhóm môn/kênh và metadata cục bộ bằng parser JSON built-in |
 | `7. networking.p2`: Volley request queue và callback | Không dùng Volley; đối chiếu IrcClient | Volley giải quyết HTTP; IRC là dòng TCP hai chiều nên dùng reader/writer của Socket |
@@ -32,7 +32,7 @@ AsyncTask đã deprecated từ API 30; xem [Android AsyncTask reference](https:/
 |---|---|---|
 | IRC wire protocol / numeric replies / RFC1459 case folding | HTTP examples không mô tả IRC | IrcParser, IrcCommands, SessionState; [RFC 2812](https://www.rfc-editor.org/rfc/rfc2812) |
 | TLS hostname verification | Certificate chain hợp lệ chưa đủ nếu sai hostname | IrcClient, SSLParameters; [Java 17 reference](https://docs.oracle.com/en/java/javase/17/docs/api/java.base/javax/net/ssl/SSLParameters.html) |
-| Epoch để bỏ callback phiên cũ | Cancel/reconnect xảy ra đồng thời với reader/writer | IrcClient và SessionRepository |
+| Epoch để bỏ callback phiên cũ | Cancel/reconnect xảy ra đồng thời với reader/writer | IrcClient và IrcSessionController |
 | Backoff, timer timeout, fixed delay heartbeat | Kết nối dài cần phục hồi và hủy đúng | IrcClient |
 | AndroidX, Material BottomSheet, insets/edge-to-edge | Thay Support Library cũ, hỗ trợ Android hiện tại | Gradle, MembersBottomSheet, WindowInsetsHelper |
 | POST_NOTIFICATIONS runtime từ Android 13 | Thông báo phải tuân theo quyền và thiết lập hệ thống | Manifest, ProfileFragment, ConnectApplication |

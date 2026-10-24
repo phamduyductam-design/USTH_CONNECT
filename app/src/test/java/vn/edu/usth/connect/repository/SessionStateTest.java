@@ -108,13 +108,13 @@ public class SessionStateTest {
   }
 
   @Test
-  public void numericRejectionMarksOutgoingFailed() {
+  public void ambiguousNumericErrorDoesNotMarkEarlierOutgoingFailed() {
     SessionState s = session();
     Conversation c = s.conversation("an");
     ChatMessage m = new ChatMessage("minh", "test", true, ChatMessage.Status.WRITTEN);
     c.add(m);
     feed(s, ":server 401 minh an :No such nick");
-    assertEquals(ChatMessage.Status.FAILED, m.status);
+    assertEquals(ChatMessage.Status.WRITTEN, m.status);
     assertEquals("401", s.errorCode);
   }
 
@@ -180,6 +180,7 @@ public class SessionStateTest {
     feed(s, ":minh!u@h MODE #c +kov secret an ha");
     assertEquals("o", s.role("#c", "an"));
     assertEquals("v", s.role("#c", "ha"));
+    s.channel("#c").beginNames();
     feed(s, ":s 353 minh = #c :@minh @an +ha");
     feed(s, ":minh!u@h MODE #c -o+v an an");
     feed(s, ":s 366 minh #c :end");
@@ -233,5 +234,48 @@ public class SessionStateTest {
     feed(s, ":s 332 minh #c :old");
     feed(s, ":an!u@h TOPIC #c :new");
     assertEquals("new", s.channel("#c").topic);
+  }
+
+  @Test
+  public void only404FailsARecentChannelMessage() {
+    SessionState s = session();
+    ChatMessage sent = new ChatMessage("minh", "hi", true, ChatMessage.Status.WRITTEN);
+    s.channel("#c").add(sent);
+    for (String code : new String[] {"401", "407", "421", "442", "482"}) {
+      feed(s, ":s " + code + " minh #c :Rejected command");
+      assertEquals(ChatMessage.Status.WRITTEN, sent.status);
+      assertEquals(code, s.errorCode);
+    }
+    feed(s, ":s 404 minh #c :Cannot send to channel");
+    assertEquals(ChatMessage.Status.FAILED, sent.status);
+  }
+
+  @Test
+  public void privateSelfEchoUsesPeerAndDoesNotCreateSelfConversation() {
+    SessionState s = session();
+    Conversation pm = s.conversation("an");
+    pm.add(new ChatMessage("minh", "hello", true, ChatMessage.Status.WRITTEN));
+    feed(s, ":minh!u@h PRIVMSG an :hello");
+    assertEquals(1, pm.messages.size());
+    assertFalse(s.conversations.containsKey("minh"));
+  }
+
+  @Test
+  public void mergedPmPreservesEarliestUnreadBoundary() {
+    SessionState s = session();
+    feed(s, ":ann!u@h PRIVMSG minh :older");
+    long boundary = s.conversation("ann").firstUnreadId;
+    feed(s, ":an!u@h PRIVMSG minh :newer");
+    feed(s, ":an!u@h NICK :ann");
+    assertEquals(2, s.conversation("ann").unread);
+    assertEquals(boundary, s.conversation("ann").firstUnreadId);
+  }
+
+  @Test
+  public void extendedJoinUsesChannelParameter() {
+    SessionState s = session();
+    feed(s, ":minh!u@h JOIN #c account :Real Name");
+    assertTrue(s.channel("#c").joined);
+    assertFalse(s.channels.containsKey("real name"));
   }
 }

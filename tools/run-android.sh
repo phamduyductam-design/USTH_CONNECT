@@ -13,4 +13,4 @@ bash ./gradlew assembleDebug --console=plain
 if [ "${1:-}" = "--build-only" ]; then
   exit 0
 fi
-exec python3 tools/start-demo.py
+exec python3 tools/start_demo.py --android

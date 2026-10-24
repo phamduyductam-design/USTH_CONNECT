@@ -41,7 +41,7 @@ Từ thư mục gốc repo, với JDK 17 và Android SDK 35 được cấu hình
 
 ```bash
 bash ./gradlew assembleDebug lintDebug testDebugUnitTest assembleDebugAndroidTest --console=plain
-python3 tools/format-code.py --check
+python3 tools/format_code.py --check
 bash tools/network-smoke.sh 127.0.0.1 16667 false
 git diff --check
 ```

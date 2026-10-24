@@ -14,7 +14,7 @@ ui/
   chat/                           # ChatFragment, ConversationsFragment
   members/                        # MembersBottomSheet
   profile/                        # ProfileFragment
-  common/                         # SessionAwareFragment, UiHelpers, ThemeMode,
+  common/                         # SessionAwareFragment, UiHelpers, AppTheme,
                                   # WindowInsetsHelper, FeatureFragmentFactory
   dialog/                         # ChannelDialogs, UserDialogs, CommonDialogs
 ```
@@ -24,9 +24,9 @@ ui/
 ## Nên đọc theo thứ tự nào?
 
 1. `app/src/main/AndroidManifest.xml`: app chạy Activity nào, quyền nào được khai báo.
-2. `ConnectApplication`: tạo SettingsStore, CourseRepository và một SessionRepository dùng chung trong process.
+2. `ConnectApplication`: tạo SettingsStore, CourseRepository và một IrcSessionController dùng chung trong process.
 3. `ui/ConnectActivity`: đọc nickname/server rồi gọi `session.connect()`.
-4. `repository/SessionRepository`: các thao tác app có thể làm, callback từ mạng và cách báo thay đổi cho UI.
+4. `repository/IrcSessionController`: các thao tác app có thể làm, callback từ mạng và cách báo thay đổi cho UI.
 5. `irc/IrcClient` → `IrcParser` → `repository/SessionState.accept()`: kết nối, phân tích dòng IRC, cập nhật dữ liệu.
 6. Chọn tính năng trong bảng bên dưới để đọc Fragment, dialog, adapter và layout tương ứng.
 
@@ -36,35 +36,35 @@ Trong các mục Java bên dưới, tiền tố chung là `app/src/main/java/vn/
 
 | Tính năng | Điểm bắt đầu trong Java | Giao diện / dữ liệu liên quan |
 |---|---|---|
-| Đăng nhập/kết nối IRC | `ui/ConnectActivity.connect()` → `SessionRepository.connect()` | `res/layout/activity_connect.xml` |
+| Đăng nhập/kết nối IRC | `ui/ConnectActivity.connect()` → `IrcSessionController.connect()` | `res/layout/activity_connect.xml` |
 | Kết nối TCP/TLS, CAP, PING/PONG, reconnect | `irc/IrcClient` | `model/ConnectionConfig`, `ConnectionState` |
 | Đọc một dòng IRC | `irc/IrcParser.parse()`; dữ liệu `IrcMessage` | `irc/IrcClient` gọi parser |
 | Danh mục môn học | `ui/courses/CoursesFragment`, `repository/CourseRepository` | `assets/courses.json`; `fragment_catalog.xml` |
 | Kênh thuộc một môn | `ui/courses/CourseChannelsFragment` | `model/Course`; `fragment_catalog.xml` |
-| Phòng công khai từ server | `CoursesFragment` → `MainActivity.showServerChannels()` → `ServerChannelsFragment` → `SessionRepository.listChannels()` | Môn học → Phòng trên server; `SessionState.handleListEntry()`; `model/ServerChannel` |
-| Tham gia/rời kênh | `ui/dialog/ChannelDialogs.showJoin()` / `showMenu()` | `dialog_join_channel.xml`; `SessionRepository.join()` / `part()`; `SessionState.handleJoin()` / `handlePart()` |
-| Gửi tin nhắn | `ui/chat/ChatFragment.send()` → `SessionRepository.send()` → `IrcCommands.message()` | `res/layout/fragment_chat.xml`; `model/ChatMessage` |
+| Phòng công khai từ server | `CoursesFragment` → `MainActivity.showServerChannels()` → `ServerChannelsFragment` → `IrcSessionController.listChannels()` | Môn học → Phòng trên server; `SessionState.handleListEntry()`; `model/ServerChannel` |
+| Tham gia/rời kênh | `ui/dialog/ChannelDialogs.showJoin()` / `showMenu()` | `dialog_join_channel.xml`; `IrcSessionController.join()` / `part()`; `SessionState.handleJoin()` / `handlePart()` |
+| Gửi tin nhắn | `ui/chat/ChatFragment.send()` → `IrcSessionController.send()` → `IrcCommands.message()` | `res/layout/fragment_chat.xml`; `model/ChatMessage` |
 | Nhận tin kênh hoặc PM | `SessionState.handleChatMessage()` | `model/Conversation`, `Channel`; `adapter/ChatAdapter`; `item_chat_message.xml`, `item_chat_separator.xml`; `bg_chat_incoming.xml`/`bg_chat_outgoing.xml` cho bubble |
-| Lệnh `/join`, `/msg`, `/topic`… | `irc/SlashCommand.parse()` → `SessionRepository.execute()` | `ChatFragment.sendSlashCommand()`; hướng dẫn trong `CommonDialogs.showCommandHelp()` |
+| Lệnh `/join`, `/msg`, `/topic`… | `irc/SlashCommand.parse()` → `IrcSessionController.execute()` | `ChatFragment.sendSlashCommand()`; hướng dẫn trong `CommonDialogs.showCommandHelp()` |
 | Hiển thị header, mất kết nối, lịch sử chat | `ChatFragment.renderHeader()` / `renderConnectionState()` / `renderMessages()` | `fragment_chat.xml`; `adapter/ChatAdapter` |
 | Nháp và cuộn hội thoại | `ChatFragment.syncTargetAndDraft()` / `onSaveInstanceState()` | `storage/SettingsStore.draft()` |
-| Thành viên, vai trò và NAMES | `ui/members/MembersBottomSheet` → `SessionRepository.refreshNames()` | `SessionState.handleNamesBatch()` / `handleNamesComplete()`; `dialog_members.xml` |
-| TOPIC và chế độ phòng | `ui/dialog/ChannelDialogs.showMenu()` / `showRoomModes()` | `SessionRepository.topic()` / `mode()`; `SessionState.applyModes()` |
-| Cấp/thu quyền hoặc KICK | `ui/dialog/UserDialogs.showMemberActions()` | `SessionRepository.mode()` / `kick()`; `SessionState.handleKick()` |
-| Đổi nickname | `ui/profile/ProfileFragment` → `SessionRepository.changeNick()` | `SessionState.handleNicknameChange()` |
-| Vắng mặt / WHO | `UserDialogs.showAway()` / `showPrivateInfo()` | `SessionRepository.setAway()` / `refreshWho()`; `SessionState.handleWhoReply()` |
+| Thành viên, vai trò và NAMES | `ui/members/MembersBottomSheet` → `IrcSessionController.refreshNames()` | `SessionState.handleNamesBatch()` / `handleNamesComplete()`; `dialog_members.xml` |
+| TOPIC và chế độ phòng | `ui/dialog/ChannelDialogs.showMenu()` / `showRoomModes()` | `IrcSessionController.topic()` / `mode()`; `SessionState.applyModes()` |
+| Cấp/thu quyền hoặc KICK | `ui/dialog/UserDialogs.showMemberActions()` | `IrcSessionController.mode()` / `kick()`; `SessionState.handleKick()` |
+| Đổi nickname | `ui/profile/ProfileFragment` → `IrcSessionController.changeNick()` | `SessionState.handleNicknameChange()` |
+| Vắng mặt / WHO | `UserDialogs.showAway()` / `showPrivateInfo()` | `IrcSessionController.setAway()` / `refreshWho()`; `SessionState.handleWhoReply()` |
 | Danh sách PM, tạo PM | `ui/chat/ConversationsFragment`; `UserDialogs.showNewConversation()` | `model/Conversation`; `fragment_catalog.xml` |
 | Nhắc nickname và thông báo | `irc/NicknameMentions`; `ConnectApplication` | `ChatAdapter`; notification channels `messages`, `mentions` |
-| Sáng/tối | `ui/common/UiHelpers.themeToggle()` → `ThemeMode.apply()` | `storage/SettingsStore.darkMode()`; `res/values-night/`; `view_theme_toggle.xml` |
+| Sáng/tối | `ui/common/UiHelpers.themeToggle()` → `AppTheme.apply()` | `storage/SettingsStore.darkMode()`; `res/values-night/`; `view_theme_toggle.xml` |
 | Điều hướng, back stack | `ui/MainActivity` | `activity_main.xml`; `res/menu/navigation.xml`; `res/color/navigation_item_tint.xml` |
 | Logo USTH và icon ứng dụng | `view_app_brand.xml` ở đầu trang; `activity_connect.xml`; Manifest dùng `@mipmap/ic_launcher` | PNG trong suốt `drawable-nodpi/usth_university_logo.png`; fallback `mipmap-anydpi/`, adaptive `mipmap-anydpi-v26/` nền trong suốt; [chi tiết branding](LOGO_BRANDING.md) |
 | Xác nhận / nhập liệu dùng chung | `ui/dialog/CommonDialogs` | `dialog_confirm.xml`, `dialog_input.xml` |
 | Listener/lifecycle dùng chung cho Fragment | `ui/common/SessionAwareFragment` | Lớp nền trừu tượng; đăng ký/hủy listener phiên theo onStart/onStop |
 | Khoảng chừa thanh hệ thống/bàn phím | `ui/common/WindowInsetsHelper.apply()` | Dùng ở `ConnectActivity` và `MainActivity`; phân biệt với kiểu giá trị `androidx.core.graphics.Insets` |
 | Danh sách, avatar, icon, màu dùng chung | `adapter/CatalogAdapter`, `ui/common/UiHelpers` | `item_catalog.xml`; `res/drawable/`; `res/values/` |
-| Chạy demo trên Mac | `Chay-demo.command` → `tools/run-android.sh` → `tools/start-demo.py` | SDK, máy ảo và Ergo được chuẩn bị trong `.tools/` |
+| Chạy demo trên Mac | `Chay-demo.command` → `tools/run-android.sh` → `tools/start_demo.py` | SDK, máy ảo và Ergo được chuẩn bị trong `.tools/` |
 | Client thứ hai nhập từ terminal | `tools/interactive-peer.sh` → `InteractivePeer.java` | Dùng cùng engine `IrcClient`; không tự trả lời |
-| Bot echo minh họa | `tools/demo-bot.py` | Công cụ demo riêng, không phải xử lý nhận tin của app |
+| Bot echo minh họa | `tools/demo_bot.py` | Công cụ demo riêng, không phải xử lý nhận tin của app |
 
 ## Trách nhiệm từng thư mục
 
@@ -78,7 +78,7 @@ Trong các mục Java bên dưới, tiền tố chung là `app/src/main/java/vn/
 | `ui/common/` | Lifecycle, theme, avatar/ngày/giờ, insets, khôi phục Fragment cũ | Sửa thành phần UI dùng lại giữa nhiều màn |
 | `ui/dialog/` | `ChannelDialogs`, `UserDialogs`, `CommonDialogs` | Thay dialog/menu theo nhóm tính năng |
 | `adapter/` | Gắn dữ liệu vào RecyclerView | Thay hàng tin nhắn hoặc hàng danh mục |
-| `repository/` | SessionRepository điều phối; SessionState nhận sự kiện; CourseRepository đọc metadata | Thay thao tác hoặc cập nhật trạng thái |
+| `repository/` | IrcSessionController điều phối; SessionState nhận sự kiện; CourseRepository đọc metadata | Thay thao tác hoặc cập nhật trạng thái |
 | `irc/` | Socket, parser, builder, slash command và nhận diện mention | Thay giao tiếp IRC; không đặt View Android ở đây |
 | `model/` | Dữ liệu kênh, người dùng, hội thoại, cấu hình | Thêm/sửa trường dữ liệu |
 | `storage/` | SharedPreferences cho cấu hình, theme và nháp | Thay thông tin lưu cục bộ |
@@ -94,9 +94,9 @@ Trong các mục Java bên dưới, tiền tố chung là `app/src/main/java/vn/
 
 ## Luồng gửi và nhận một tin nhắn
 
-**Gửi:** `ChatFragment.send()` → `SessionRepository.send()` → `IrcCommands.message()` kiểm tra đầu vào → `IrcClient.send()` ghi socket → callback cập nhật trạng thái WRITTEN/FAILED/UNCERTAIN → `notifyListeners()` → Fragment render.
+**Gửi:** `ChatFragment.send()` → `IrcSessionController.send()` → `IrcCommands.message()` kiểm tra đầu vào → `IrcClient.send()` ghi socket → callback cập nhật trạng thái WRITTEN/FAILED/UNCERTAIN → `notifyListeners()` → Fragment render.
 
-**Nhận:** socket → `IrcParser.parse()` → `SessionRepository.onMessage()` chuyển về `mainHandler` → `SessionState.accept()` chọn handler → `handleChatMessage()` thêm vào Conversation → Fragment/adapter hiển thị; Application quyết định có thông báo ở nền hay không.
+**Nhận:** socket → `IrcParser.parse()` → `IrcSessionController.onMessage()` chuyển về `mainHandler` → `SessionState.accept()` chọn handler → `handleChatMessage()` thêm vào Conversation → Fragment/adapter hiển thị; Application quyết định có thông báo ở nền hay không.
 
 State về JOIN, MODE, TOPIC… đến từ server. Bấm nút hoặc ghi socket thành công không đồng nghĩa server đã chấp nhận thao tác.
 
@@ -128,8 +128,8 @@ rg -n 'R.id.composer|@\+id/composer' app/src/main
 Chạy từ folder gốc, cần Python 3 và JDK 17:
 
 ```bash
-python3 tools/format-code.py          # Chuẩn hóa Java và XML của view
-python3 tools/format-code.py --check  # Kiểm tra, không sửa source
+python3 tools/format_code.py          # Chuẩn hóa Java và XML của view
+python3 tools/format_code.py --check  # Kiểm tra, không sửa source
 ```
 
 Lần đầu cần mạng để tải google-java-format 1.22.0; file JAR được giữ trong `.tools/` và kiểm tra SHA-256 trước khi chạy. Có cache rồi thì không cần tải lại. Dùng bản cố định để mọi máy tạo kết quả giống nhau; không thêm plugin Gradle hay thay dependency của app.

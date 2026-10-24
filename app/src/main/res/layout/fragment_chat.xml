@@ -212,6 +212,7 @@
             android:paddingVertical="12dp"
             android:inputType="textMultiLine|textCapSentences"
             android:singleLine="false"
+            android:saveEnabled="false"
             android:maxLines="5"
             android:imeOptions="flagNoExtractUi"
             android:gravity="center_vertical"

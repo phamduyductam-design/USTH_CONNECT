@@ -8,7 +8,7 @@ import vn.edu.usth.connect.model.*;
 import vn.edu.usth.connect.storage.SettingsStore;
 
 /** Application owns this object. Never holds an Activity, Fragment, View or lifecycle owner. */
-public final class SessionRepository implements IrcClient.Listener {
+public final class IrcSessionController implements IrcClient.Listener {
   private static final long JOIN_TIMEOUT_MS = 15000;
   private static final long NAMES_TIMEOUT_MS = 15000;
   private static final long LIST_TIMEOUT_MS = 30000;
@@ -22,17 +22,54 @@ public final class SessionRepository implements IrcClient.Listener {
   }
 
   public final SessionState data = new SessionState();
-  private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+  interface Scheduler {
+    void post(Runnable callback);
+
+    void postDelayed(Runnable callback, long delay);
+
+    void removeCallbacks(Runnable callback);
+  }
+
+  private static final class MainScheduler implements Scheduler {
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
+    public void post(Runnable callback) {
+      handler.post(callback);
+    }
+
+    public void postDelayed(Runnable callback, long delay) {
+      handler.postDelayed(callback, delay);
+    }
+
+    public void removeCallbacks(Runnable callback) {
+      handler.removeCallbacks(callback);
+    }
+  }
+
+  private final Scheduler mainHandler;
   private final Set<Listener> listeners = new LinkedHashSet<>();
   private final Map<String, String> channelKeys = new HashMap<>();
   private final SettingsStore settings;
-  private final IrcClient client = new IrcClient(this);
+  private final IrcTransport client;
+  private final Map<String, Runnable> joinTimers = new HashMap<>(), namesTimers = new HashMap<>();
+  private Runnable listTimer;
+  private boolean foreground = true;
   public ConnectionConfig config;
   public String reason = "";
   public IncomingListener incomingListener;
 
-  public SessionRepository(SettingsStore settings) {
+  public IrcSessionController(SettingsStore settings) {
+    this(settings, new MainScheduler(), IrcClient::new);
+  }
+
+  IrcSessionController(
+      SettingsStore settings,
+      Scheduler scheduler,
+      java.util.function.Function<IrcClient.Listener, IrcTransport> factory) {
     this.settings = settings;
+    mainHandler = scheduler;
+    client = factory.apply(this);
   }
 
   public void addListener(Listener listener) {
@@ -49,6 +86,7 @@ public final class SessionRepository implements IrcClient.Listener {
   }
 
   public void connect(ConnectionConfig newConfig) {
+    cancelRequests();
     if (config == null
         || !config.serverId().equals(newConfig.serverId())
         || !IrcParser.fold(config.nickname).equals(IrcParser.fold(newConfig.nickname))) {
@@ -80,8 +118,10 @@ public final class SessionRepository implements IrcClient.Listener {
           if (epoch != client.epoch()) return;
           data.connection = state;
           this.reason = reason;
-          if (state != ConnectionState.CONNECTED) data.connectionLost();
-          else {
+          if (state != ConnectionState.CONNECTED) {
+            cancelRequests();
+            data.connectionLost();
+          } else {
             config = config.withNick(data.nickname);
             settings.save(config);
             if (!data.requestedAway.isEmpty()) setAway(data.requestedAway);
@@ -98,11 +138,33 @@ public final class SessionRepository implements IrcClient.Listener {
     mainHandler.post(
         () -> {
           if (epoch != client.epoch()) return;
+          if (message.command.equals("NICK") && config != null) {
+            String oldTarget = message.nick(), newTarget = message.last();
+            if (!IrcParser.fold(oldTarget).equals(IrcParser.fold(newTarget))) {
+              String sourceDraft = draft(oldTarget), destinationDraft = draft(newTarget);
+              boolean sourceVisible =
+                  IrcParser.fold(data.activeTarget).equals(IrcParser.fold(oldTarget));
+              saveDraft(oldTarget, "");
+              if (!sourceDraft.isEmpty() && (sourceVisible || destinationDraft.isEmpty()))
+                saveDraft(newTarget, sourceDraft);
+            }
+          }
           ChatMessage received = data.accept(message);
+          boolean namesRejected =
+              message.command.equals("421")
+                  || message.command.equals("461")
+                  || (message.command.equals("263")
+                      && namesTimers.size() == 1
+                      && data.channels.values().stream().filter(c -> c.namesInProgress).count()
+                          == 1);
+          if (namesRejected && message.param(1).equalsIgnoreCase("NAMES"))
+            for (String key : namesTimers.keySet()) data.channels.get(key).cancelNames(true);
+          cancelFinishedRequests();
           if (message.command.equals("JOIN")
               && IrcParser.fold(message.nick()).equals(IrcParser.fold(data.nickname))) {
-            refreshWho(message.last());
-            mode(message.last(), "", "");
+            startNamesTimer(message.param(0));
+            refreshWho(message.param(0));
+            mode(message.param(0), "", "");
           }
           if (message.command.equals("NICK") && config != null) {
             config = config.withNick(data.nickname);
@@ -126,30 +188,36 @@ public final class SessionRepository implements IrcClient.Listener {
     data.errorCode = "";
     channelKeys.put(IrcParser.fold(name), key == null ? "" : key);
     long epoch = client.epoch();
+    String channelKey = IrcParser.fold(name);
+    Runnable timer =
+        new Runnable() {
+          public void run() {
+            if (joinTimers.get(channelKey) != this) return;
+            joinTimers.remove(channelKey);
+            if (epoch == client.epoch() && c.joining && !c.joined) {
+              c.joining = false;
+              c.wanted = false;
+              data.errorCode = "join_timeout";
+              data.errorTarget = name;
+              notifyListeners();
+            }
+          }
+        };
+    joinTimers.put(channelKey, timer);
+    mainHandler.postDelayed(timer, JOIN_TIMEOUT_MS);
     client.send(
         line,
         (written, uncertain) ->
             mainHandler.post(
                 () -> {
-                  if (epoch != client.epoch()) return;
+                  if (epoch != client.epoch() || joinTimers.get(channelKey) != timer) return;
                   if (!written) {
+                    cancelTimer(joinTimers.remove(channelKey));
                     c.joining = false;
                     data.errorCode = "network";
                     notifyListeners();
                   }
                 }));
-    // A server that silently drops JOIN must not leave the button pending forever.
-    mainHandler.postDelayed(
-        () -> {
-          if (epoch == client.epoch() && c.joining && !c.joined) {
-            c.joining = false;
-            c.wanted = false;
-            data.errorCode = "join_timeout";
-            data.errorTarget = name;
-            notifyListeners();
-          }
-        },
-        JOIN_TIMEOUT_MS);
     notifyListeners();
   }
 
@@ -193,16 +261,21 @@ public final class SessionRepository implements IrcClient.Listener {
     data.listing = true;
     data.listLoaded = false;
     long epoch = client.epoch();
-    mainHandler.postDelayed(
-        () -> {
-          if (epoch == client.epoch() && data.listing) {
-            data.listing = false;
-            data.errorCode = "timeout";
-            data.errorTarget = "LIST";
-            notifyListeners();
+    cancelTimer(listTimer);
+    listTimer =
+        new Runnable() {
+          public void run() {
+            if (listTimer != this) return;
+            listTimer = null;
+            if (epoch == client.epoch() && data.listing) {
+              data.listing = false;
+              data.errorCode = "timeout";
+              data.errorTarget = "LIST";
+              notifyListeners();
+            }
           }
-        },
-        LIST_TIMEOUT_MS);
+        };
+    mainHandler.postDelayed(listTimer, LIST_TIMEOUT_MS);
     notifyListeners();
   }
 
@@ -211,24 +284,56 @@ public final class SessionRepository implements IrcClient.Listener {
     if (!canSend(target)) throw new IllegalStateException("offline");
     Channel c = data.channel(target);
     if (c.namesInProgress) return;
-    c.namesInProgress = true;
-    c.namesBatch.clear();
-    c.namesRemoved.clear();
+    c.beginNames();
+    startNamesTimer(target);
     sendCommand(line);
     refreshWho(target);
+  }
+
+  private void startNamesTimer(String target) {
+    Channel c = data.channel(target);
     long epoch = client.epoch();
-    mainHandler.postDelayed(
-        () -> {
-          if (epoch == client.epoch() && c.namesInProgress) {
-            c.namesInProgress = false;
-            c.namesBatch.clear();
-            c.namesRemoved.clear();
-            data.errorCode = "timeout";
-            data.errorTarget = target;
-            notifyListeners();
+    String key = IrcParser.fold(target);
+    cancelTimer(namesTimers.remove(key));
+    Runnable timer =
+        new Runnable() {
+          public void run() {
+            if (namesTimers.get(key) != this) return;
+            namesTimers.remove(key);
+            if (epoch == client.epoch() && c.namesInProgress) {
+              c.cancelNames(false);
+              data.errorCode = "timeout";
+              data.errorTarget = target;
+              notifyListeners();
+            }
           }
-        },
-        NAMES_TIMEOUT_MS);
+        };
+    namesTimers.put(key, timer);
+    mainHandler.postDelayed(timer, NAMES_TIMEOUT_MS);
+  }
+
+  private void cancelTimer(Runnable timer) {
+    if (timer != null) mainHandler.removeCallbacks(timer);
+  }
+
+  private void cancelFinishedRequests() {
+    if (!data.listing) {
+      cancelTimer(listTimer);
+      listTimer = null;
+    }
+    for (String key : new ArrayList<>(joinTimers.keySet()))
+      if (!data.channel(key).joining) cancelTimer(joinTimers.remove(key));
+    for (String key : new ArrayList<>(namesTimers.keySet()))
+      if (!data.channel(key).namesInProgress) cancelTimer(namesTimers.remove(key));
+  }
+
+  private void cancelRequests() {
+    cancelTimer(listTimer);
+    listTimer = null;
+    for (Runnable timer : joinTimers.values()) cancelTimer(timer);
+    for (Runnable timer : namesTimers.values()) cancelTimer(timer);
+    joinTimers.clear();
+    namesTimers.clear();
   }
 
   public void refreshWho(String target) {
@@ -341,6 +446,7 @@ public final class SessionRepository implements IrcClient.Listener {
   }
 
   public void setActive(String target) {
+    if (!foreground) return;
     data.activeTarget = target;
     if (!target.isEmpty()) data.markRead(target);
     notifyListeners();
@@ -350,12 +456,18 @@ public final class SessionRepository implements IrcClient.Listener {
     if (IrcParser.fold(data.activeTarget).equals(IrcParser.fold(target))) data.activeTarget = "";
   }
 
+  public void setForeground(boolean visible) {
+    foreground = visible;
+    if (!visible) data.activeTarget = "";
+  }
+
   public void reconnect() {
     data.errorCode = "";
     client.reconnectNow();
   }
 
   public void disconnect() {
+    cancelRequests();
     data.requestedAway = "";
     for (Channel c : data.channels.values()) c.wanted = false;
     channelKeys.clear();

@@ -6,8 +6,8 @@ import android.os.Build;
 import androidx.appcompat.app.AppCompatDelegate;
 
 /** Apply the saved preference before activities inflate their night-qualified resources. */
-public final class ThemeMode {
-  private ThemeMode() {}
+public final class AppTheme {
+  private AppTheme() {}
 
   public static void apply(Context context, boolean dark) {
     if (Build.VERSION.SDK_INT >= 31) {
