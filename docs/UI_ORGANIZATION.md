@@ -15,7 +15,7 @@ Nền `fbc1a8e`, nhánh `codex/organize-android-features`. Mục tiêu: giảm c
 | `ProfileFragment.java` | `profile/ProfileFragment.java` | Hồ sơ, nickname, presence, thiết lập |
 | `SessionAwareFragment.java` | `common/SessionAwareFragment.java` | Lifecycle/listener chung, không phải một màn hình |
 | `UiHelpers.java` | `common/UiHelpers.java` | Avatar, ngày giờ, trạng thái, theme toggle dùng lại |
-| `ThemeMode.java` | `common/ThemeMode.java` | Áp dụng sáng/tối dùng chung |
+| `AppTheme.java` | `common/AppTheme.java` | Áp dụng sáng/tối dùng chung |
 | `WindowInsetsHelper.java` | `common/WindowInsetsHelper.java` | Insets hệ thống/IME cho hai Activity |
 
 Các Activity vẫn ở `ui/ConnectActivity.java` và `ui/MainActivity.java` để giữ nguyên component launcher/Intent/thông báo. `ui/dialog/` và `adapter/` tiếp tục chứa thành phần tái sử dụng có tên rõ. Model, storage, repository và IRC giữ nguyên vị trí/trách nhiệm; không gom socket hoặc lưu trữ vào Fragment.
@@ -32,7 +32,7 @@ Các tên cũ còn xuất hiện có chủ đích trong factory tương thích, 
 
 ```sh
 ./gradlew assembleDebug assembleDebugAndroidTest lintDebug testDebugUnitTest
-python3 tools/format-code.py --check
+python3 tools/format_code.py --check
 bash tools/network-smoke.sh 127.0.0.1 17667 false
 # Trên thiết bị kiểm thử riêng, với daemon local tại 17667:
 adb shell am instrument -w -r -e server 10.0.2.2 -e port 17667 \

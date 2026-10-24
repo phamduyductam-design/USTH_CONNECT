@@ -11,7 +11,7 @@ import vn.edu.usth.connect.model.ConnectionConfig;
 import vn.edu.usth.connect.model.ConnectionState;
 
 /** One process-owned connection. Reader never occupies the writer executor. */
-public final class IrcClient {
+public final class IrcClient implements IrcTransport {
   public interface Listener {
     void onState(long epoch, ConnectionState state, String reason);
 

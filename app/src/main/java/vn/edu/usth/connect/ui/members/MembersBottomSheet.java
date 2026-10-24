@@ -11,15 +11,15 @@ import vn.edu.usth.connect.*;
 import vn.edu.usth.connect.adapter.CatalogAdapter;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.*;
-import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
 
 public final class MembersBottomSheet extends BottomSheetDialogFragment
-    implements SessionRepository.Listener {
+    implements IrcSessionController.Listener {
   private View root;
-  private SessionRepository session;
+  private IrcSessionController session;
   private CatalogAdapter adapter;
   private String target;
   private String selectedNick = "";

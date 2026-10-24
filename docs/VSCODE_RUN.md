@@ -17,7 +17,7 @@ export ANDROID_HOME=/path/to/android-sdk
 bash tools/run-android.sh --build-only
 ```
 
-Trên máy đã chuẩn bị demo, bỏ --build-only để chạy. tools/start-demo.py dùng Python 3, AVD `usth_demo_api35` (đổi bằng USTH_AVD_NAME), SDK theo ANDROID_HOME và server Ergo trong .tools/ergo. SDK/AVD/server không đưa vào Git. Bot demo và helper khởi động nằm trong tools, là source có version control.
+Trên máy đã chuẩn bị demo, bỏ --build-only để chạy. tools/start_demo.py dùng Python 3, AVD `usth_demo_api35` (đổi bằng USTH_AVD_NAME), SDK theo ANDROID_HOME và server Ergo trong .tools/ergo. SDK/AVD/server không đưa vào Git. Bot demo và helper khởi động nằm trong tools, là source có version control.
 
 Nếu cài Android Studio/SDK ở vị trí khác, đặt ANDROID_HOME hoặc local.properties. Bản demo local dùng host 10.0.2.2, port 6667, TLS tắt; cần daemon trên host lắng nghe localhost:6667. Script giữ nháp và biệt danh khi khởi động lại demo.
 

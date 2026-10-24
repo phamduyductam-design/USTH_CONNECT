@@ -11,7 +11,7 @@ Ngày 22/10/2026. Nền: commit `86c25f4`, app versionName 1.2 / versionCode 3. 
 | testDebugUnitTest | 30 test, 0 lỗi |
 | Android instrumentation | 2 test, `OK (2 tests)` |
 | NetworkSmoke + AdvancedNetworkSmoke | 21 bước PASS qua IRC TCP thật |
-| tools/format-code.py --check | 45 file Java và 56 file XML; không còn khác biệt định dạng |
+| tools/format_code.py --check | 45 file Java và 56 file XML; không còn khác biệt định dạng |
 | So sánh canonical XML với commit nền | 56/56 tài liệu view giữ nguyên nội dung |
 | git diff --check | Không có lỗi whitespace |
 
@@ -24,7 +24,7 @@ Ngày 22/10/2026. Nền: commit `86c25f4`, app versionName 1.2 / versionCode 3. 
 
 ```bash
 bash ./gradlew assembleDebug assembleDebugAndroidTest lintDebug testDebugUnitTest --console=plain
-python3 tools/format-code.py --check
+python3 tools/format_code.py --check
 bash tools/network-smoke.sh 127.0.0.1 6669 false
 
 # Khi emulator-5556 đã sẵn sàng và có test server riêng:

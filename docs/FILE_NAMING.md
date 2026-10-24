@@ -1,5 +1,21 @@
 # Rà soát tên file USTH_CONNECT
 
+Cập nhật 24/10/2026 khi đồng bộ cải tiến từ Dart; giữ nguyên cây package Java
+theo feature và các thư mục gốc. Những tên thay đổi trong lần này:
+
+| Tên trước | Tên hiện tại | Vai trò |
+|---|---|---|
+| `repository/SessionRepository.java` | `repository/IrcSessionController.java` | Điều phối kết nối, lệnh, callback và deadline của phiên IRC |
+| `ui/common/ThemeMode.java` | `ui/common/AppTheme.java` | Áp dụng theme sáng/tối; đây là helper chứ không phải enum |
+| `tools/demo-bot.py` | `tools/demo_bot.py` | Bot echo IRC minh họa, hỗ trợ TLS và Unicode |
+| `tools/start-demo.py` | `tools/start_demo.py` | Khởi động/dừng dịch vụ demo, tùy chọn mở Android |
+| `tools/format-code.py` | `tools/format_code.py` | Định dạng/kiểm tra Java và XML |
+| `tools/generate_resources.py` | `tools/generate_legacy_resources.py` | Xuất tài nguyên giao diện lịch sử vào thư mục riêng |
+
+Import, lớp, lời gọi và tham chiếu tài liệu đã đổi theo tên mới. Các tên còn lại
+đã mô tả đúng vai trò Activity/Fragment/Adapter/State/Store/Parser nên giữ lại.
+Các mục bên dưới ghi bối cảnh của lần rà soát trước đây.
+
 Ngày 22/10/2026. Nền: `449e06e` (`origin/main` tại lúc bắt đầu). Nhánh riêng: `codex/readable-file-names`. Phiên bản app vẫn 1.2 / versionCode 3.
 
 ## Căn cứ lecture MOBI
@@ -48,19 +64,19 @@ Package hiện có: `ui/` cho màn hình/lifecycle; `ui/dialog/` cho hộp tho�
 | `drawable/bg_bubble.xml` | `drawable/bg_outgoing_message.xml` | Nền phần nội dung tin nhắn gửi đi | Tên mới mô tả đúng trường hợp dùng thay vì chỉ hình dạng |
 | `color/nav_tint.xml` | `color/navigation_item_tint.xml` | Selector màu icon/chữ mục điều hướng | Bỏ viết tắt `nav`, chỉ rõ đối tượng được tô màu |
 
-Giữ các tên đã rõ: `ConnectActivity`, `MainActivity`, `CoursesFragment`, `ServerChannelsFragment`, `ChatFragment`, `ConversationsFragment`, `ProfileFragment`, `MembersBottomSheet`, `CatalogAdapter`, `ChatAdapter`, `SessionRepository`, `SessionState`, `CourseRepository`, `SettingsStore`, `ThemeMode`, `IrcClient`, `IrcParser`, `IrcCommands`, các model và dialog helper. `Irc` là tên giao thức phổ biến, có giải thích trong CODE_MAP; không đổi sang tên dài hàng loạt. `fragment_catalog.xml` và `item_catalog.xml` được giữ vì thật sự được dùng chung cho môn/kênh/hội thoại/thành viên. File values, menu, icon và background đã có nghĩa rõ ràng được giữ.
+Giữ các tên đã rõ: `ConnectActivity`, `MainActivity`, `CoursesFragment`, `ServerChannelsFragment`, `ChatFragment`, `ConversationsFragment`, `ProfileFragment`, `MembersBottomSheet`, `CatalogAdapter`, `ChatAdapter`, `IrcSessionController`, `SessionState`, `CourseRepository`, `SettingsStore`, `AppTheme`, `IrcClient`, `IrcParser`, `IrcCommands`, các model và dialog helper. `Irc` là tên giao thức phổ biến, có giải thích trong CODE_MAP; không đổi sang tên dài hàng loạt. `fragment_catalog.xml` và `item_catalog.xml` được giữ vì thật sự được dùng chung cho môn/kênh/hội thoại/thành viên. File values, menu, icon và background đã có nghĩa rõ ràng được giữ.
 
 ## Tìm bảy nhóm chức năng
 
 | Nhóm | Điểm bắt đầu |
 |---|---|
-| Kết nối | `ui/ConnectActivity` → `repository/SessionRepository` → `irc/IrcClient`; layout `activity_connect.xml` |
+| Kết nối | `ui/ConnectActivity` → `repository/IrcSessionController` → `irc/IrcClient`; layout `activity_connect.xml` |
 | Môn học/kênh | `CoursesFragment` → `CourseChannelsFragment`; `CourseRepository`, `assets/courses.json`; `ServerChannelsFragment` cho LIST từ server |
 | Chat | `ChatFragment`, `ChatAdapter`; `fragment_chat.xml`, `item_chat_message.xml`, `item_chat_separator.xml` |
 | Thành viên | `MembersBottomSheet`, `dialog_members.xml`; `SessionState.handleNamesBatch()`/`handleNamesComplete()` |
-| Quản trị | `ui/dialog/ChannelDialogs` cho TOPIC/MODE; `UserDialogs.showMemberActions()` cho cấp/thu quyền và KICK; `SessionRepository` gửi lệnh |
+| Quản trị | `ui/dialog/ChannelDialogs` cho TOPIC/MODE; `UserDialogs.showMemberActions()` cho cấp/thu quyền và KICK; `IrcSessionController` gửi lệnh |
 | Thông báo | `ConnectApplication` tạo/phát notification; `NicknameMentions` nhận diện nickname, `SessionState.handleChatMessage()` gắn mention; thiết lập ở `ProfileFragment`/`SettingsStore` |
-| Sáng/tối | `ThemeMode`, `UiHelpers.themeToggle()`, `view_theme_toggle.xml`, `SettingsStore.darkMode()`, `res/values-night/` |
+| Sáng/tối | `AppTheme`, `UiHelpers.themeToggle()`, `view_theme_toggle.xml`, `SettingsStore.darkMode()`, `res/values-night/` |
 
 Xem [CODE_MAP.md](CODE_MAP.md) để tra đến từng hàm và resource.
 

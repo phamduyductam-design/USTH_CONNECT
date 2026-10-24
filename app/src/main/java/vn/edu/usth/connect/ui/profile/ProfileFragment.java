@@ -14,8 +14,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.ui.common.AppTheme;
 import vn.edu.usth.connect.ui.common.SessionAwareFragment;
-import vn.edu.usth.connect.ui.common.ThemeMode;
 import vn.edu.usth.connect.ui.common.UiHelpers;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
 import vn.edu.usth.connect.ui.dialog.UserDialogs;
@@ -55,7 +55,7 @@ public final class ProfileFragment extends SessionAwareFragment {
             w -> {
               boolean dark = !app.settings.darkMode();
               app.settings.darkMode(dark);
-              ThemeMode.apply(requireContext(), dark);
+              AppTheme.apply(requireContext(), dark);
             });
     v.findViewById(R.id.change)
         .setOnClickListener(

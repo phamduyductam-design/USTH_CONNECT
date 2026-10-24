@@ -7,7 +7,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import vn.edu.usth.connect.ConnectApplication;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.model.ConnectionState;
-import vn.edu.usth.connect.repository.SessionRepository;
+import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 import vn.edu.usth.connect.ui.common.UiHelpers;
 
@@ -55,7 +55,7 @@ public final class ChannelDialogs {
   }
 
   public static void showMenu(MainActivity activity, String target) {
-    SessionRepository session = ConnectApplication.from(activity).session;
+    IrcSessionController session = ConnectApplication.from(activity).session;
     int[] labels = {
       R.string.refresh_members,
       R.string.edit_topic,
@@ -108,7 +108,7 @@ public final class ChannelDialogs {
   }
 
   private static void showRoomModes(MainActivity activity, String target) {
-    SessionRepository session = ConnectApplication.from(activity).session;
+    IrcSessionController session = ConnectApplication.from(activity).session;
     if (!session.data.canManage(target)) {
       UiHelpers.toast(activity, R.string.operator_required);
       return;

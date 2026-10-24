@@ -2,15 +2,37 @@ package vn.edu.usth.connect.storage;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import java.util.regex.Pattern;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.ConnectionConfig;
 
 /** Non-sensitive preferences only. No server password or channel key is persisted. */
 public final class SettingsStore {
+  private static final Pattern SENSITIVE_COMMAND =
+      Pattern.compile("^/\\s*(?:j|jo|joi|join|m|mo|mod|mode)(?:\\s|$)", Pattern.CASE_INSENSITIVE);
   private final SharedPreferences prefs;
 
   public SettingsStore(Context context) {
-    prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE);
+    this(context.getSharedPreferences("settings", Context.MODE_PRIVATE));
+  }
+
+  public SettingsStore(SharedPreferences preferences) {
+    prefs = preferences;
+    // Clean old drafts too, even when their conversation is never opened again.
+    SharedPreferences.Editor edit = prefs.edit();
+    for (java.util.Map.Entry<String, ?> entry : prefs.getAll().entrySet())
+      if (entry.getKey().startsWith("draft:")
+          && entry.getValue() instanceof String
+          && containsSensitiveCommand((String) entry.getValue())) edit.remove(entry.getKey());
+    edit.apply();
+  }
+
+  private static boolean containsSensitiveCommand(String text) {
+    int start = 0;
+    while (start < text.length()
+        && (Character.isWhitespace(text.charAt(start))
+            || Character.isSpaceChar(text.charAt(start)))) start++;
+    return SENSITIVE_COMMAND.matcher(text.substring(start)).find();
   }
 
   public boolean darkMode() {
@@ -66,12 +88,18 @@ public final class SettingsStore {
   }
 
   public String draft(String server, String target) {
-    return prefs.getString(draftKey(server, target), "");
+    String key = draftKey(server, target);
+    String text = prefs.getString(key, "");
+    if (containsSensitiveCommand(text)) {
+      prefs.edit().remove(key).apply();
+      return "";
+    }
+    return text;
   }
 
   public void draft(String server, String target, String text) {
     SharedPreferences.Editor edit = prefs.edit();
-    if (text.isEmpty()) edit.remove(draftKey(server, target));
+    if (text.isEmpty() || containsSensitiveCommand(text)) edit.remove(draftKey(server, target));
     else edit.putString(draftKey(server, target), text);
     edit.apply();
   }

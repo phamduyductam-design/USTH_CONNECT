@@ -20,7 +20,7 @@ Xoay khi đang chat có nháp: Activity tạo lại nhưng cùng Application/ses
 
 ## Networking — 3 phút
 
-Mở IrcCommands.message, IrcParser.parse, IrcClient.readSession/write và SessionRepository.onMessage/send. Vẽ luồng UI → executor ghi → Socket và Socket → parser → Handler → model → adapter.
+Mở IrcCommands.message, IrcParser.parse, IrcClient.readSession/write và IrcSessionController.onMessage/send. Vẽ luồng UI → executor ghi → Socket và Socket → parser → Handler → model → adapter.
 
 Nêu:
 

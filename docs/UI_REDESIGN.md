@@ -6,9 +6,9 @@ Ngày 22/10/2026. Nhánh riêng `codex/android-ui-redesign`, dựa trên `461bde
 
 App có một module Android, Java 17, XML Views, AndroidX Fragment/RecyclerView và Material Components. AGP 8.7.3, Gradle 8.9, minSdk 24, compile/target SDK 35; giữ nguyên cấu hình và dependency. Không có Compose hoặc ViewModel trong kiến trúc hiện tại.
 
-`ConnectApplication` sở hữu `SettingsStore`, `CourseRepository`, `SessionRepository`. `ConnectActivity` đọc cấu hình đã lưu và yêu cầu kết nối; chỉ chuyển sang MainActivity khi server xác nhận đăng ký. MainActivity điều hướng Fragment bằng FragmentManager/back stack. SessionAwareFragment đăng ký/hủy listener theo onStart/onStop.
+`ConnectApplication` sở hữu `SettingsStore`, `CourseRepository`, `IrcSessionController`. `ConnectActivity` đọc cấu hình đã lưu và yêu cầu kết nối; chỉ chuyển sang MainActivity khi server xác nhận đăng ký. MainActivity điều hướng Fragment bằng FragmentManager/back stack. SessionAwareFragment đăng ký/hủy listener theo onStart/onStop.
 
-SessionRepository dùng Handler main thread nhận callback từ IrcClient. Socket/TLS, parser, command builder, epoch/reconnect, trạng thái JOIN/PART/NAMES/LIST/WHO/MODE/TOPIC, trạng thái gửi và xử lý notification đã có sẵn. UI tiếp tục gọi các API này; không viết lại mạng. SettingsStore giữ nickname, host/port/TLS, nháp và lựa chọn theme bằng đúng các khóa cũ.
+IrcSessionController dùng Handler main thread nhận callback từ IrcClient. Socket/TLS, parser, command builder, epoch/reconnect, trạng thái JOIN/PART/NAMES/LIST/WHO/MODE/TOPIC, trạng thái gửi và xử lý notification đã có sẵn. UI tiếp tục gọi các API này; không viết lại mạng. SettingsStore giữ nickname, host/port/TLS, nháp và lựa chọn theme bằng đúng các khóa cũ.
 
 Danh mục bốn môn và tên kênh là metadata cấu hình trong `courses.json`. Số kênh cấu hình có thể khác ảnh demo và được giữ nguyên. Các tin nhắn, thành viên, topic, unread, quyền và danh sách phòng lấy từ IRC thật. Các công cụ demo/bot trong tools là tiện ích phát triển riêng, không phải nguồn dữ liệu của production.
 

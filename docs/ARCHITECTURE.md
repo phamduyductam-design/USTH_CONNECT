@@ -4,7 +4,7 @@
 
 ```mermaid
 flowchart TD
-    Application[ConnectApplication: lifetime theo process] --> Session[SessionRepository]
+    Application[ConnectApplication: lifetime theo process] --> Session[IrcSessionController]
     Application --> Courses[CourseRepository]
     Application --> Settings[SettingsStore]
     Connect[ConnectActivity] --> Session
@@ -47,7 +47,7 @@ flowchart LR
     H -->|Xác nhận ngắt| A
 ```
 
-MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/Bundle và view hierarchy được Android lưu khi xoay. Chat lưu target, mốc chưa đọc và Parcelable của LinearLayoutManager; nháp ở SettingsStore. Không khai báo `configChanges` để né vòng đời. Một Application giữ nguyên SessionRepository và socket khi Activity được tạo lại.
+MainActivity sử dụng FragmentManager và back stack. Trạng thái Fragment/Bundle và view hierarchy được Android lưu khi xoay. Chat lưu target, mốc chưa đọc và Parcelable của LinearLayoutManager; nháp ở SettingsStore. Không khai báo `configChanges` để né vòng đời. Một Application giữ nguyên IrcSessionController và socket khi Activity được tạo lại.
 
 Điều hướng chính hiện có ba tab Môn học, Tin nhắn, Cá nhân. ServerChannelsFragment được mở qua nút Phòng trên server trong Môn học hoặc `/list`; có nút Back và vẫn gọi LIST thật. Chat kênh chọn tab Môn học, PM chọn tab Tin nhắn. Thanh tab hiện khi duyệt và ẩn khi bàn phím mở. WindowInsetsHelper áp dụng khoảng chừa system bars/IME cho root.
 
@@ -55,7 +55,7 @@ UI tiếp tục dùng XML + Material + RecyclerView; không thêm Compose hoặc
 
 ## Luồng gửi
 
-1. Người dùng bấm Gửi. ChatFragment gộp xuống dòng thành khoảng trắng. SlashCommand tách lệnh gõ thành thao tác typed; tin thường gọi SessionRepository.send. // gửi dấu / nguyên văn.
+1. Người dùng bấm Gửi. ChatFragment gộp xuống dòng thành khoảng trắng. SlashCommand tách lệnh gõ thành thao tác typed; tin thường gọi IrcSessionController.send. // gửi dấu / nguyên văn.
 2. IrcCommands kiểm tra target, CR/LF/NUL, nội dung trống và kích thước UTF-8 của cả dòng <= 512 byte với CRLF.
 3. Repository thêm một hàng QUEUED của chính mình, gọi IrcClient.send. Nút gửi chỉ khả dụng khi CONNECTED và nếu là kênh thì JOIN đã xác nhận.
 4. Writer executor ghi UTF-8 và CRLF, flush socket. Handler nhận kết quả, đổi sang WRITTEN. Mọi cập nhật adapter nằm trên main thread.
@@ -97,7 +97,7 @@ NicknameMentions giữ chỉ số UTF-16 khi fold nickname theo RFC1459, dùng r
 
 ## Chuyển chế độ sáng/tối
 
-`view_theme_toggle.xml` được dùng ở header đăng nhập, danh mục, chat và cá nhân. `UiHelpers.themeToggle` đọc uiMode hiện tại, đổi icon/nhãn rồi lưu boolean darkMode qua SettingsStore. `ThemeMode.apply` cập nhật UiModeManager (API 31+) và AppCompatDelegate; màn hình được tái tạo với resources `values-night`, giữ session trong Application và state/nháp như khi xoay. ConnectApplication áp dụng lựa chọn lưu trước khi Activity được mở.
+`view_theme_toggle.xml` được dùng ở header đăng nhập, danh mục, chat và cá nhân. `UiHelpers.themeToggle` đọc uiMode hiện tại, đổi icon/nhãn rồi lưu boolean darkMode qua SettingsStore. `AppTheme.apply` cập nhật UiModeManager (API 31+) và AppCompatDelegate; màn hình được tái tạo với resources `values-night`, giữ session trong Application và state/nháp như khi xoay. ConnectApplication áp dụng lựa chọn lưu trước khi Activity được mở.
 
 Màu nền/chữ/viền và icon status/navigation có bản night. Màu nền nút, avatar và màu chữ trắng được tách khỏi surface để giữ độ tương phản. Logo gốc nằm trên nền trắng nhỏ ở cả hai chế độ.
 
@@ -105,4 +105,4 @@ Tham khảo [Android dark theme](https://developer.android.com/develop/ui/views/
 
 ## Tra cứu source sau đợt làm sạch
 
-Các dialog nằm trong `ui/dialog/`: ChannelDialogs cho kênh/phòng, UserDialogs cho thành viên/PM/away, CommonDialogs cho xác nhận/nhập liệu/help. SessionState.accept() điều phối tới các handler có tên theo sự kiện; ChatFragment.render() gọi các bước nhỏ theo phần màn hình. SessionRepository dùng mainHandler và notifyListeners() để cập nhật UI. Xem [CODE_MAP.md](CODE_MAP.md) để tìm từng tính năng.
+Các dialog nằm trong `ui/dialog/`: ChannelDialogs cho kênh/phòng, UserDialogs cho thành viên/PM/away, CommonDialogs cho xác nhận/nhập liệu/help. SessionState.accept() điều phối tới các handler có tên theo sự kiện; ChatFragment.render() gọi các bước nhỏ theo phần màn hình. IrcSessionController dùng mainHandler và notifyListeners() để cập nhật UI. Xem [CODE_MAP.md](CODE_MAP.md) để tìm từng tính năng.
