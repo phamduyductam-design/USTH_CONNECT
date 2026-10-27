@@ -10,6 +10,7 @@ import vn.edu.usth.connect.ConnectApplication;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.irc.IrcCommands;
 import vn.edu.usth.connect.irc.IrcParser;
+import vn.edu.usth.connect.model.ConnectionState;
 import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 import vn.edu.usth.connect.ui.common.UiHelpers;
@@ -89,7 +90,7 @@ public final class UserDialogs {
         text -> ConnectApplication.from(activity).session.setAway(text));
   }
 
-  public static void showPrivateInfo(MainActivity activity, String target) {
+  public static void showPrivateInfo(MainActivity activity, String target, Runnable search) {
     IrcSessionController session = ConnectApplication.from(activity).session;
     AlertDialog dialog =
         new MaterialAlertDialogBuilder(activity)
@@ -97,6 +98,7 @@ public final class UserDialogs {
             .setPositiveButton(
                 R.string.commands_title, (d, which) -> CommonDialogs.showCommandHelp(activity))
             .setNegativeButton(R.string.close, null)
+            .setNeutralButton(R.string.search_messages, (d, which) -> search.run())
             .create();
     IrcSessionController.Listener listener =
         () -> {
@@ -122,6 +124,6 @@ public final class UserDialogs {
     dialog.show();
     activity.getLifecycle().addObserver(observer);
     session.addListener(listener);
-    session.refreshWho(target);
+    if (session.data.connection == ConnectionState.CONNECTED) session.refreshWho(target);
   }
 }

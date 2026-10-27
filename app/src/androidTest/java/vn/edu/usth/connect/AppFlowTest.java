@@ -146,6 +146,30 @@ public class AppFlowTest {
                 withId(R.id.avatar),
                 withParent(hasDescendant(withText("Cùng trao đổi bài tập trong kênh nhé.")))))
         .check(matches(withEffectiveVisibility(Visibility.INVISIBLE)));
+    // Search filters the live conversation without changing the composer draft.
+    onView(withId(R.id.composer)).perform(replaceText("Nháp khi tìm"), closeSoftKeyboard());
+    onView(withId(R.id.more)).perform(click());
+    onView(withText(R.string.search_messages)).perform(click());
+    onView(withId(R.id.chat_search_query))
+        .perform(replaceText("CLIENT THỨ HAI"), closeSoftKeyboard());
+    onView(withText("Xin chào Minh từ client thứ hai")).check(matches(isDisplayed()));
+    onView(withText("Cùng trao đổi bài tập trong kênh nhé.")).check(doesNotExist());
+    onView(withId(R.id.chat_search_count))
+        .check(
+            matches(
+                withText(
+                    app.getResources().getQuantityString(R.plurals.search_messages_count, 1, 1))));
+    onView(withId(R.id.theme_toggle)).perform(click());
+    onView(withId(R.id.chat_search_query)).check(matches(withText("CLIENT THỨ HAI")));
+    onView(withText("Xin chào Minh từ client thứ hai")).check(matches(isDisplayed()));
+    onView(withId(R.id.theme_toggle)).perform(click());
+    onView(withId(R.id.chat_search_query))
+        .perform(replaceText("không có kết quả này"), closeSoftKeyboard());
+    onView(withText(R.string.search_messages_none)).check(matches(isDisplayed()));
+    onView(withId(R.id.chat_search_close)).perform(click());
+    onView(withId(R.id.chat_search_panel)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    onView(withId(R.id.composer)).check(matches(withText("Nháp khi tìm")));
+    onView(withText("Cùng trao đổi bài tập trong kênh nhé.")).check(matches(isDisplayed()));
     capture("04-chat-kenh");
     onView(withId(R.id.composer)).perform(replaceText("Nháp khi xoay"), closeSoftKeyboard());
     InstrumentationRegistry.getInstrumentation()
