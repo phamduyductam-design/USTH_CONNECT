@@ -25,7 +25,8 @@ public final class ChatFragment extends SessionAwareFragment {
   private Parcelable scrollState;
   private long unreadBoundary;
   private boolean firstRender = true, pinned = true;
-  private int messageCount;
+  private long lastMessageId;
+  private boolean newMessagesPending;
   private boolean draftOwner;
   private String observedDraft = "";
   private boolean searchOpen, normalPinned;
@@ -57,6 +58,8 @@ public final class ChatFragment extends SessionAwareFragment {
       searchQuery = saved.getString("search_query", "");
       normalScrollState = saved.getParcelable("search_normal_scroll");
       normalPinned = saved.getBoolean("search_normal_pinned", true);
+      lastMessageId = saved.getLong("last_message_id");
+      newMessagesPending = saved.getBoolean("new_messages_pending");
     }
   }
 
@@ -79,7 +82,13 @@ public final class ChatFragment extends SessionAwareFragment {
         new RecyclerView.OnScrollListener() {
           @Override
           public void onScrolled(@NonNull RecyclerView recycler, int dx, int dy) {
-            if (dy != 0 && !searchOpen) pinned = !recycler.canScrollVertically(1);
+            if (dy != 0 && !searchOpen) {
+              pinned = !recycler.canScrollVertically(1);
+              if (pinned) {
+                newMessagesPending = false;
+                UiHelpers.visible(v.findViewById(R.id.latest), false);
+              }
+            }
           }
         });
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());
@@ -136,6 +145,7 @@ public final class ChatFragment extends SessionAwareFragment {
         .setOnClickListener(
             w -> {
               pinned = true;
+              newMessagesPending = false;
               list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
               UiHelpers.visible(v.findViewById(R.id.latest), false);
             });
@@ -243,6 +253,13 @@ public final class ChatFragment extends SessionAwareFragment {
     renderMessages();
   }
 
+  /** Closing search keeps this chat visible and retains ownership of its draft. */
+  public boolean closeSearchIfOpen() {
+    if (!searchOpen || root == null) return false;
+    closeSearch();
+    return true;
+  }
+
   private void closeSearch() {
     if (root == null) return;
     searchOpen = false;
@@ -254,7 +271,7 @@ public final class ChatFragment extends SessionAwareFragment {
         requireContext().getSystemService(android.view.inputmethod.InputMethodManager.class);
     if (keyboard != null) keyboard.hideSoftInputFromWindow(root.getWindowToken(), 0);
     pinned = normalPinned;
-    scrollState = normalScrollState;
+    scrollState = normalPinned ? null : normalScrollState;
     firstRender = true;
     renderMessages();
   }
@@ -417,7 +434,11 @@ public final class ChatFragment extends SessionAwareFragment {
     RecyclerView list = root.findViewById(R.id.list);
     UiHelpers.visible(list, hasChat);
     Parcelable anchor = list.getLayoutManager().onSaveInstanceState();
-    int currentSize = chat.messages.size();
+    long currentLastMessageId =
+        chat.messages.isEmpty() ? 0 : chat.messages.get(chat.messages.size() - 1).id;
+    // IDs still advance when the bounded history is full, unlike its row count.
+    if (currentLastMessageId > lastMessageId && !(searchOpen ? normalPinned : pinned))
+      newMessagesPending = true;
     adapter.submit(messages, unreadBoundary, query);
     if (firstRender) {
       if (scrollState != null) list.getLayoutManager().onRestoreInstanceState(scrollState);
@@ -426,10 +447,10 @@ public final class ChatFragment extends SessionAwareFragment {
     } else if (pinned) list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
     else {
       list.getLayoutManager().onRestoreInstanceState(anchor);
-      if (currentSize > messageCount && !searchOpen)
-        UiHelpers.visible(root.findViewById(R.id.latest), true);
     }
-    messageCount = currentSize;
+    if (!searchOpen && pinned) newMessagesPending = false;
+    UiHelpers.visible(root.findViewById(R.id.latest), !searchOpen && newMessagesPending);
+    lastMessageId = currentLastMessageId;
   }
 
   @Override
@@ -442,6 +463,8 @@ public final class ChatFragment extends SessionAwareFragment {
     out.putString("search_query", searchQuery);
     out.putParcelable("search_normal_scroll", normalScrollState);
     out.putBoolean("search_normal_pinned", normalPinned);
+    out.putLong("last_message_id", lastMessageId);
+    out.putBoolean("new_messages_pending", newMessagesPending);
     Parcelable state =
         root == null
             ? scrollState
