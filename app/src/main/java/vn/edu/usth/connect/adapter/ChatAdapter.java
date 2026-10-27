@@ -10,6 +10,7 @@ import java.util.*;
 import vn.edu.usth.connect.R;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.ChatMessage;
+import vn.edu.usth.connect.ui.chat.MessageSearch;
 import vn.edu.usth.connect.ui.common.UiHelpers;
 
 public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> {
@@ -35,6 +36,7 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
   private final Retry retry;
   private final Context context;
   private final boolean privateChat;
+  private String searchQuery = "";
 
   public ChatAdapter(Context context, Retry retry, boolean privateChat) {
     this.context = context;
@@ -43,7 +45,8 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
     setHasStableIds(true);
   }
 
-  public void submit(List<ChatMessage> messages, long unreadId) {
+  public void submit(List<ChatMessage> messages, long unreadId, String query) {
+    searchQuery = query;
     rows.clear();
     String previousDate = "";
     ChatMessage previous = null;
@@ -168,6 +171,20 @@ public final class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.Holder> 
       content.setSpan(
           new android.text.style.ForegroundColorSpan(
               ContextCompat.getColor(context, R.color.primary)),
+          range[0],
+          range[1],
+          android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+    for (int[] range : MessageSearch.ranges(m.text, searchQuery)) {
+      content.setSpan(
+          new android.text.style.BackgroundColorSpan(
+              ContextCompat.getColor(context, R.color.primary)),
+          range[0],
+          range[1],
+          android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+      content.setSpan(
+          new android.text.style.ForegroundColorSpan(
+              ContextCompat.getColor(context, R.color.surface)),
           range[0],
           range[1],
           android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
