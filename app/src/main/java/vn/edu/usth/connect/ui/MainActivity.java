@@ -101,6 +101,8 @@ public final class MainActivity extends AppCompatActivity {
   }
 
   public void back() {
+    Fragment current = getSupportFragmentManager().findFragmentById(R.id.container);
+    if (current instanceof ChatFragment && ((ChatFragment) current).closeSearchIfOpen()) return;
     updateChatVisibility(false);
     getOnBackPressedDispatcher().onBackPressed();
   }
