@@ -1,9 +1,14 @@
 package vn.edu.usth.connect;
 
+import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.*;
+import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.*;
 import static org.junit.Assert.*;
 
 import android.widget.EditText;
 import androidx.lifecycle.Lifecycle;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -13,6 +18,7 @@ import org.junit.*;
 import org.junit.runner.RunWith;
 import vn.edu.usth.connect.irc.IrcParser;
 import vn.edu.usth.connect.model.ConnectionConfig;
+import vn.edu.usth.connect.model.Conversation;
 import vn.edu.usth.connect.repository.IrcSessionController;
 import vn.edu.usth.connect.ui.MainActivity;
 import vn.edu.usth.connect.ui.dialog.CommonDialogs;
@@ -135,5 +141,153 @@ public class ChatLifecycleTest {
     scenario.moveToState(Lifecycle.State.RESUMED);
     waitForActive("an");
     scenario.onActivity(activity -> assertEquals(0, app.session.data.conversation("an").unread));
+  }
+
+  @Test
+  public void headerBackFromSearchKeepsReadingAndSavingDrafts() throws Exception {
+    onView(withId(R.id.composer)).perform(replaceText("draft before search"), closeSoftKeyboard());
+    openSearch();
+    onView(withId(R.id.chat_search_query)).perform(replaceText("history"), closeSoftKeyboard());
+
+    onView(withId(R.id.back)).perform(click());
+    onView(withId(R.id.chat_search_panel)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    waitForActive("an");
+    feed(":an!u@h PRIVMSG minh :message after closing search");
+    scenario.onActivity(
+        activity -> {
+          assertEquals("an", app.session.data.activeTarget);
+          assertEquals(0, app.session.data.conversation("an").unread);
+        });
+
+    onView(withId(R.id.composer)).perform(replaceText("draft after search"), closeSoftKeyboard());
+    onView(withId(R.id.back)).perform(click());
+    waitForActive("");
+    scenario.onActivity(activity -> activity.openChat("an"));
+    waitForActive("an");
+    onView(withId(R.id.composer)).check(matches(withText("draft after search")));
+  }
+
+  @Test
+  public void closingSearchRestoresExistingLatestButton() throws Exception {
+    fillAndScrollUp();
+    feed(":an!u@h PRIVMSG minh :new message before search");
+    onView(withId(R.id.latest)).check(matches(isDisplayed()));
+
+    openSearch();
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    onView(withId(R.id.chat_search_close)).perform(click());
+
+    assertLatestReturnsToNewestMessage();
+  }
+
+  @Test
+  public void messageDuringSearchOffersLatestAfterRecreationAndClose() throws Exception {
+    fillAndScrollUp();
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    openSearch();
+    onView(withId(R.id.chat_search_query)).perform(replaceText("history"), closeSoftKeyboard());
+    feed(":an!u@h PRIVMSG minh :new message outside search results");
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+
+    scenario.recreate();
+    waitForActive("an");
+    onView(withId(R.id.chat_search_query))
+        .check(matches(withText("history")))
+        .perform(closeSoftKeyboard());
+    Espresso.pressBack();
+    onView(withId(R.id.chat_search_panel)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+
+    assertLatestReturnsToNewestMessage();
+  }
+
+  @Test
+  public void closingSearchFromPinnedChatFollowsMessagesReceivedDuringSearch() throws Exception {
+    fillChat(60);
+    scenario.onActivity(
+        activity -> {
+          RecyclerView list = activity.findViewById(R.id.list);
+          assertFalse("Chat must start at its newest message", list.canScrollVertically(1));
+        });
+    openSearch();
+    onView(withId(R.id.chat_search_query)).perform(replaceText("history"), closeSoftKeyboard());
+    feed(":an!u@h PRIVMSG minh :newest message received during search");
+    onView(withId(R.id.chat_search_close)).perform(click());
+
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    onView(withText("newest message received during search")).check(matches(isDisplayed()));
+    scenario.onActivity(
+        activity -> {
+          RecyclerView list = activity.findViewById(R.id.list);
+          assertFalse("Closing search must follow the newest message", list.canScrollVertically(1));
+        });
+  }
+
+  @Test
+  public void fullHistoryStillOffersLatestForMessagesReceivedDuringSearch() throws Exception {
+    fillChat(Conversation.MAX_HISTORY_MESSAGES);
+    scrollUp();
+    openSearch();
+    onView(withId(R.id.chat_search_query)).perform(replaceText("history"), closeSoftKeyboard());
+    feed(":an!u@h PRIVMSG minh :new message beyond the history limit");
+    scenario.onActivity(
+        activity ->
+            assertEquals(
+                Conversation.MAX_HISTORY_MESSAGES,
+                app.session.data.conversation("an").messages.size()));
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    onView(withId(R.id.chat_search_close)).perform(click());
+
+    assertLatestReturnsToNewestMessage();
+    onView(withText("new message beyond the history limit")).check(matches(isDisplayed()));
+  }
+
+  private void openSearch() throws Exception {
+    onView(withId(R.id.more)).perform(click());
+    onView(withText(R.string.search_messages)).perform(click());
+    onView(withId(R.id.chat_search_panel)).check(matches(isDisplayed()));
+    waitForActive("an");
+  }
+
+  private void fillAndScrollUp() {
+    fillChat(60);
+    scrollUp();
+  }
+
+  private void fillChat(int count) {
+    InstrumentationRegistry.getInstrumentation()
+        .runOnMainSync(
+            () -> {
+              for (int i = 0; i < count; i++)
+                app.session.onMessage(
+                    0, IrcParser.parse(":an!u@h PRIVMSG minh :history message " + i));
+            });
+    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+  }
+
+  private void scrollUp() {
+    scenario.onActivity(
+        activity -> {
+          RecyclerView list = activity.findViewById(R.id.list);
+          list.scrollBy(0, -3 * list.getHeight());
+          assertTrue(
+              "History must remain below the scrolled position", list.canScrollVertically(1));
+        });
+    InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+  }
+
+  private void assertLatestReturnsToNewestMessage() {
+    onView(withId(R.id.latest)).check(matches(isDisplayed()));
+    scenario.onActivity(
+        activity -> {
+          RecyclerView list = activity.findViewById(R.id.list);
+          assertTrue("Closing search must retain the older position", list.canScrollVertically(1));
+        });
+    onView(withId(R.id.latest)).perform(click());
+    onView(withId(R.id.latest)).check(matches(withEffectiveVisibility(Visibility.GONE)));
+    scenario.onActivity(
+        activity -> {
+          RecyclerView list = activity.findViewById(R.id.list);
+          assertFalse("Latest must reveal the newest message", list.canScrollVertically(1));
+        });
   }
 }

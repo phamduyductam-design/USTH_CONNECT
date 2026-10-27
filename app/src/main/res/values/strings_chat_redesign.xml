@@ -1,3 +1,12 @@
 <resources>
     <string name="chat_commands">Lệnh trò chuyện IRC</string>
+    <string name="search_messages">Tìm tin nhắn</string>
+    <string name="search_messages_hint">Nhập nội dung cần tìm</string>
+    <string name="search_messages_scope">Tìm trong tin nhắn hiện có của cuộc trò chuyện này.</string>
+    <string name="search_messages_none">Không tìm thấy tin nhắn</string>
+    <string name="search_messages_none_detail">Thử từ khóa khác hoặc đóng tìm kiếm để xem toàn bộ cuộc trò chuyện.</string>
+    <string name="search_messages_close">Đóng tìm kiếm</string>
+    <plurals name="search_messages_count">
+        <item quantity="other">%d tin nhắn phù hợp</item>
+    </plurals>
 </resources>
