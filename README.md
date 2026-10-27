@@ -20,6 +20,8 @@ Bắt đầu từ [bản đồ mã nguồn](docs/CODE_MAP.md): có bảng tính 
 
 Giao diện mới giữ Java/XML và IRC engine hiện có, với ba tab **Môn học · Tin nhắn · Cá nhân**. Duyệt phòng công khai ở **Môn học → Phòng trên server**. Xem [thiết kế, tích hợp và kiểm chứng UI](docs/UI_REDESIGN.md).
 
+Trong chat kênh hoặc tin nhắn riêng, mở **Tùy chọn → Tìm tin nhắn** để lọc và tô sáng nội dung đang có trong phiên; xem [hướng dẫn và demo tìm tin nhắn](docs/CHAT_SEARCH.md).
+
 ## Mở và build
 
 Clone repository, rồi mở thư mục vừa clone bằng Android Studio hoặc VS Code:

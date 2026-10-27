@@ -3,6 +3,7 @@ package vn.edu.usth.connect.ui.chat;
 import android.os.*;
 import android.view.*;
 import android.widget.*;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.*;
 import androidx.recyclerview.widget.*;
 import vn.edu.usth.connect.R;
@@ -24,9 +25,14 @@ public final class ChatFragment extends SessionAwareFragment {
   private Parcelable scrollState;
   private long unreadBoundary;
   private boolean firstRender = true, pinned = true;
-  private int messageCount;
+  private long lastMessageId;
+  private boolean newMessagesPending;
   private boolean draftOwner;
   private String observedDraft = "";
+  private boolean searchOpen, normalPinned;
+  private String searchQuery = "";
+  private Parcelable normalScrollState;
+  private OnBackPressedCallback searchBack;
 
   public static ChatFragment create(String target) {
     ChatFragment f = new ChatFragment();
@@ -48,6 +54,12 @@ public final class ChatFragment extends SessionAwareFragment {
     if (saved != null) {
       scrollState = saved.getParcelable("scroll");
       pinned = saved.getBoolean("pinned", true);
+      searchOpen = saved.getBoolean("search_open");
+      searchQuery = saved.getString("search_query", "");
+      normalScrollState = saved.getParcelable("search_normal_scroll");
+      normalPinned = saved.getBoolean("search_normal_pinned", true);
+      lastMessageId = saved.getLong("last_message_id");
+      newMessagesPending = saved.getBoolean("new_messages_pending");
     }
   }
 
@@ -70,7 +82,13 @@ public final class ChatFragment extends SessionAwareFragment {
         new RecyclerView.OnScrollListener() {
           @Override
           public void onScrolled(@NonNull RecyclerView recycler, int dx, int dy) {
-            if (dy != 0) pinned = !recycler.canScrollVertically(1);
+            if (dy != 0 && !searchOpen) {
+              pinned = !recycler.canScrollVertically(1);
+              if (pinned) {
+                newMessagesPending = false;
+                UiHelpers.visible(v.findViewById(R.id.latest), false);
+              }
+            }
           }
         });
     v.findViewById(R.id.back).setOnClickListener(w -> main().back());
@@ -86,12 +104,29 @@ public final class ChatFragment extends SessionAwareFragment {
                 ChannelDialogs.showJoin(main(), target);
               else session.reconnect();
             });
-    v.findViewById(R.id.more)
-        .setOnClickListener(
-            w -> {
-              if (session.data.connection == ConnectionState.CONNECTED) showChatMenu();
-              else UiHelpers.toast(requireContext(), R.string.error_offline);
-            });
+    v.findViewById(R.id.more).setOnClickListener(w -> showChatMenu());
+    EditText search = v.findViewById(R.id.chat_search_query);
+    search.setText(searchQuery);
+    UiHelpers.visible(v.findViewById(R.id.chat_search_panel), searchOpen);
+    UiHelpers.watch(
+        search,
+        () -> {
+          String query = search.getText().toString();
+          if (!searchOpen || query.equals(searchQuery)) return;
+          searchQuery = query;
+          pinned = false;
+          renderMessages();
+          list.scrollToPosition(0);
+        });
+    v.findViewById(R.id.chat_search_close).setOnClickListener(w -> closeSearch());
+    searchBack =
+        new OnBackPressedCallback(searchOpen) {
+          @Override
+          public void handleOnBackPressed() {
+            closeSearch();
+          }
+        };
+    requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), searchBack);
     EditText composer = v.findViewById(R.id.composer);
     observedDraft = session.draft(target);
     composer.setText(observedDraft);
@@ -110,6 +145,7 @@ public final class ChatFragment extends SessionAwareFragment {
         .setOnClickListener(
             w -> {
               pinned = true;
+              newMessagesPending = false;
               list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
               UiHelpers.visible(v.findViewById(R.id.latest), false);
             });
@@ -168,6 +204,7 @@ public final class ChatFragment extends SessionAwareFragment {
   }
 
   private void send() {
+    if (searchOpen) closeSearch();
     EditText composer = root.findViewById(R.id.composer);
     try {
       // A composer line break is text, not the end of an IRC command.
@@ -196,8 +233,47 @@ public final class ChatFragment extends SessionAwareFragment {
   }
 
   private void showChatMenu() {
-    if (IrcParser.isChannel(target)) ChannelDialogs.showMenu(main(), target);
-    else UserDialogs.showPrivateInfo(main(), target);
+    if (IrcParser.isChannel(target)) ChannelDialogs.showMenu(main(), target, this::showSearch);
+    else UserDialogs.showPrivateInfo(main(), target, this::showSearch);
+  }
+
+  private void showSearch() {
+    if (root == null) return;
+    if (!searchOpen) {
+      normalScrollState =
+          ((RecyclerView) root.findViewById(R.id.list)).getLayoutManager().onSaveInstanceState();
+      normalPinned = pinned;
+    }
+    searchOpen = true;
+    pinned = false;
+    searchBack.setEnabled(true);
+    UiHelpers.visible(root.findViewById(R.id.chat_search_panel), true);
+    UiHelpers.visible(root.findViewById(R.id.latest), false);
+    root.findViewById(R.id.chat_search_query).requestFocus();
+    renderMessages();
+  }
+
+  /** Closing search keeps this chat visible and retains ownership of its draft. */
+  public boolean closeSearchIfOpen() {
+    if (!searchOpen || root == null) return false;
+    closeSearch();
+    return true;
+  }
+
+  private void closeSearch() {
+    if (root == null) return;
+    searchOpen = false;
+    searchQuery = "";
+    searchBack.setEnabled(false);
+    ((EditText) root.findViewById(R.id.chat_search_query)).setText("");
+    UiHelpers.visible(root.findViewById(R.id.chat_search_panel), false);
+    android.view.inputmethod.InputMethodManager keyboard =
+        requireContext().getSystemService(android.view.inputmethod.InputMethodManager.class);
+    if (keyboard != null) keyboard.hideSoftInputFromWindow(root.getWindowToken(), 0);
+    pinned = normalPinned;
+    scrollState = normalPinned ? null : normalScrollState;
+    firstRender = true;
+    renderMessages();
   }
 
   private void sendSlashCommand(String text, EditText composer) {
@@ -332,10 +408,24 @@ public final class ChatFragment extends SessionAwareFragment {
 
   private void renderMessages() {
     boolean channel = chat instanceof Channel;
-    if (!channel)
-      ((TextView) root.findViewById(R.id.empty_detail)).setText(R.string.pm_empty_detail);
+    String query = searchOpen ? searchQuery.trim() : "";
+    java.util.List<ChatMessage> messages = MessageSearch.filter(chat.messages, query);
+    ((TextView) root.findViewById(R.id.chat_search_count))
+        .setText(
+            query.isEmpty()
+                ? getString(R.string.search_messages_scope)
+                : getResources()
+                    .getQuantityString(
+                        R.plurals.search_messages_count, messages.size(), messages.size()));
+    ((TextView) root.findViewById(R.id.empty_title))
+        .setText(query.isEmpty() ? R.string.chat_empty : R.string.search_messages_none);
+    ((TextView) root.findViewById(R.id.empty_detail))
+        .setText(
+            !query.isEmpty()
+                ? R.string.search_messages_none_detail
+                : channel ? R.string.chat_empty_detail : R.string.pm_empty_detail);
     boolean hasChat = false;
-    for (ChatMessage m : chat.messages)
+    for (ChatMessage m : messages)
       if (m.event.isEmpty()) {
         hasChat = true;
         break;
@@ -344,8 +434,12 @@ public final class ChatFragment extends SessionAwareFragment {
     RecyclerView list = root.findViewById(R.id.list);
     UiHelpers.visible(list, hasChat);
     Parcelable anchor = list.getLayoutManager().onSaveInstanceState();
-    int currentSize = chat.messages.size();
-    adapter.submit(chat.messages, unreadBoundary);
+    long currentLastMessageId =
+        chat.messages.isEmpty() ? 0 : chat.messages.get(chat.messages.size() - 1).id;
+    // IDs still advance when the bounded history is full, unlike its row count.
+    if (currentLastMessageId > lastMessageId && !(searchOpen ? normalPinned : pinned))
+      newMessagesPending = true;
+    adapter.submit(messages, unreadBoundary, query);
     if (firstRender) {
       if (scrollState != null) list.getLayoutManager().onRestoreInstanceState(scrollState);
       else list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
@@ -353,9 +447,10 @@ public final class ChatFragment extends SessionAwareFragment {
     } else if (pinned) list.scrollToPosition(Math.max(0, adapter.getItemCount() - 1));
     else {
       list.getLayoutManager().onRestoreInstanceState(anchor);
-      if (currentSize > messageCount) UiHelpers.visible(root.findViewById(R.id.latest), true);
     }
-    messageCount = currentSize;
+    if (!searchOpen && pinned) newMessagesPending = false;
+    UiHelpers.visible(root.findViewById(R.id.latest), !searchOpen && newMessagesPending);
+    lastMessageId = currentLastMessageId;
   }
 
   @Override
@@ -364,6 +459,12 @@ public final class ChatFragment extends SessionAwareFragment {
     out.putString("target", target);
     out.putLong("unread", unreadBoundary);
     out.putBoolean("pinned", pinned);
+    out.putBoolean("search_open", searchOpen);
+    out.putString("search_query", searchQuery);
+    out.putParcelable("search_normal_scroll", normalScrollState);
+    out.putBoolean("search_normal_pinned", normalPinned);
+    out.putLong("last_message_id", lastMessageId);
+    out.putBoolean("new_messages_pending", newMessagesPending);
     Parcelable state =
         root == null
             ? scrollState

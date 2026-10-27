@@ -73,6 +73,47 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/divider" />
+    <LinearLayout
+        android:id="@+id/chat_search_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
+        android:background="@color/surface"
+        android:visibility="gone">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical">
+            <EditText
+                android:id="@+id/chat_search_query"
+                style="@style/SearchInput"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/search_messages_hint"
+                android:inputType="text"
+                android:imeOptions="actionSearch|flagNoExtractUi"
+                android:autofillHints=""
+                android:maxLength="512"
+                app:drawableStartCompat="@drawable/ic_search"
+                android:drawablePadding="8dp" />
+            <ImageButton
+                android:id="@+id/chat_search_close"
+                style="@style/IconButton"
+                android:src="@drawable/ic_close"
+                android:contentDescription="@string/search_messages_close" />
+        </LinearLayout>
+        <TextView
+            android:id="@+id/chat_search_count"
+            style="@style/Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="6dp"
+            android:textSize="12sp"
+            android:accessibilityLiveRegion="polite" />
+    </LinearLayout>
     <TextView
         android:id="@+id/topic"
         style="@style/Caption"

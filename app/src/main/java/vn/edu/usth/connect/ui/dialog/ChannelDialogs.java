@@ -20,6 +20,7 @@ public final class ChannelDialogs {
   private static final int ACTION_EDIT_TOPIC = 1;
   private static final int ACTION_ROOM_MODES = 2;
   private static final int ACTION_COMMANDS = 3;
+  private static final int ACTION_SEARCH = 4;
 
   public static void showJoin(MainActivity activity, String preset) {
     View view = activity.getLayoutInflater().inflate(R.layout.dialog_join_channel, null);
@@ -54,13 +55,14 @@ public final class ChannelDialogs {
     dialog.show();
   }
 
-  public static void showMenu(MainActivity activity, String target) {
+  public static void showMenu(MainActivity activity, String target, Runnable search) {
     IrcSessionController session = ConnectApplication.from(activity).session;
     int[] labels = {
       R.string.refresh_members,
       R.string.edit_topic,
       R.string.room_modes,
       R.string.commands_title,
+      R.string.search_messages,
       R.string.leave
     };
     String[] items = new String[labels.length];
@@ -70,6 +72,10 @@ public final class ChannelDialogs {
         .setItems(
             items,
             (d, which) -> {
+              if (which == ACTION_SEARCH) {
+                search.run();
+                return;
+              }
               if (which == ACTION_COMMANDS) {
                 CommonDialogs.showCommandHelp(activity);
                 return;

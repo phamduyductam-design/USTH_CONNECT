@@ -14,7 +14,7 @@ Giải thích OOP qua model Conversation/Channel, listener interface, các packa
 
 ## Activities — 2 phút
 
-ConnectActivity chỉ chuyển sang MainActivity sau 001. MainActivity điều phối Môn học/Phòng/Tin nhắn/Cá nhân và back stack Kênh/Chat; MembersBottomSheet mở từ chat. Intent/Bundle dùng để điều hướng và lưu state. onStart/onStop đăng ký/hủy listener.
+ConnectActivity chỉ chuyển sang MainActivity sau 001. MainActivity điều phối ba tab Môn học/Tin nhắn/Cá nhân và back stack Kênh/Chat; Phòng trên server nằm trong Môn học, MembersBottomSheet mở từ chat. Intent/Bundle dùng để điều hướng và lưu state. onStart/onStop đăng ký/hủy listener.
 
 Xoay khi đang chat có nháp: Activity tạo lại nhưng cùng Application/session; nháp và vị trí cuộn được giữ. Giải thích process death khác với xoay: không bảo đảm giữ Socket khi hệ điều hành hủy process.
 
@@ -50,8 +50,10 @@ Chuẩn bị server Ergo riêng và hai client trước buổi bảo vệ; để
 4. Đổi nickname An; quan sát cập nhật thành viên/conversation. Thử nickname Minh để thấy máy chủ từ chối.
 5. Nhập nháp, xoay màn hình. Cuộn lên đọc cũ rồi gửi thêm từ client kia; app giữ vị trí và hiện nút tin mới.
 6. Dừng server: banner và send bị vô hiệu; khởi động lại: backoff, 001, JOIN lại. App không tự phát lại tin.
-7. Mở tab Phòng để lấy LIST thật; dùng menu đổi topic và cấp Voice nếu là Operator. Đặt AWAY, nhắc nickname từ client thứ hai và xem thông báo khi app ở nền.
+7. Mở **Môn học → Phòng trên server** để lấy LIST thật; dùng menu đổi topic và cấp Voice nếu là Operator. Đặt AWAY, nhắc nickname từ client thứ hai và xem thông báo khi app ở nền.
 8. Rời kênh bằng menu; ngắt kết nối có xác nhận. Nếu hết giờ, ưu tiên các bước 1–4 và ngắt chủ động.
+
+Nếu còn 30 giây, minh họa **Tùy chọn → Tìm tin nhắn** trong chat: nhập từ khóa, chỉ ra số tin khớp và phần nội dung được tô sáng, thử từ không có kết quả rồi đóng tìm kiếm để trở lại đầy đủ hội thoại. Nêu rõ tính năng chỉ lọc nội dung đang có trong phiên, không tải lịch sử từ server. Xem [kịch bản chi tiết](CHAT_SEARCH.md).
 
 ## Conclusion — 1 phút
 
