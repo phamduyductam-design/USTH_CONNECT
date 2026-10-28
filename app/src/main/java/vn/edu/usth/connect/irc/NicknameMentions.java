@@ -2,7 +2,6 @@ package vn.edu.usth.connect.irc;
 
 import java.util.*;
 
-/** Nickname boundaries and RFC1459 folding; indices remain valid in the original UTF-16 text. */
 public final class NicknameMentions {
   private NicknameMentions() {}
 
