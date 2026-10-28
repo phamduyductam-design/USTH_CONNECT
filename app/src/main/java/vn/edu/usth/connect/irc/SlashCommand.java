@@ -2,7 +2,6 @@ package vn.edu.usth.connect.irc;
 
 import java.util.Locale;
 
-/** Parses user commands into typed operations; never forwards arbitrary raw IRC input. */
 public final class SlashCommand {
   public final String name, target, text, extra;
 
