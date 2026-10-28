@@ -5,6 +5,7 @@
             "label": "USTH: Build APK",
             "type": "process",
             "command": "powershell.exe",
+
             "args": [
                 "-NoProfile",
                 "-ExecutionPolicy",
@@ -13,18 +14,23 @@
                 "${workspaceFolder}/tools/run-android.ps1",
                 "-BuildOnly"
             ],
+
             "options": {
                 "cwd": "${workspaceFolder}"
             },
+
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
+
             "problemMatcher": [],
+
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
             },
+
             "osx": {
                 "command": "/bin/bash",
                 "args": [
@@ -33,10 +39,12 @@
                 ]
             }
         },
+
         {
             "label": "USTH: Chay may ao va ung dung",
             "type": "process",
             "command": "powershell.exe",
+
             "args": [
                 "-NoProfile",
                 "-ExecutionPolicy",
@@ -44,14 +52,18 @@
                 "-File",
                 "${workspaceFolder}/tools/run-android.ps1"
             ],
+
             "options": {
                 "cwd": "${workspaceFolder}"
             },
+
             "problemMatcher": [],
+
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
             },
+
             "osx": {
                 "command": "/bin/bash",
                 "args": [
