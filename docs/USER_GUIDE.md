@@ -74,6 +74,18 @@ Danh mục môn học là dữ liệu cục bộ, không bảo đảm phòng đ�
 
 Không có lịch sử chat offline giả. Không giả định app sẽ nhận tin khi đã ngắt kết nối.
 
+## 7. Checklist trước buổi demo nhóm
+
+- [ ] Server IRC đang hoạt động và cả hai thiết bị đều có mạng.
+- [ ] Hai client nhập cùng địa chỉ server, cổng và lựa chọn TLS.
+- [ ] Mỗi client sử dụng một biệt danh khác nhau.
+- [ ] Hai client đã được server xác nhận tham gia cùng kênh thử.
+- [ ] Tin nhắn tiếng Việt được nhận theo cả hai chiều.
+- [ ] Danh sách thành viên hiển thị hai biệt danh; nhắn riêng tới đúng người nhận.
+- [ ] Thử rời phòng và ngắt kết nối sau khi hoàn tất.
+
+Nếu có bước thất bại, ghi lại thiết bị, phiên bản Android, bước thực hiện và thông báo lỗi để nhóm có thể kiểm tra lại. Đánh dấu kết quả sau khi thử thực tế, không coi checklist này là báo cáo đã kiểm thử.
+
 ## Tài liệu liên quan
 
 - [Cài đặt, chạy và giới hạn của dự án](../README.md)
