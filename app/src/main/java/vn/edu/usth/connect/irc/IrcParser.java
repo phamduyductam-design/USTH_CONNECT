@@ -2,7 +2,6 @@ package vn.edu.usth.connect.irc;
 
 import java.util.*;
 
-/** Parses framing after CRLF was removed. No Android dependency: can be tested on a desktop JDK. */
 public final class IrcParser {
   private IrcParser() {}
 
