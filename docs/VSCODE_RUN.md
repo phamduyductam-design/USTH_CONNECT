@@ -7,7 +7,7 @@ Mở thư mục chứa settings.gradle và .vscode/tasks.json, không mở thư 
 - Terminal → Run Task → **USTH: Build APK**.
 - Terminal → Run Task → **USTH: Chay may ao va ung dung**.
 
-Task có cấu hình riêng cho Windows PowerShell và macOS bash. Máy chạy cần JDK 17, Android SDK Platform 35, build-tools, platform-tools và một máy ảo phù hợp kiến trúc.
+Task có cấu hình riêng cho Windows PowerShell và macOS bash. Máy chạy cần JDK 17, Android SDK Platform 35, build-tools, platform-tools và một máy ảo phù hợp kiến trúc
 
 ## macOS
 
