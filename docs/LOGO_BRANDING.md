@@ -8,7 +8,7 @@ Asset dùng chung: `app/src/main/res/drawable-nodpi/usth_university_logo.png`, P
 - Manifest dùng `@mipmap/ic_launcher` cho icon thường và roundIcon. API 24–25 dùng bitmap trong khung trong suốt 48×48dp; phần ảnh giữ tỷ lệ 2:1. API 26+ dùng adaptive icon có background trong suốt, foreground giữ tỷ lệ và nằm trong vùng an toàn của mask.
 - Không thêm bản monochrome thay màu thương hiệu. Cảnh báo `MonochromeLauncherIcon` được bỏ qua ở đúng resource; launcher vẫn có thể áp dụng hiệu ứng theo cài đặt hệ điều hành. Pixel Launcher trên máy ảo API 35 gộp vùng alpha của adaptive icon thành đĩa đen; app không gán nền trắng. Logo bên trong các màn hình giữ alpha thật và không có khung.
 - Generator resource lịch sử không quản lý logo hiện tại. Không chạy lại generator để cập nhật UI.
-- Không sửa giao thức IRC, kho dữ liệu, preferences hoặc logic điều hướng.
+- Không sửa giao thức IRC,kho dữ liệu, preferences hoặc logic điều hướng.
 
 Kiểm chứng cập nhật: `assembleDebug`, `lintDebug`, `testDebugUnitTest`, `assembleDebugAndroidTest` thành công; 30 unit test và 3 bài AppFlowTest qua. Lint 0 lỗi, 8 cảnh báo có sẵn. Formatter và `git diff --check` qua. Ảnh kiểm tra lấy từ máy ảo API 35 riêng, bao gồm logo trên nền sáng/tối và icon trong launcher. Không cài lại hoặc xóa dữ liệu máy ảo emulator-5554 của người dùng.
 
