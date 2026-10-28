@@ -4,6 +4,7 @@
         "**/.gradle": true,
         "**/build": true
     },
+
     "search.exclude": {
         "**/.tools": true,
         "**/.gradle": true,
