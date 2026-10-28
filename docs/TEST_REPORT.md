@@ -32,7 +32,7 @@ Ngày: 12/10/2026. Nền tảng kiểm tra: macOS Apple Silicon, JDK 17, Gradle 
 - LIST bắt đầu/kết thúc/rỗng/lỗi; MODE có tham số key/role không làm lệch nickname; đổi quyền trong lúc NAMES chưa kết thúc.
 - PREFIX/CHANMODES từ ISUPPORT; WHO, AWAY, 301/305/306; đổi nickname và QUIT cập nhật presence.
 - Nhắc nickname theo nguyên từ/RFC1459; giữ đúng chỉ số khi có Unicode/emoji trước nickname.
-- Slash command sai báo lỗi; topic query/clear phân biệt; builder mới vẫn chặn CRLF/NUL và tin quá dài.
+- Slash command sai báo lỗi;topic query/clear phân biệt; builder mới vẫn chặn CRLF/NUL và tin quá dài.
 
 ## Giao thức trực tiếp với hai phiên client
 
