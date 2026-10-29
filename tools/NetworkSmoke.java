@@ -1,13 +1,15 @@
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
-import vn.edu.usth.connect.irc.*;
-import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.irc.IrcClient;
+import vn.edu.usth.connect.irc.IrcCommands;
+import vn.edu.usth.connect.irc.IrcMessage;
+import vn.edu.usth.connect.model.ConnectionConfig;
+import vn.edu.usth.connect.model.ConnectionState;
 
-/**
- * Opt-in live smoke test. Its two clients communicate only with each other in a unique temporary
- * room.
- */
 public final class NetworkSmoke {
   static final class Peer implements IrcClient.Listener, AutoCloseable {
     final BlockingQueue<IrcMessage> messages = new LinkedBlockingQueue<>();
@@ -23,51 +25,56 @@ public final class NetworkSmoke {
               host, port, tls, nick, "usth", "USTH Connect automated integration test"));
     }
 
-    public void onState(long e, ConnectionState state, String reason) {
-      if (state == ConnectionState.CONNECTED) connected.countDown();
+    public void onState(long epoch, ConnectionState state, String reason) {
+      if (state == ConnectionState.CONNECTED) {
+        connected.countDown();
+      }
       if (state == ConnectionState.FAILED) {
         failure = reason;
         connected.countDown();
       }
     }
 
-    public void onMessage(long e, IrcMessage message) {
+    public void onMessage(long epoch, IrcMessage message) {
       messages.add(message);
     }
 
     void awaitConnection() throws Exception {
-      if (!connected.await(35, TimeUnit.SECONDS) || !failure.isEmpty())
+      if (!connected.await(35, TimeUnit.SECONDS) || !failure.isEmpty()) {
         throw new IllegalStateException("Connection failed: " + failure);
+      }
     }
 
     IrcMessage await(Predicate<IrcMessage> predicate) throws Exception {
       long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(12);
       while (System.nanoTime() < deadline) {
-        IrcMessage m = messages.poll(100, TimeUnit.MILLISECONDS);
-        if (m != null && predicate.test(m)) return m;
+        IrcMessage message = messages.poll(100, TimeUnit.MILLISECONDS);
+        if (message != null && predicate.test(message)) {
+          return message;
+        }
       }
       throw new IllegalStateException("Expected IRC reply not received");
     }
 
     void send(String line) throws Exception {
       CountDownLatch sent = new CountDownLatch(1);
-      java.util.concurrent.atomic.AtomicBoolean ok =
-          new java.util.concurrent.atomic.AtomicBoolean();
+      AtomicBoolean writeSucceeded = new AtomicBoolean();
       client.send(
           line,
           (written, uncertain) -> {
-            ok.set(written);
+            writeSucceeded.set(written);
             sent.countDown();
           });
-      if (!sent.await(5, TimeUnit.SECONDS) || !ok.get())
+      if (!sent.await(5, TimeUnit.SECONDS) || !writeSucceeded.get()) {
         throw new IllegalStateException("write failed");
+      }
     }
 
     public void close() {
       client.disconnect();
       try {
         Thread.sleep(150);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException error) {
         Thread.currentThread().interrupt();
       }
       client.shutdown();
@@ -84,41 +91,51 @@ public final class NetworkSmoke {
     boolean tls = args.length > 2 && Boolean.parseBoolean(args[2]);
     String suffix = Long.toString(System.nanoTime(), 36);
     suffix = suffix.substring(Math.max(0, suffix.length() - 6));
-    String aNick = "ua" + suffix, bNick = "ub" + suffix, room = "#usth-test-" + suffix;
-    try (Peer a = new Peer(host, port, tls, aNick);
-        Peer b = new Peer(host, port, tls, bNick)) {
-      a.awaitConnection();
-      b.awaitConnection();
+    String firstNickname = "ua" + suffix;
+    String secondNickname = "ub" + suffix;
+    String room = "#usth-test-" + suffix;
+    try (Peer firstPeer = new Peer(host, port, tls, firstNickname);
+        Peer secondPeer = new Peer(host, port, tls, secondNickname)) {
+      firstPeer.awaitConnection();
+      secondPeer.awaitConnection();
       pass("two real TCP sessions accepted with 001 (TLS=" + tls + ")");
-      a.send(IrcCommands.join(room, ""));
-      a.await(m -> m.command.equals("JOIN") && m.nick().equals(aNick));
-      b.send(IrcCommands.join(room, ""));
-      b.await(m -> m.command.equals("JOIN") && m.nick().equals(bNick));
-      a.await(m -> m.command.equals("JOIN") && m.nick().equals(bNick));
+      firstPeer.send(IrcCommands.join(room, ""));
+      firstPeer.await(
+          message -> message.command.equals("JOIN") && message.nick().equals(firstNickname));
+      secondPeer.send(IrcCommands.join(room, ""));
+      secondPeer.await(
+          message -> message.command.equals("JOIN") && message.nick().equals(secondNickname));
+      firstPeer.await(
+          message -> message.command.equals("JOIN") && message.nick().equals(secondNickname));
       pass("JOIN acknowledgements and peer membership event");
-      b.await(m -> m.command.equals("366") && m.param(1).equals(room));
+      secondPeer.await(message -> message.command.equals("366") && message.param(1).equals(room));
       pass("NAMES completed");
-      a.send(IrcCommands.message(room, "Xin chào từ USTH Connect test"));
-      b.await(m -> m.command.equals("PRIVMSG") && m.last().equals("Xin chào từ USTH Connect test"));
+      firstPeer.send(IrcCommands.message(room, "Xin chào từ USTH Connect test"));
+      secondPeer.await(
+          message ->
+              message.command.equals("PRIVMSG")
+                  && message.last().equals("Xin chào từ USTH Connect test"));
       pass("UTF-8 channel PRIVMSG delivered to second client");
-      b.send(IrcCommands.message(aNick, "Tin riêng thử nghiệm"));
-      a.await(m -> m.command.equals("PRIVMSG") && m.last().equals("Tin riêng thử nghiệm"));
+      secondPeer.send(IrcCommands.message(firstNickname, "Tin riêng thử nghiệm"));
+      firstPeer.await(
+          message ->
+              message.command.equals("PRIVMSG") && message.last().equals("Tin riêng thử nghiệm"));
       pass("private PRIVMSG delivered");
       String newNick = "uc" + suffix;
-      b.send(IrcCommands.nick(newNick));
-      a.await(m -> m.command.equals("NICK") && m.last().equals(newNick));
+      secondPeer.send(IrcCommands.nick(newNick));
+      firstPeer.await(message -> message.command.equals("NICK") && message.last().equals(newNick));
       pass("NICK broadcast");
-      b.send(IrcCommands.message("absent" + suffix, "not delivered"));
-      b.await(m -> m.command.equals("401"));
+      secondPeer.send(IrcCommands.message("absent" + suffix, "not delivered"));
+      secondPeer.await(message -> message.command.equals("401"));
       pass("401 for missing recipient");
-      b.send(IrcCommands.part(room));
-      a.await(m -> m.command.equals("PART") && m.nick().equals(newNick));
+      secondPeer.send(IrcCommands.part(room));
+      firstPeer.await(message -> message.command.equals("PART") && message.nick().equals(newNick));
       pass("PART broadcast");
-      b.send(IrcCommands.join(room, ""));
-      b.await(m -> m.command.equals("JOIN") && m.nick().equals(newNick));
-      a.await(m -> m.command.equals("JOIN") && m.nick().equals(newNick));
-      b.client.disconnect();
-      a.await(m -> m.command.equals("QUIT") && m.nick().equals(newNick));
+      secondPeer.send(IrcCommands.join(room, ""));
+      secondPeer.await(message -> message.command.equals("JOIN") && message.nick().equals(newNick));
+      firstPeer.await(message -> message.command.equals("JOIN") && message.nick().equals(newNick));
+      secondPeer.client.disconnect();
+      firstPeer.await(message -> message.command.equals("QUIT") && message.nick().equals(newNick));
       pass("QUIT broadcast; no implicit resend");
     }
   }

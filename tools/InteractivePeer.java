@@ -2,13 +2,18 @@ import java.util.Scanner;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import vn.edu.usth.connect.irc.*;
-import vn.edu.usth.connect.model.*;
+import vn.edu.usth.connect.irc.IrcClient;
+import vn.edu.usth.connect.irc.IrcCommands;
+import vn.edu.usth.connect.irc.IrcMessage;
+import vn.edu.usth.connect.irc.IrcParser;
+import vn.edu.usth.connect.irc.SlashCommand;
+import vn.edu.usth.connect.model.ConnectionConfig;
+import vn.edu.usth.connect.model.ConnectionState;
 
-/** A human-operated second IRC client, using the same protocol implementation as Android. */
 public final class InteractivePeer implements IrcClient.Listener {
   final IrcClient client = new IrcClient(this);
-  final AtomicReference<String> nick, target;
+  final AtomicReference<String> nick;
+  final AtomicReference<String> target;
   final CountDownLatch accepted = new CountDownLatch(1);
   volatile String failure = "";
 
@@ -28,54 +33,65 @@ public final class InteractivePeer implements IrcClient.Listener {
     }
   }
 
-  public void onMessage(long epoch, IrcMessage m) {
-    if (m.command.equals("JOIN") && IrcParser.fold(m.nick()).equals(IrcParser.fold(nick.get())))
-      target.set(m.last());
-    if (m.command.equals("NICK") && IrcParser.fold(m.nick()).equals(IrcParser.fold(nick.get())))
-      nick.set(m.last());
-    if (m.command.equals("PRIVMSG"))
-      System.out.println(m.nick() + " → " + m.param(0) + ": " + m.last());
-    else
-      System.out.println("[" + m.command + "] " + m.source + " " + String.join(" ", m.parameters));
+  public void onMessage(long epoch, IrcMessage message) {
+    if (message.command.equals("JOIN")
+        && IrcParser.fold(message.nick()).equals(IrcParser.fold(nick.get()))) {
+      target.set(message.last());
+    }
+    if (message.command.equals("NICK")
+        && IrcParser.fold(message.nick()).equals(IrcParser.fold(nick.get()))) {
+      nick.set(message.last());
+    }
+    if (message.command.equals("PRIVMSG")) {
+      System.out.println(message.nick() + " → " + message.param(0) + ": " + message.last());
+    } else {
+      System.out.println(
+          "["
+              + message.command
+              + "] "
+              + message.source
+              + " "
+              + String.join(" ", message.parameters));
+    }
   }
 
   void input(String text) {
     if (text.startsWith("/") && !text.startsWith("//")) {
-      SlashCommand c = SlashCommand.parse(text, target.get());
+      SlashCommand command = SlashCommand.parse(text, target.get());
       String line;
-      switch (c.name) {
+      switch (command.name) {
         case "join":
-          line = IrcCommands.join(c.target, c.extra);
+          line = IrcCommands.join(command.target, command.extra);
           break;
         case "nick":
-          line = IrcCommands.nick(c.target);
+          line = IrcCommands.nick(command.target);
           break;
         case "msg":
-          line = IrcCommands.message(c.target, c.text);
+          line = IrcCommands.message(command.target, command.text);
           break;
         case "part":
-          line = IrcCommands.part(c.target);
+          line = IrcCommands.part(command.target);
           break;
         case "names":
-          line = IrcCommands.names(c.target);
+          line = IrcCommands.names(command.target);
           break;
         case "who":
-          line = IrcCommands.who(c.target);
+          line = IrcCommands.who(command.target);
           break;
         case "list":
           line = IrcCommands.list();
           break;
         case "topic":
-          line = IrcCommands.topic(c.target, c.text);
+          line = IrcCommands.topic(command.target, command.text);
           break;
         case "mode":
-          line = IrcCommands.mode(c.target, c.text, c.extra);
+          line = IrcCommands.mode(command.target, command.text, command.extra);
           break;
         case "kick":
-          line = IrcCommands.kick(c.target, c.text, c.extra);
+          line = IrcCommands.kick(command.target, command.text, command.extra);
           break;
         case "away":
-          line = IrcCommands.away(c.text);
+          line = IrcCommands.away(command.text);
           break;
         default:
           System.out.println(
@@ -83,10 +99,11 @@ public final class InteractivePeer implements IrcClient.Listener {
           return;
       }
       client.send(line, null);
-    } else
+    } else {
       client.send(
           IrcCommands.message(target.get(), text.startsWith("//") ? text.substring(1) : text),
           null);
+    }
   }
 
   public static void main(String[] args) throws Exception {
@@ -104,19 +121,24 @@ public final class InteractivePeer implements IrcClient.Listener {
             "usth",
             "USTH human demo peer"));
     try {
-      if (!peer.accepted.await(35, TimeUnit.SECONDS) || !peer.failure.isEmpty())
+      if (!peer.accepted.await(35, TimeUnit.SECONDS) || !peer.failure.isEmpty()) {
         throw new IllegalStateException("Connection failed: " + peer.failure);
+      }
       System.out.println(
           "Type a message or /help. This client does not auto-reply. Use /quit to close.");
       try (Scanner input = new Scanner(System.in)) {
         while (input.hasNextLine()) {
           String line = input.nextLine();
-          if (line.equals("/quit")) break;
-          if (line.trim().isEmpty()) continue;
+          if (line.equals("/quit")) {
+            break;
+          }
+          if (line.trim().isEmpty()) {
+            continue;
+          }
           try {
             peer.input(line);
-          } catch (IllegalArgumentException e) {
-            System.err.println(e.getMessage());
+          } catch (IllegalArgumentException error) {
+            System.err.println(error.getMessage());
           }
         }
       }
