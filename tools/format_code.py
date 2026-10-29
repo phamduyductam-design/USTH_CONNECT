@@ -39,7 +39,6 @@ def formatter_path():
 
 
 def format_view_xml(source):
-    """One attribute per line for Android layouts, menus, icons and view backgrounds."""
     document = minidom.parseString(source)
 
     def render(node, depth=0):
@@ -50,9 +49,10 @@ def format_view_xml(source):
             if node.nodeType == Node.TEXT_NODE and not node.data.strip():
                 return []
             return [indent + node.toxml()]
-        children = [n for n in node.childNodes if not (
-            n.nodeType == Node.TEXT_NODE and not n.data.strip()
-        )]
+        children = [
+            child for child in node.childNodes
+            if not (child.nodeType == Node.TEXT_NODE and not child.data.strip())
+        ]
         attributes = list(node.attributes.items())
         opening = [indent + "<" + node.tagName]
         for name, value in attributes:
@@ -80,26 +80,34 @@ def main():
     java_files = sorted((PROJECT_DIR / "app/src").rglob("*.java"))
     java_files += sorted((PROJECT_DIR / "tools").glob("*.java"))
     java_home = os.environ.get("JAVA_HOME")
-    java = str(Path(java_home) / "bin/java") if java_home else "java"
+    java_binary = str(Path(java_home) / "bin/java") if java_home else "java"
     flags = ["--dry-run", "--set-exit-if-changed"] if args.check else ["--replace"]
-    java_result = subprocess.run([
-        java, "-jar", str(formatter_path()), *flags, *(str(p) for p in java_files)
-    ])
-    res = PROJECT_DIR / "app/src/main/res"
-    xml_files = sorted(p for folder in ("layout", "drawable", "menu", "color")
-                       for p in (res / folder).glob("*.xml"))
-    changed = []
+    java_result = subprocess.run(
+        [
+            java_binary, "-jar", str(formatter_path()), *flags,
+            *(str(path) for path in java_files),
+        ]
+    )
+    resources_dir = PROJECT_DIR / "app/src/main/res"
+    xml_files = sorted(
+        path for folder in ("layout", "drawable", "menu", "color")
+        for path in (resources_dir / folder).glob("*.xml")
+    )
+    changed_files = []
     for path in xml_files:
         source = path.read_text(encoding="utf-8")
         result = format_view_xml(source)
         if source != result:
-            changed.append(path)
+            changed_files.append(path)
             if args.check:
                 print(path.relative_to(PROJECT_DIR))
             else:
                 path.write_text(result, encoding="utf-8")
-    print(f"Java: {len(java_files)} files; XML: {len(xml_files)} files; XML differences: {len(changed)}")
-    return 1 if java_result.returncode or (args.check and changed) else 0
+    print(
+        f"Java: {len(java_files)} files; XML: {len(xml_files)} files; "
+        f"XML differences: {len(changed_files)}"
+    )
+    return 1 if java_result.returncode or (args.check and changed_files) else 0
 
 
 if __name__ == "__main__":
