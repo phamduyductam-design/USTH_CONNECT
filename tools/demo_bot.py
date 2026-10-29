@@ -8,24 +8,27 @@ import time
 
 
 def checked(line):
-    if any(c in line for c in "\r\n\0") or len(line.encode("utf-8")) + 2 > 512:
+    if any(character in line for character in "\r\n\0") or len(line.encode("utf-8")) + 2 > 512:
         raise ValueError("IRC command must be a single line of at most 512 UTF-8 bytes.")
     return (line + "\r\n").encode("utf-8")
 
 
 def reply_line(target, text):
     prefix = f"PRIVMSG {target} :Demo đã nhận: "
-    budget = 510 - len(prefix.encode("utf-8"))
-    if budget < 0:
+    byte_budget = 510 - len(prefix.encode("utf-8"))
+    if byte_budget < 0:
         raise ValueError("Target is too long")
-    body = text[:80].encode("utf-8")[:budget].decode("utf-8", errors="ignore")
+    body = text[:80].encode("utf-8")[:byte_budget].decode("utf-8", errors="ignore")
     return checked(prefix + body)
 
 
 def run(host, port, tls, room):
     nick = "Demo_Bot"
     with socket.create_connection((host, port), timeout=15) as raw:
-        connection = ssl.create_default_context().wrap_socket(raw, server_hostname=host) if tls else raw
+        connection = (
+            ssl.create_default_context().wrap_socket(raw, server_hostname=host)
+            if tls else raw
+        )
         with connection as sock:
             sock.settimeout(180)
             sock.sendall(checked(f"NICK {nick}"))
@@ -48,10 +51,16 @@ def run(host, port, tls, room):
                         sock.sendall(checked("PONG " + line.partition(" ")[2]))
                     elif command == "001":
                         sock.sendall(checked("JOIN " + room))
-                    elif command == "PRIVMSG" and len(parts) > 1 and sender.casefold() != nick.casefold():
+                    elif (
+                        command == "PRIVMSG"
+                        and len(parts) > 1
+                        and sender.casefold() != nick.casefold()
+                    ):
                         if text.startswith("\x01"):
                             continue
-                        target = parts[1] if parts[1].startswith(("#", "&", "+", "!")) else sender
+                        target = (
+                            parts[1] if parts[1].startswith(("#", "&", "+", "!")) else sender
+                        )
                         sock.sendall(reply_line(target, text))
 
 
@@ -62,7 +71,9 @@ def main():
     parser.add_argument("--tls", action="store_true")
     parser.add_argument("--room", default="#web-general")
     args = parser.parse_args()
-    if not args.room.startswith(("#", "&", "+", "!")) or any(c.isspace() or c in ",\0" for c in args.room):
+    if not args.room.startswith(("#", "&", "+", "!")) or any(
+        character.isspace() or character in ",\0" for character in args.room
+    ):
         parser.error("room must be a single IRC channel")
     checked("JOIN " + args.room)
     try:
